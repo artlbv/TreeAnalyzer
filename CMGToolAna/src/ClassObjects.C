@@ -1,36 +1,9 @@
+
 #include "../interface/ClassObjects.h"
 
 using namespace std;
 
-// global Objects
-vector<Jet> goodJet;
-vector<Jet> goodBJet;
 
-TLorentzVector MET;
-TLorentzVector genMET;
-TLorentzVector METnoPU;
-
-vector<Lepton> goodLep;
-vector<Lepton> goodEl;
-vector<Lepton> goodMu;
-
-vector<Lepton> vetoLep;
-vector<Lepton> vetoEl;
-vector<Lepton> vetoMu;
-
-vector<GenLepton> genLep;
-vector<GenLepton> genEl;
-vector<GenLepton> genMu;
-vector<GenLepton> genTau;
-
-vector<GenLepton> genLepFromTau;
-vector<GenLepton> genElFromTau;
-vector<GenLepton> genMuFromTau;
-
-///////////////////////////////////
-///////////////////////////////////
-///////////////////////////////////
-// Object cuts
 Float_t goodEta = 2.4;
 
 //leptons
@@ -49,10 +22,6 @@ Bool_t goodEl_tightID = true;
 //jets
 Float_t goodJetPt = 40.0;
 Float_t goodJetBtagCSV = 0.679;
-
-///////////////////////////////////
-///////////////////////////////////
-///////////////////////////////////
 
 // variables for tree
 const int arrayN = 50;
@@ -84,7 +53,7 @@ Float_t met_phi;
 Float_t met_pt;
 Float_t met_mass;
 
-void GetLeptons(EasyChain * tree){
+void GetObjects::GetLeptons(EasyChain * tree){
 
     // clearing objects
     goodLep.clear();
@@ -182,7 +151,7 @@ void GetLeptons(EasyChain * tree){
 */
 }
 
-void GetGenLeptons(EasyChain * tree){
+void GetObjects::GetGenLeptons(EasyChain * tree){
 
     // clearing objects
     genLep.clear();
@@ -230,7 +199,7 @@ tree->Get(genLep_charge[0],"genLep_charge");
 }
 
 
-void GetGenLeptonsFromTau(EasyChain * tree){
+void GetObjects::GetGenLeptonsFromTau(EasyChain * tree){
 
     // clearing objects
     genLepFromTau.clear();
@@ -272,7 +241,7 @@ void GetGenLeptonsFromTau(EasyChain * tree){
     }
 }
 
-void GetGenTaus(EasyChain * tree){
+void GetObjects::GetGenTaus(EasyChain * tree){
 
     // clearing objects
     genTau.clear();
@@ -298,7 +267,7 @@ void GetGenTaus(EasyChain * tree){
     }
 }
 
-void GetJets(EasyChain * tree){
+void GetObjects::GetJets(EasyChain * tree){
     goodJet.clear();
     goodBJet.clear();
 
@@ -340,7 +309,7 @@ void GetJets(EasyChain * tree){
 */
 }
 
-void GetMET(EasyChain * tree){
+void GetObjects::GetMET(EasyChain * tree){
     MET.SetPtEtaPhiM(0,0,0,0);
 
     tree->Get(met_pt,"met_pt");
@@ -351,7 +320,7 @@ void GetMET(EasyChain * tree){
     MET.SetPtEtaPhiM(met_pt,met_eta,met_phi,met_mass);
 }
 
-void GetGenMET(EasyChain * tree){
+void GetObjects::GetGenMET(EasyChain * tree){
     genMET.SetPtEtaPhiM(0,0,0,0);
 
     tree->Get(met_pt,"met_genPt");
@@ -362,7 +331,7 @@ void GetGenMET(EasyChain * tree){
     genMET.SetPtEtaPhiM(met_pt,met_eta,met_phi,met_mass);
 }
 
-void GetMETnoPU(EasyChain * tree){
+void GetObjects::GetMETnoPU(EasyChain * tree){
     METnoPU.SetPtEtaPhiM(0,0,0,0);
 
     tree->Get(met_pt,"metNoPU_pt");

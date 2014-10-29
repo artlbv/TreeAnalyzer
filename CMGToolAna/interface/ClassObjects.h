@@ -107,76 +107,72 @@ public:
     Double_t met(){ return Pt(); }
 };
 
-// non class objects
 
-/* Definition of objects:
- * leptons, muons, electrons
- * jets
- */
+class GetObjects{                                                                                              
+ public:                                                                                                                        void GetJets(EasyChain * tree);
+  void GetMET(EasyChain * tree);
+  void GetGenMET(EasyChain * tree);
 
-void GetJets(EasyChain * tree);
-void GetMET(EasyChain * tree);
-void GetGenMET(EasyChain * tree);
-
-void GetLeptons(EasyChain * tree);
-void GetGenLeptons(EasyChain * tree);
-void GetGenLeptonsFromTau(EasyChain * tree);
-void GetGenTaus(EasyChain * tree);
-
-// to be written ?
-/*
-  void GetElectrons(EasyChain * tree);
-  void GetMuons(EasyChain * tree);
-  void GetGoodLeptons(EasyChain * tree);
-  void GetGoodElectrons(EasyChain * tree);
-  void GetGoodMuons(EasyChain * tree);
-*/
-
-// global object variables
-extern std::vector<Jet> goodJet;
-extern std::vector<Jet> goodBJet;
-
-extern TLorentzVector MET;
-extern TLorentzVector genMET;
-extern TLorentzVector METnoPU;
-
-extern std::vector<Lepton> goodLep;
-extern std::vector<Lepton> goodEl;
-extern std::vector<Lepton> goodMu;
-
-extern std::vector<Lepton> vetoLep;
-extern std::vector<Lepton> vetoEl;
-extern std::vector<Lepton> vetoMu;
-
-extern std::vector<GenLepton> genLep;
-extern std::vector<GenLepton> genEl;
-extern std::vector<GenLepton> genMu;
-extern std::vector<GenLepton> genTau;
-
-extern std::vector<GenLepton> genLepFromTau;
-extern std::vector<GenLepton> genElFromTau;
-extern std::vector<GenLepton> genMuFromTau;
-
-// objects number can be aslo detemined as object.size()
-
-Int_t nLepGood;
-Int_t nMuGood;
-Int_t nElGood;
-
-Int_t nLepVeto;
-Int_t nElVeto;
-Int_t nMuVeto;
-
-Int_t nJetGood;
-Int_t nBJetGood;
-
-Int_t nGenTau;
-Int_t nGenLep;
-Int_t nGenLepFromTau;
-
-// global variables
-
-Float_t HT40;
-Float_t ST;
-
+  void GetMETnoPU(EasyChain * tree);
+  void GetLeptons(EasyChain * tree);
+  void GetGenLeptons(EasyChain * tree);
+  void GetGenLeptonsFromTau(EasyChain * tree);
+  void GetGenTaus(EasyChain * tree);
+  
+  // to be written ?
+  /*
+    void GetElectrons(EasyChain * tree);
+    void GetMuons(EasyChain * tree);
+    void GetGoodLeptons(EasyChain * tree);
+    void GetGoodElectrons(EasyChain * tree);
+    void GetGoodMuons(EasyChain * tree);
+  */
+  
+  // global object variables
+  std::vector<Jet> goodJet;
+  std::vector<Jet> goodBJet;
+  
+  TLorentzVector MET;
+  TLorentzVector genMET;
+  TLorentzVector METnoPU;
+  
+  std::vector<Lepton> goodLep;
+  std::vector<Lepton> goodEl;
+  std::vector<Lepton> goodMu;
+  
+  std::vector<Lepton> vetoLep;
+  std::vector<Lepton> vetoEl;
+  std::vector<Lepton> vetoMu;
+  
+  std::vector<GenLepton> genLep;
+  std::vector<GenLepton> genEl;
+  std::vector<GenLepton> genMu;
+  std::vector<GenLepton> genTau;
+  
+  std::vector<GenLepton> genLepFromTau;
+  std::vector<GenLepton> genElFromTau;
+  std::vector<GenLepton> genMuFromTau;
+  
+  // objects number can be aslo detemined as object.size()
+  
+  Int_t nLepGood;
+  Int_t nMuGood;
+  Int_t nElGood;
+  
+  Int_t nLepVeto;
+  Int_t nElVeto;
+  Int_t nMuVeto;
+  
+  Int_t nJetGood;
+  Int_t nBJetGood;
+  
+  Int_t nGenTau;
+  Int_t nGenLep;
+  Int_t nGenLepFromTau;
+  
+  // global variables
+  
+  Float_t HT40;
+  Float_t ST;
+};
 #endif
