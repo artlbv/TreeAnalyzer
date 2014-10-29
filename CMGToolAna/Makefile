@@ -1,21 +1,67 @@
-SOURCES=src/TreeAnalyzer_FastJet.C
-EXECUTABLE=TreeAnalyzer_FastJet
-OBJECTS=$(SOURCES:.cpp=.o)
-FASTJET=/nfs/dust/cms/user/clseitz/1LepSUS/CMSSW_7_0_6_patch1/src/fastjet-install/
+# Makefile for the CMG ntuple analysis
+#
+# Author: Dirk Kruecker, 3.6.203, AL
+#
+#----------------------- here you can input your files and libraries ----------
+#
+# we compile all *.C and *.cpp defined in SOURCES
+#
 
-CC=g++
-CFLAGS=-c -I$(ROOTSYS)/include 
-LDFLAGS=-L$(ROOTSYS)/lib $(shell root-config --glibs) $(shell root-config --cflags) `$(FASTJET)/bin/fastjet-config --cxxflags --libs --plugins`
+  SOURCES =  src/ClassObjects.C
+  SOURCES += src/testReader.C
 
-all: $(SOURCES) $(EXECUTABLE)
+# and create this executable
+#
+  EXEC=reader
 
-$(EXECUTABLE): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+# with additional libs and includes
+# e.g. MORELIBS = -L/path -lblub
+  MORELIBS = -L./
+# e.g. -I/path
+#  MOREINCS = -I classes -I ExRootAnalysis
 
-.cpp.o:
-	$(CC) $(CFLAGS) $< -o $@
+OBJS	  = $(SOURCES)
+OBJS     := $(OBJS:.cpp=.o)
+OBJS     := $(OBJS:.C=.o)
 
-.PHONY: clean
+$(info Using the following files: $(SOURCES) )
+$(info Using the following files: $(OBJS) )
+
+
+
+#------------------------------------------------------------------------------
+
+ifndef ROOTSYS
+  $(error ROOTSYS is not defined!)
+endif
+
+ROOTLIBS    = `root-config --libs` -lGenVector
+CXX         = clang++
+CXXFLAGS    = -g `root-config --cflags` -std=c++11 -stdlib=libstdc++ -I./
+LD          = clang++
+LDFLAGS     = `root-config --ldflags`
+
+.SUFFIXES: .cpp .C .o .so
+
+#------------------------------------------------------------------------------
+
+all:           $(EXEC)
+
+$(EXEC):  $(OBJS)  Dict.o
+	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS)  -o $@
+	@echo "$@ done"
+
+Dict.cxx: Linkdef.h
+		@echo "Generating dictionary $@..."
+		@rootcint -f $@ -c  -p TLorentzVector.h Math/LorentzVector.h $^
+Dict.o: Dict.cxx
+	 $(CXX) $(CXXFLAGS) -D __NTHEADER___ -c $<
 
 clean:
-	rm -rf *.o *~
+	@echo rm -f $(EXEC) *Dict.*  core $(OBJS) *.d
+	@rm -f $(EXEC) *Dict.*  core $(OBJS) *.d
+
+.cpp.o:
+		$(CXX) $(CXXFLAGS) -c $<
+.C.o:
+		$(CXX) $(CXXFLAGS) -c $<
