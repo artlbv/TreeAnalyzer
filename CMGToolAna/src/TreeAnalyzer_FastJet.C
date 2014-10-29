@@ -1,5 +1,5 @@
-#include "../interface/NtupleTools3.h"
-#include "../interface/Objects.h" 
+//#include "../interface/NtupleTools3.h"
+#include "../interface/ClassObjects.h" 
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -124,7 +124,7 @@ int main (){
     }
 
   bool Debug = false;
-  Float_t goodElPt = 20.0;
+
   Float_t goodMuPt = 20.0;
   Float_t goodLepPt = 20.0;
   Float_t vetoLepPt = 10.0;
@@ -153,7 +153,7 @@ int main (){
     goodLep.clear(); vetoLep.clear();
     goodEl.clear(); goodMu.clear();
   Float_t fw = tree->GetEntryW(entry);
-  progressT();
+  //progressT();
   //lumi calcualtion done in runAnalyzer.py (fb and pb)
   float EvWeight = 1;
   EvWeight *= fw ;
@@ -164,8 +164,9 @@ int main (){
     tree->Get(Jet_eta[0],"Jet_eta");
     tree->Get(Jet_phi[0],"Jet_phi");
     tree->Get(Jet_mass[0],"Jet_mass");
-
-    //GetLeptons(tree);
+    GetObjects bla;
+    bla.GetLeptons(tree);
+    cout<<"YEAH MUON:"<<goodLep.size()<<endl;
 
     /*    int nLep = tree->Get(nLep,"nLepGood");
     int nLepGood = 0;
