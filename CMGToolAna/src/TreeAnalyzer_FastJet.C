@@ -164,7 +164,10 @@ int main (){
     tree->Get(Jet_eta[0],"Jet_eta");
     tree->Get(Jet_phi[0],"Jet_phi");
     tree->Get(Jet_mass[0],"Jet_mass");
-    int nLep = tree->Get(nLep,"nLepGood");
+
+    //GetLeptons(tree);
+
+    /*    int nLep = tree->Get(nLep,"nLepGood");
     int nLepGood = 0;
     int nMuGood = 0;
     int nElGood = 0;
@@ -196,7 +199,7 @@ int main (){
 	  }
 	}
       }
-
+    */
     vector<PseudoJet> particles;
     // an event with three particles:   px    py  pz      E
     for(int ijet=0;ijet<nJet;ijet++)
