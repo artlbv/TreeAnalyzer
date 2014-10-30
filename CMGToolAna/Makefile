@@ -64,4 +64,4 @@ clean:
 .cpp.o:
 		$(CXX) $(CXXFLAGS) -c $<
 .C.o:
-		$(CXX) $(CXXFLAGS) -c $<
+		$(CXX) $(CXXFLAGS) -c -o $@ $<
