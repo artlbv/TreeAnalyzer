@@ -6,7 +6,7 @@ from ROOT import gROOT
 # scenarios and samples
 scenarios = ['MC','data']
 #samples   = ['TTbar','T1tttt_1500_100','T1tttt_1200_800']
-samples   = ['WJets','TTbar','TTbar_DiLep','TTbar_SinLep','T1tttt_1500_100','T1tttt_1200_800','T1tttt_800_450','T1tttt_1300_100']
+samples   = ['QCD','WJets','TTbar','TTbar_DiLep','TTbar_SinLep','T1tttt_1500_100','T1tttt_1200_800','T1tttt_800_450','T1tttt_1300_100']
 treename = 'treeProducerSusySingleLepton/'
 Lumi = 1 #given in fb^-1
 Lumi = Lumi * 1000
@@ -113,6 +113,22 @@ dirsHT[sample]  = ['100-200/','200-400/','400-600/','600-Inf/']
 xsec_lumi[sample] = [2234.9,580.06,68.38,23.14] 
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
 inDir['MC'][sample] = '/afs/desy.de/user/s/safarzad/dust/13TeV/ISOTrck/WJets/' 
+print inDir['MC'][sample]
+evtgen[sample] = {}
+k=0
+print evtgen
+for HT in dirsHT[sample]:
+	evtgen[sample][k]=GetNevents(inDir['MC'][sample]+HT)
+	print "from func",evtgen[sample][k]
+	k=k+1
+
+sample = 'QCD'
+
+
+dirsHT[sample]  = ['Pt170to300/','Pt300to470/','Pt470to600/','Pt600to800/','Pt800to1000/','Pt1000to1400/','Pt1400to1800/','Pt1800/']
+xsec_lumi[sample] = [120300, 7475, 587, 167, 28.25, 8.195, 0.7346, 0.1091]
+xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
+inDir['MC'][sample] = '/afs/desy.de/user/s/safarzad/dust/13TeV/ISOTrck/QCD/' 
 print inDir['MC'][sample]
 evtgen[sample] = {}
 k=0
