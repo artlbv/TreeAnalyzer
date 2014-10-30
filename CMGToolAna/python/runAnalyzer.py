@@ -36,11 +36,10 @@ def GetNevents(loc):
 
 # choose the analysis and a sample
 
-#gROOT.LoadMacro('Objects.C+')
 srcdir = '../src/'
 
 gROOT.LoadMacro(srcdir+'Objects.C+')
-
+exe = ' '
 if len(sys.argv)>1:
         if sys.argv[1]=='SingleS_P':  # single lepton testing version
                 gROOT.LoadMacro(srcdir+'readerSingleS_P.C+')
@@ -59,6 +58,8 @@ if len(sys.argv)>1:
         elif sys.argv[1]=='TreeAnalyzer_BKG':  # single lepton testing version
                 gROOT.LoadMacro(srcdir+'TreeAnalyzer_BKG.C+')
                 from ROOT import TreeAnalyzer_BKG as reader
+	elif sys.argv[1]=='TreeAnalyzer_FastJet':  
+		exe = 'TreeAnalyzer_FastJet'
         else:
                 help()
 else:
@@ -160,17 +161,23 @@ def GetTreeName(file):
                 exit(0)
 
 # do it
+from subprocess import call
 for scene in scenarios:
 
         for samp in samples:
                 if do[scene][samp]:
                         f=''
+			fcomp=''
                         print dirsHT, samp
                         for i in range(len(dirsHT[samp])):
                                 entries = evtgen[samp][i]
                                 print "cross section x lumi",xsec_lumi[samp], "Events generated", entries
                                 f=f+inDir[scene][samp]+dirsHT[samp][i]+treename+' '+str(xsec_lumi[samp][i]/entries)+' '
+				fcomp=fcomp+inDir[scene][samp]+dirsHT[samp][i]+treename
 				print "file name to be processed", f
                         print f,samp,scene
-                        reader(f,scene+'_'+samp)
+			if exe == ' ':
+				reader(f,scene+'_'+samp)
+			else:
+				call([".././"+exe, fcomp,str(xsec_lumi[samp][i]/entries),scene+'_'+samp])
 

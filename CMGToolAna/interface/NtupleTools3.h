@@ -285,7 +285,6 @@ public:
 	// here all kinds of variables can be load from the chain
 	// e.g.: vector<LorentzV>* electrons = tree->Get(&electrons,"electronP4Pat");
 	//       electron->size()
-
   int GetResult(vector<string>& out, const TString& command,bool nodup)
   {
     TString line;

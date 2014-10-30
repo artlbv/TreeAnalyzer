@@ -12,7 +12,7 @@
   SOURCES +=  src/ClassObjects.C
 # and create this executable
 #
-  EXEC=TreeAnalyzer_example
+  EXEC=TreeAnalyzer_FastJet
 
 # with additional libs and includes
 FASTJET=/nfs/dust/cms/user/clseitz/1LepSUS/CMSSW_7_0_6_patch1/src/fastjet-install/
@@ -51,7 +51,7 @@ LDFLAGS     = `root-config --ldflags`
 all:           $(EXEC)
 
 $(EXEC):  $(SOURCES)  Dict.o
-	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS) -o $@
+	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS)  -o $@
 	@echo "$@ done"
 
 Dict.cxx: Linkdef.h

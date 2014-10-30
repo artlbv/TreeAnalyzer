@@ -243,6 +243,7 @@ int main (int argc, char* argv[]){
     cout<<"add: "<<files[i]<<" "<<weights[i]<<endl;
   }
   int Nevents=tree->GetEntries();
+  //progressT();
   cout<<">>>>>>>>>>>>>>>>>>>>>>> total number of events:\t" << Nevents <<endl;
   // CutFlow variables
   int iCut = 0;
@@ -258,6 +259,10 @@ int main (int argc, char* argv[]){
   string TTbarModes[2] = {"MC_TTbar_DiLep","MC_TTbar_SinLep"};
 
   for(int entry=0; entry < Nevents/*min(1000000,Nevents)*/; entry+=1){
+
+    if (entry % 10000 == 0) {
+      printf("\n=================Processing entry: %i\n", entry);
+    }
   //lumi calcualtion done in runAnalyzer.py (fb and pb)
   Float_t fw = tree->GetEntryW(entry);
   float EvWeight = 1;
