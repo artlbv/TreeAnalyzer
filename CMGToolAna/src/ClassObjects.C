@@ -17,9 +17,6 @@ Float_t goodEl_relIso03 = 0.14;
 Float_t goodMu_relIso03 = 0.12;
 Float_t goodLep_relIso03 = 0.15;
 
-Bool_t goodMu_tightID = true;
-Bool_t goodEl_tightID = true;
-
 //jets
 Float_t goodJetPt = 40.0;
 Float_t goodJetBtagCSV = 0.679;
@@ -38,7 +35,7 @@ Float_t LepGood_phi[arrayN];
 Float_t LepGood_mass[arrayN];
 Float_t LepGood_relIso03[arrayN];
 Int_t   LepGood_pdgId[arrayN];
-Bool_t  LepGood_tightID[arrayN];
+Int_t  LepGood_tightID[arrayN];
 
 // Gen particles
 Float_t genLep_pt[2]; //[ngenLep]
@@ -105,7 +102,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
 	    continue;
 	// Muon cuts
 	if(abs(LepGood_pdgId[ilep]) == 13){
-	    if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] && LepGood_relIso03[ilep] < goodMu_relIso03){
+	  if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep]==1 && LepGood_relIso03[ilep] < goodMu_relIso03){
 			goodLep.push_back(dummyLep);
 			goodMu.push_back(dummyLep);
 			nMuGood++;
@@ -121,7 +118,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
 
 	// Electron cuts
 	if(abs(LepGood_pdgId[ilep]) == 11){
-	    if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] && LepGood_relIso03[ilep] < goodEl_relIso03){
+	    if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep]==1 && LepGood_relIso03[ilep] < goodEl_relIso03){
 //                    isGoodEl = true;
 			goodLep.push_back(dummyLep);
 			goodEl.push_back(dummyLep);

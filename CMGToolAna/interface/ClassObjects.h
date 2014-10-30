@@ -74,7 +74,7 @@ public:
 
     int pdgID;
     Double_t relIso03;
-    bool tightID;
+    int tightID;
     int charge;
 };
 

@@ -178,6 +178,7 @@ def GetTreeName(file):
 
 # do it
 from subprocess import call
+
 for scene in scenarios:
 
         for samp in samples:
@@ -191,9 +192,10 @@ for scene in scenarios:
                                 f=f+inDir[scene][samp]+dirsHT[samp][i]+treename+' '+str(xsec_lumi[samp][i]/entries)+' '
 				fcomp=fcomp+inDir[scene][samp]+dirsHT[samp][i]+treename
 				print "file name to be processed", f
-                        print f,samp,scene
 			if exe == ' ':
-				reader(f,scene+'_'+samp)
+				print f,samp,scene
+                                #reader(f,scene+'_'+samp)
 			else:
-				call([".././"+exe, fcomp,str(xsec_lumi[samp][i]/entries),scene+'_'+samp])
+				print([".././"+exe, f,scene+'_'+samp])
+				os.system(".././"+exe+" "+f+" "+scene+'_'+samp)
 

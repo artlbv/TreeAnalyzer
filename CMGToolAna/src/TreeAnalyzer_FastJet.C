@@ -29,9 +29,16 @@ const char * CutList[CutNumb] = {"noCut",
 				 "Nb>2 ST>450,Df<1","Nb>2 ST>450,Df>1",
 };
 // define global hists
+
+
+
+float MJ =0;
+float MJ_lep =0;
 TH1F* CutFlow= new TH1F("CutFlow","Cut Flow",CutNumb,0.5,CutNumb+0.5);
 TH1F *hHT[CutNumb];
 TH1F *hST[CutNumb];
+TH1F *hMJ[CutNumb];
+TH1F *hMJ_lep[CutNumb];
 TH1F *hWpT[CutNumb];
 TH1F *h0JetpT[CutNumb];
 TH1F *h1JetpT[CutNumb];
@@ -75,6 +82,8 @@ TH2F *hHTST[CutNumb];
 TH2F *hNJST[CutNumb];
 TH2F *hMTMET[CutNumb];
 TH2F *hDfDfGen[CutNumb];
+
+
 // Set Up histograms and Cut Flow variables
 void SetupHists(int CutNumber){
   double xbinNJ[5] ={3,5,6,7,20};
@@ -91,6 +100,10 @@ void SetupHists(int CutNumber){
       // hHT[cj]->Sumw2();
       hST[cj] = new TH1F ("ST_"+nCut,"ST "+cutName,400,0.0,4000.0);
       // hST[cj]->Sumw2();
+      hMJ[cj] = new TH1F ("MJ_"+nCut,"MJ "+cutName,400,0.0,4000.0);
+      hMJ[cj]->Sumw2();
+      hMJ_lep[cj] = new TH1F ("MJ_lep"+nCut,"MJ_lep "+cutName,400,0.0,4000.0);
+      hMJ_lep[cj]->Sumw2();
       h0JetpT[cj] = new TH1F ("0JetpT_"+nCut,"0JetpT "+cutName,200,0.0,2000.0);
       //h0JetpT[cj]->Sumw2();
       h1JetpT[cj] = new TH1F ("1JetpT_"+nCut,"1JetpT "+cutName,200,0.0,2000.0);
@@ -203,6 +216,8 @@ void FillMainHists(int CutIndex, float EvWeight, bool FillBJets = true){
   hMET[CutIndex]->Fill(Obj.MET.Pt(),EvWeight);
   hHT[CutIndex]->Fill(Obj.HT40,EvWeight);
   hST[CutIndex]->Fill(Obj.ST,EvWeight);
+  hMJ[CutIndex]->Fill(MJ,EvWeight);
+  hMJ_lep[CutIndex]->Fill(MJ_lep,EvWeight);
   hnGenLep[CutIndex]->Fill(Obj.nGenLep,EvWeight);
   hnGenTau[CutIndex]->Fill(Obj.nGenTau,EvWeight);
   hnGenLepFromTau[CutIndex]->Fill(Obj.nGenLepFromTau,EvWeight);
@@ -218,9 +233,11 @@ int main (int argc, char* argv[]){
  cout<<argc<<" "<<argv[1]<<" "<<argv[2]<<endl;
   //TString list = "/afs/desy.de/user/s/safarzad/dust/13TeV/ISOTrck/T1tttt/SMS_T1tttt_2J_mGl1300_mLSP100_PU_S14_POSTLS170/treeProducerSusySingleLepton/ 2 ";
   TString list = argv[1];
-  list.Append(" ");
-  list.Append(argv[2]);
-  TString outname = argv[3];
+  for (int i = 2; i<argc-1;i++){
+    list.Append(" ");
+    list.Append(argv[i]);
+  }
+  TString outname = argv[argc-1];
   SetupHists(CutNumb);
   TObjArray* arr = list.Tokenize(" ");
   int size=arr->GetEntries();
@@ -258,7 +275,7 @@ int main (int argc, char* argv[]){
   string outnameStr = (string)outname;
   string TTbarModes[2] = {"MC_TTbar_DiLep","MC_TTbar_SinLep"};
 
-  for(int entry=0; entry < Nevents/*min(1000000,Nevents)*/; entry+=1){
+  for(int entry=0; entry < Nevents/*min(1000,Nevents)*/; entry+=1){
 
     if (entry % 10000 == 0) {
       printf("\n=================Processing entry: %i\n", entry);
@@ -275,6 +292,8 @@ int main (int argc, char* argv[]){
   Obj.GetMET(tree);
   Obj.GetGenMET(tree);
 
+  MJ =0;
+  MJ_lep =0;
   bool TwoLep = false;
   if((Obj.nGenLep+Obj.nGenLepFromTau ==2) || (Obj.nGenLep ==1 && Obj.nGenLepFromTau ==0 && Obj.nGenTau ==1) ||(Obj.nGenLep ==0 && Obj.nGenLepFromTau ==1 && Obj.nGenTau ==2))
     TwoLep = true;
@@ -290,19 +309,19 @@ int main (int argc, char* argv[]){
   // Fill main histograms
   FillMainHists(iCut, EvWeight);    
 
-
   CFCounter[iCut]+= EvWeight;
   iCFCounter[iCut]++;
   iCut++;
+
   // 1. Cut
   //////////////////Require exactly one good lepton and two jets
-  if (Obj.nMuGood != 1) continue;
+  if (Obj.nLepGood != 1) continue;
+  if( Obj.nMuGood != 1) continue;
   if(Obj.nMuVeto !=0 || Obj.nElVeto !=0) continue;
-  if (Obj.nJetGood < 2) continue;
+  //if (Obj.nJetGood < 2) continue;
   // Fill main histograms
-  FillMainHists(iCut, EvWeight);
-  CFCounter[iCut]+= EvWeight;                                                                                                   iCFCounter[iCut]++;
     vector<PseudoJet> particles;
+    vector<PseudoJet> particles_lep;
     // an event with three particles:   px    py  pz      E
     for(int ijet=0;ijet<Obj.nJetGood;ijet++)
       {
@@ -310,9 +329,10 @@ int main (int argc, char* argv[]){
 	  TLorentzVector dummyJet;
 	  dummyJet.SetPtEtaPhiM(Obj.goodJet[ijet].Pt(),Obj.goodJet[ijet].Eta(),Obj.goodJet[ijet].Phi(),Obj.goodJet[ijet].M());
 	  particles.push_back ( PseudoJet( dummyJet.Px(), dummyJet.Py(), dummyJet.Pz(), dummyJet.E()));
+	  particles_lep.push_back ( PseudoJet( dummyJet.Px(), dummyJet.Py(), dummyJet.Pz(), dummyJet.E()));
 
       }
-
+    particles_lep.push_back(PseudoJet( Obj.goodMu[0].Px(), Obj.goodMu[0].Py(), Obj.goodMu[0].Pz(), Obj.goodMu[0].E()));  
     
     // choose a jet definition
     double R = 1.2;
@@ -321,24 +341,105 @@ int main (int argc, char* argv[]){
     // run the clustering, extract the jets
     ClusterSequence cs(particles, jet_def);
     vector<PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
+    ClusterSequence cs_lep(particles_lep, jet_def);
+    vector<PseudoJet> jets_lep = sorted_by_pt(cs_lep.inclusive_jets());
     
     // print out some infos
     //    cout << "Clustering with " << jet_def.description() << endl;
-    float fMJ=0;    
+
     // print the jets
     //    cout <<   "        pt y phi" << endl;
     for (unsigned i = 0; i < jets.size(); i++) {
-      fMJ = fMJ + jets[i].m(); 
-      //cout << "jet " << i << ": "<< jets[i].pt() << " " 
-      //	   << jets[i].rap() << " " << jets[i].phi() << endl;
-      vector<PseudoJet> constituents = jets[i].constituents();
-      for (unsigned j = 0; j < constituents.size(); j++) {
-	//	cout << "    constituent " << j << "'s pt: " << constituents[j].pt()
-	//     << endl;
-      }
+      MJ = MJ + jets[i].m(); 
+      //vector<PseudoJet> constituents = jets[i].constituents();
+    }
+    for (unsigned i = 0; i < jets_lep.size(); i++) {
+      MJ_lep = MJ_lep + jets_lep[i].m(); 
+      //vector<PseudoJet> constituents = jets[i].constituents();
     }
     //hMJ[0]->Fill(fMJ,EvWeight);
-    
+    FillMainHists(iCut, EvWeight);
+    // Fill special histos
+    //float DelPhiMetMu = TMath::ACos(TMath::Cos(MET.Phi() - goodMu[0].Phi()));
+    float DelPhiMetMu = fabs(Obj.MET.Phi() - Obj.goodMu[0].Phi());
+    if (DelPhiMetMu > acos(-1.0)) DelPhiMetMu -= 2*acos(-1.0);
+    //if (DelPhiMetMu < -TMath::Pi()) DelPhiMetMu += 2*TMath::Pi();
+    //float Wpt = TMath::Sqrt( TMath::Power(Met,2) + TMath::Power(goodMu[0].Pt(),2) + 2*goodMu[0].Pt()*Met*TMath::Cos(DelPhiMetMu));
+    // TLorentzVector METV; METV.SetPtEtaPhiM(Met,0.0,MET.Phi(),0.0);
+    TLorentzVector WBos = Obj.MET + Obj.goodMu[0];
+    float DelPhiWlep = (WBos.Phi() - Obj.goodMu[0].Phi());
+    if (DelPhiWlep > TMath::Pi())
+      DelPhiWlep -= 2*TMath::Pi();
+    if (DelPhiWlep <= -TMath::Pi())
+      DelPhiWlep += 2*TMath::Pi();
+    float Wpt = WBos.Pt();
+    float Wphi = WBos.Phi();
+    float MT = sqrt(pow((Obj.goodMu[0].Et()+Obj.MET.Et()),2)-pow((Obj.goodMu[0].Px()+Obj.MET.Px()),2)-pow((Obj.goodMu[0].Py()+Obj.MET.Py()),2));
+    //cout << nMuGood << "\t" << MET.Pt() << endl;
+    hWpT[iCut]->Fill(Wpt,EvWeight);
+    hdPhiWLep[iCut]->Fill(fabs(DelPhiWlep),EvWeight);
+    hdPhi[iCut]->Fill(DelPhiMetMu,EvWeight);
+    CFCounter[iCut]+= EvWeight;
+    iCFCounter[iCut]++;
+    iCut++;
+    // 2. Cut
+    ////////////////////////////
+    if (Obj.nJetGood < 6) continue;
+    //if (!(nJetGood >3 && nJetGood <6)) continue;
+    //if (nJetGood < 3) continue; //control sample or new search bin?
+    // Fill main histograms
+    FillMainHists(iCut, EvWeight);
+    // Fill special histos
+    hdPhiWLep[iCut]->Fill(fabs(DelPhiWlep),EvWeight);
+    hDfST[iCut]->Fill(Obj.ST,fabs(DelPhiWlep));
+    hDfHT[iCut]->Fill(Obj.HT40,fabs(DelPhiWlep));
+    hHTST[iCut]->Fill(Obj.HT40,Obj.ST);
+    hNJST[iCut]->Fill(Obj.nJetGood,Obj.ST);
+    hMTMET[iCut]->Fill(MT,Obj.MET.Pt());
+    hWpT[iCut]->Fill(Wpt,EvWeight);
+    CFCounter[iCut]+= EvWeight;
+    iCFCounter[iCut]++;
+    iCut++;
+    // 3. Cut
+    ////////////////////////////
+    if (Obj.HT40 < 500) continue;
+    // Fill main histograms
+    FillMainHists(iCut, EvWeight);
+    // Fill special histos
+    if(Obj.MET.Pt() > 250 && MT > 120) 
+      hDfST[iCut]->Fill(Obj.ST,fabs(DelPhiWlep));
+    if(Obj.ST > 250 && fabs(DelPhiWlep) >= 1) hMTMET[iCut]->Fill(MT,Obj.MET.Pt());
+    hdPhiWLep[iCut]->Fill(fabs(DelPhiWlep),EvWeight);
+    hdPhi[iCut]->Fill(DelPhiMetMu,EvWeight);
+    hWpT[iCut]->Fill(Wpt,EvWeight);
+    CFCounter[iCut]+= EvWeight;
+    iCFCounter[iCut]++;
+    iCut++;
+    // 4. Cut
+    ////////////////////////////
+    if (Obj.ST < 250 ) continue;
+    // Fill main histograms
+    FillMainHists(iCut, EvWeight);
+    // Fill special histos
+    hdPhiWLep[iCut]->Fill(fabs(DelPhiWlep),EvWeight);
+    hWpT[iCut]->Fill(Wpt,EvWeight);
+    CFCounter[iCut]+= EvWeight;
+    iCFCounter[iCut]++;
+    iCut++;
+    // 5. Cut
+    ////////////////////////////
+    if (Obj.nBJetGood < 1) continue;
+    // Fill main histograms
+    FillMainHists(iCut, EvWeight);
+    // Fill special histos
+    hnGenLep[iCut]->Fill(Obj.nGenLep,EvWeight);
+    hnGenLepFromTau[iCut]->Fill(Obj.nGenLepFromTau,EvWeight);
+    hWpT[iCut]->Fill(Wpt,EvWeight);
+    hdPhiWLep[iCut]->Fill(fabs((DelPhiWlep)),EvWeight);
+    hdPhi[iCut]->Fill(DelPhiMetMu,EvWeight);
+    CFCounter[iCut]+= EvWeight;
+    iCFCounter[iCut]++;
+    iCut++;    
 }
 
   ofstream tfile;
@@ -378,6 +479,9 @@ int main (int argc, char* argv[]){
       hNJRC[cj]->Write();
       hHT[cj]->Write();
       hST[cj]->Write();
+      hMJ[cj]->Write();
+      hMJ_lep[cj]->Write();
+
       hWpT[cj]->Write();
       hnJet[cj]->Write();
       hnBJet[cj]->Write();
@@ -399,26 +503,6 @@ int main (int argc, char* argv[]){
       hHTST[cj]->Write();
       hNJST[cj]->Write();
       hMTMET[cj]->Write();
-      /*      hHT[cj]->Write();
-      hST[cj]->Write();
-      hMJ[cj]->Write();
-      h0JetpT[cj]->Write();
-      h1JetpT[cj]->Write();
-      h2JetpT[cj]->Write();
-      h3JetpT[cj]->Write();
-      hnJet[cj]->Write();
-      hnBJet[cj]->Write();
-      hnMu[cj]->Write();
-      hnEl[cj]->Write();
-      hMupt[cj]->Write();
-      hElpt[cj]->Write();
-      hnLep[cj]->Write();
-      hLeppt[cj]->Write();
-      hLepeta[cj]->Write();
-      hCentral[cj]->Write();
-      hMET[cj]->Write();
-      hdPhi[cj]->Write();
-      hmT[cj]->Write();
-      hmT2W[cj]->Write();*/
+
     }
 }
