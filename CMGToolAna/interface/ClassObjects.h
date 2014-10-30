@@ -15,6 +15,7 @@
 // shouldn't be using 'using namespace' in header files
 //using namespace std;
 
+
 // Extend the EasyChain class with getObjects functions
 class ObjectChain: EasyChain {
 
@@ -36,7 +37,6 @@ public:
 	SetPtEtaPhiM(pt,eta,phi,mass);
     }
 
-// common variables for all obejcts, except TLV
 };
 
 /*
@@ -107,9 +107,9 @@ public:
     Double_t met(){ return Pt(); }
 };
 
-
 class GetObjects{                                                                                              
- public:                                                                                                                        void GetJets(EasyChain * tree);
+ public:                                                                       
+  void GetJets(EasyChain * tree);
   void GetMET(EasyChain * tree);
   void GetGenMET(EasyChain * tree);
 
@@ -118,61 +118,54 @@ class GetObjects{
   void GetGenLeptons(EasyChain * tree);
   void GetGenLeptonsFromTau(EasyChain * tree);
   void GetGenTaus(EasyChain * tree);
+
+   std::vector<Jet> goodJet;
+   std::vector<Jet> goodBJet;
   
-  // to be written ?
-  /*
-    void GetElectrons(EasyChain * tree);
-    void GetMuons(EasyChain * tree);
-    void GetGoodLeptons(EasyChain * tree);
-    void GetGoodElectrons(EasyChain * tree);
-    void GetGoodMuons(EasyChain * tree);
-  */
+   TLorentzVector MET;
+   TLorentzVector genMET;
+   TLorentzVector METnoPU;
   
-  // global object variables
-  std::vector<Jet> goodJet;
-  std::vector<Jet> goodBJet;
+   std::vector<Lepton> goodLep;
+   std::vector<Lepton> goodEl;
+   std::vector<Lepton> goodMu;
   
-  TLorentzVector MET;
-  TLorentzVector genMET;
-  TLorentzVector METnoPU;
+   std::vector<Lepton> vetoLep;
+   std::vector<Lepton> vetoEl;
+   std::vector<Lepton> vetoMu;
   
-  std::vector<Lepton> goodLep;
-  std::vector<Lepton> goodEl;
-  std::vector<Lepton> goodMu;
+   std::vector<GenLepton> genLep;
+   std::vector<GenLepton> genEl;
+   std::vector<GenLepton> genMu;
+   std::vector<GenLepton> genTau;
   
-  std::vector<Lepton> vetoLep;
-  std::vector<Lepton> vetoEl;
-  std::vector<Lepton> vetoMu;
-  
-  std::vector<GenLepton> genLep;
-  std::vector<GenLepton> genEl;
-  std::vector<GenLepton> genMu;
-  std::vector<GenLepton> genTau;
-  
-  std::vector<GenLepton> genLepFromTau;
-  std::vector<GenLepton> genElFromTau;
-  std::vector<GenLepton> genMuFromTau;
+   std::vector<GenLepton> genLepFromTau;
+   std::vector<GenLepton> genElFromTau;
+   std::vector<GenLepton> genMuFromTau;
   
   // objects number can be aslo detemined as object.size()
   
-  Int_t nLepGood;
-  Int_t nMuGood;
-  Int_t nElGood;
+   Int_t nLepGood;
+   Int_t nMuGood;
+   Int_t nElGood;
   
-  Int_t nLepVeto;
-  Int_t nElVeto;
-  Int_t nMuVeto;
+   Int_t nLepVeto;
+   Int_t nElVeto;
+   Int_t nMuVeto;
   
-  Int_t nJetGood;
-  Int_t nBJetGood;
+   Int_t nJetGood;
+   Int_t nBJetGood;
   
-  Int_t nGenTau;
-  Int_t nGenLep;
-  Int_t nGenLepFromTau;
+   Int_t nGenTau;
+   Int_t nGenLep;
+   Int_t nGenLepFromTau;
   
   // global variables
   
-  Float_t HT40;
-  Float_t ST;
+   Float_t HT40;
+   Float_t ST;  
+
 };
+
+
 #endif

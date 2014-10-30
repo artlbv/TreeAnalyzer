@@ -1,10 +1,11 @@
+#ifndef NtupleTools3_h
+#define NtupleTools3_h
 //---NtupleTools----------
 //   Version 3.0
 //   Original version by Dirk Kruecker
 //   dirk.kruecker@desy.de
 
-#ifndef NtupleTools3_h
-#define NtupleTools3_h
+
 
 #ifdef __GNUC__
 // only visible for the gnu pre-compiler
@@ -83,8 +84,8 @@ typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>  >     XYZPo
 #ifndef __CINT__ 
 // following functions should not be processed by rootcint
 //---------- simple progress counter and timer -----------------------------
-void progress(ostream& os=cout,const TString& pref="",const TString& postf="")
-#ifndef __NTHEADER___
+ void progress(ostream& os=cout, const TString& pref="",const TString& postf="")
+#ifdef __NTHEADER___
 {
         static int cnt(0),step(1),next(1);
         cnt++;
@@ -97,7 +98,7 @@ void progress(ostream& os=cout,const TString& pref="",const TString& postf="")
 #endif
 ;
 void progressT(int flush=0,ostream& os=cout)
-#ifndef __NTHEADER___
+#ifdef __NTHEADER___
 {
 	static TStopwatch timer;
         static int cnt(0),step(1),next(1);
@@ -119,7 +120,7 @@ void progressT(int flush=0,ostream& os=cout)
 #endif
 ;
 void timer(ostream& os=cout,int stp=10)
-#ifndef __NTHEADER___
+#ifdef __NTHEADER___
 {
 	static TStopwatch timer;
         static int cnt(0),step(stp),next(stp);
@@ -141,7 +142,7 @@ void timer(ostream& os=cout,int stp=10)
 
 //---------- file handling -----------------------------
 int GetResult(vector<string>& out, const TString& command,bool nodup)
-#ifndef __NTHEADER___
+#ifdef __NTHEADER___
 {
 	TString line;
 	FILE* pipe= gSystem->OpenPipe(command,"r");
@@ -188,7 +189,7 @@ int GetResult(vector<string>& out, const TString& command,bool nodup)
 //AllRootFilesIn(dir,tree,"dcls")    // dcache -  needs proxy & dctools !
 //AllRootFilesIn(dir,tree,"dcls",10) //first 10 files in dir
 int AllRootFilesIn(const TString& dir,TChain* chain,const TString& LScommand,int max,bool nodup=false)
-#ifndef __NTHEADER___
+#ifdef __NTHEADER___
 {
 	vector<string> files;
 	int n=0;
@@ -213,21 +214,21 @@ int AllRootFilesIn(const TString& dir,TChain* chain,const TString& LScommand,int
 ;
 // no duplicate check
 int AllRootFilesIn(const TString& dir,TChain* chain)
-#ifndef __NTHEADER___
+#ifdef __NTHEADER___
 {
 	return AllRootFilesIn(dir,chain,"ls",1000,false);
 }
 #endif
 ;
 int AllRootFilesIn(const TString& dir,TChain* chain,const TString& LScommand)
-#ifndef __NTHEADER___
+#ifdef __NTHEADER___
 {
 	return AllRootFilesIn(dir,chain,LScommand,1000,false);
 }
 #endif
 ;
 int AllRootFilesIn(const TString& dir,TChain* chain,int max)
-#ifndef __NTHEADER___
+#ifdef __NTHEADER___
 {
 	return AllRootFilesIn(dir,chain,"ls",max,false);
 }
@@ -235,28 +236,28 @@ int AllRootFilesIn(const TString& dir,TChain* chain,int max)
 ;
 // duplicate check
 int AllRootFilesNoDup(const TString& dir,TChain* chain)
-#ifndef __NTHEADER___
+#ifdef __NTHEADER___
 {
 	return AllRootFilesIn(dir,chain,"ls",1000,true);
 }
 #endif
 ;
 int AllRootFilesNoDup(const TString& dir,TChain* chain,const TString& LScommand)
-#ifndef __NTHEADER___
+#ifdef __NTHEADER___
 {
 	return AllRootFilesIn(dir,chain,LScommand,1000,true);
 }
 #endif
 ;
 int AllRootFilesNoDup(const TString& dir,TChain* chain,int max)
-#ifndef __NTHEADER___
+#ifdef __NTHEADER___
 {
 	return AllRootFilesIn(dir,chain,"ls",max,true);
 }
 #endif
 ;
 string file_base(const string& nam)
-#ifndef __NTHEADER___
+#ifdef __NTHEADER___
 {
 	int dot=nam.rfind(".");
 	int slash=nam.rfind("/")+1;
@@ -265,7 +266,7 @@ string file_base(const string& nam)
 #endif
 ;
 TString file_base(const TString& nam)
-#ifndef __NTHEADER___
+#ifdef __NTHEADER___
 {
 	const string namstr(nam.Data());
 	return file_base(namstr).c_str();
@@ -284,6 +285,51 @@ public:
 	// here all kinds of variables can be load from the chain
 	// e.g.: vector<LorentzV>* electrons = tree->Get(&electrons,"electronP4Pat");
 	//       electron->size()
+
+  int GetResult(vector<string>& out, const TString& command,bool nodup)
+  {
+    TString line;
+    FILE* pipe= gSystem->OpenPipe(command,"r");
+    if(!pipe){
+      cerr<<"Did not work: "<<command<<endl;
+    } else {
+      while (line.Gets(pipe)) if(line!="") {
+	  out.push_back(string(line));
+	}
+      gSystem->ClosePipe(pipe);
+    }
+    if(nodup){
+      map<string, pair<unsigned,string> > singleOut;
+		map<string, pair<unsigned,string> >::iterator it;
+		unsigned i;
+		for(i=0;i<out.size();i++){
+			//check format
+			if(count(out[i].begin(),out[i].end(),'_') < 3) break;
+			//let's hope it fits
+			unsigned pos =out[i].rfind("_");
+			unsigned pos2=out[i].substr(0,pos).rfind("_")+1;
+			unsigned n=atoi(out[i].substr(pos2,pos-pos2).c_str());
+			it = singleOut.find(out[i].substr(0,pos2));
+			if(it!=singleOut.end()) {
+				if(it->second.first<n) {
+					it->second.first=n;
+					it->second.second=out[i].substr(pos2);
+				}
+			} else singleOut[out[i].substr(0,pos2)]=pair<unsigned,string>(n,out[i].substr(pos2));
+		}
+		if(i==out.size()){
+			if (out.size()!=singleOut.size()) cout<< out.size()-singleOut.size() <<" duplicates ignored!"<<endl;;
+			out.clear();
+			for(it = singleOut.begin();it!=singleOut.end();it++)
+			 		out.push_back(it->first+it->second.second);
+		} else cout<<"File name format not appropriate for duplicate check!"<<endl;
+	}
+	return out.size();
+}
+
+;
+
+
 	template<typename T>
 	inline T* Get(T** ppt, const char* name){
 	
