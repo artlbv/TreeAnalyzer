@@ -1,5 +1,8 @@
-#include "../interface/NtupleTools3.h"
+//#include "../interface/NtupleTools3.h"
+
+//#ifndef NtupleTools3_h //__NtupleTools3__
 #include "../interface/ClassObjects.h"
+//#endif
 
 #include <fstream>
 #include <iostream>
@@ -48,7 +51,7 @@ int main(int argc, char* argv[]){
     }
 
 
-    EasyChain* tree = new EasyChain("treeProducerSusySingleLepton");
+    ObjectChain* tree = new ObjectChain("treeProducerSusySingleLepton");
 
     for(unsigned int i=0; i < files.size(); i++){
         tree->AddSmartW(files[i], weights[i]);
@@ -58,6 +61,11 @@ int main(int argc, char* argv[]){
     int Nevents=tree->GetEntries();
     cout<<">>>>>>>>>>>>>>>>>>>>>>> total number of events:\t" << Nevents <<endl;
 
+
+    // object variables;
+    vector<Jet> goodJets;
+    vector<Jet> goodBJets;
+
     /////////////   event loop   //////////////////////
 //      for(int entry=0; entry <  Nevents/*min(1000000,Nevents)*/; entry+=1){
     for(int entry=0; entry <  1000/*min(1000000,Nevents)*/; entry+=1){
@@ -66,9 +74,7 @@ int main(int argc, char* argv[]){
         Float_t fw = tree->GetEntryW(entry);
         progressT();
 
-
-        GetLeptons(tree);
-        GetJets(tree);
+	tree->GetJets(goodJets, goodBJets);
 
     }
 

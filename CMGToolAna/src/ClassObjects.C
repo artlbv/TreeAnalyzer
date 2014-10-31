@@ -2,6 +2,7 @@
 
 using namespace std;
 
+/*
 // global Objects
 vector<Jet> goodJet;
 vector<Jet> goodBJet;
@@ -26,6 +27,7 @@ vector<GenLepton> genTau;
 vector<GenLepton> genLepFromTau;
 vector<GenLepton> genElFromTau;
 vector<GenLepton> genMuFromTau;
+*/
 
 ///////////////////////////////////
 ///////////////////////////////////
@@ -54,7 +56,7 @@ Float_t goodJetBtagCSV = 0.679;
 ///////////////////////////////////
 ///////////////////////////////////
 
-// variables for tree
+// variables for fTree
 const int arrayN = 50;
 Float_t Jet_pt[arrayN];
 Float_t Jet_eta[arrayN];
@@ -84,7 +86,8 @@ Float_t met_phi;
 Float_t met_pt;
 Float_t met_mass;
 
-void GetLeptons(EasyChain * tree){
+/*
+void ObjectChain::GetLeptons(vector<Lepton> lepton, vector<Lepton> electron, vector<Lepton> muon){
 
     // clearing objects
     goodLep.clear();
@@ -103,15 +106,15 @@ void GetLeptons(EasyChain * tree){
     nElVeto = 0;
     nMuVeto = 0;
 
-    // filling objects from tree
-    int nLep = tree->Get(nLep,"nLepGood");
-    tree->Get(LepGood_pt[0],"LepGood_pt");
-    tree->Get(LepGood_eta[0],"LepGood_eta");
-    tree->Get(LepGood_phi[0],"LepGood_phi");
-    tree->Get(LepGood_mass[0],"LepGood_mass");
-    tree->Get(LepGood_relIso03[0],"LepGood_relIso03");
-    tree->Get(LepGood_pdgId[0],"LepGood_pdgId");
-    tree->Get(LepGood_tightID[0],"LepGood_tightId");
+    // filling objects from fTree
+    int nLep = this->Get(nLep,"nLepGood");
+    this->Get(LepGood_pt[0],"LepGood_pt");
+    this->Get(LepGood_eta[0],"LepGood_eta");
+    this->Get(LepGood_phi[0],"LepGood_phi");
+    this->Get(LepGood_mass[0],"LepGood_mass");
+    this->Get(LepGood_relIso03[0],"LepGood_relIso03");
+    this->Get(LepGood_pdgId[0],"LepGood_pdgId");
+    this->Get(LepGood_tightID[0],"LepGood_tightId");
 
     for(int ilep = 0; ilep < nLep; ilep++){
 
@@ -121,12 +124,6 @@ void GetLeptons(EasyChain * tree){
 	dummyLep.tightID = LepGood_tightID[ilep];
 	dummyLep.relIso03 = LepGood_relIso03[ilep];
 
-/*
-  bool isGoodMu = false;
-  bool isGoodEl = false;
-  bool isGoodLep = false;
-  bool isVetoLep = false;
-*/
 	bool isVetoMu = false;
 	bool isVetoEl = false;
 
@@ -174,32 +171,27 @@ void GetLeptons(EasyChain * tree){
 	}
     }
 
-/*
-  cout << "Get leptons summary: total number of Leptons = \t" << nLep << endl;
-  cout << "Number of good Muons = \t" << nMuGood << " and veto Mu = \t" << nMuVeto << endl;
-  cout << "Number of good Electrons = \t" << nElGood  << " and veto El = \t" << nElVeto << endl;
-  cout << "Number of veto leptons = \t" << nLepVeto << endl;
-*/
+
+// cout << "Get leptons summary: total number of Leptons = \t" << nLep << endl;
+//  cout << "Number of good Muons = \t" << nMuGood << " and veto Mu = \t" << nMuVeto << endl;
+//  cout << "Number of good Electrons = \t" << nElGood  << " and veto El = \t" << nElVeto << endl;
+//  cout << "Number of veto leptons = \t" << nLepVeto << endl;
+
 }
 
-void GetGenLeptons(EasyChain * tree){
+void ObjectChain::GetGenLeptons(vector<GenLepton> lepton, vector<GenLepton> electron, vector<GenLepton> muon){
 
     // clearing objects
     genLep.clear();
     nGenLep = 0;
 
-    // filling objects from tree
-    tree->Get(nGenLep,"ngenLep"); //n prompt Lep
-    tree->Get(genLep_pt[0],"genLep_pt");
-    tree->Get(genLep_mass[0],"genLep_mass");
-    tree->Get(genLep_eta[0],"genLep_eta");
-    tree->Get(genLep_phi[0],"genLep_phi");
-    tree->Get(genLep_pdgId[0],"genLep_pdgId");
-
-/*
-// why?
-tree->Get(genLep_charge[0],"genLep_charge");
-*/
+    // filling objects from this
+    this->Get(nGenLep,"ngenLep"); //n prompt Lep
+    this->Get(genLep_pt[0],"genLep_pt");
+    this->Get(genLep_mass[0],"genLep_mass");
+    this->Get(genLep_eta[0],"genLep_eta");
+    this->Get(genLep_phi[0],"genLep_phi");
+    this->Get(genLep_pdgId[0],"genLep_pdgId");
 
     for(int ilep = 0; ilep < nGenLep; ilep++){
 
@@ -230,7 +222,7 @@ tree->Get(genLep_charge[0],"genLep_charge");
 }
 
 
-void GetGenLeptonsFromTau(EasyChain * tree){
+void ObjectChain::GetGenLeptonsFromTau(vector<GenLepton> lepton, vector<GenLepton> electron, vector<GenLepton> muon){
 
     // clearing objects
     genLepFromTau.clear();
@@ -239,14 +231,14 @@ void GetGenLeptonsFromTau(EasyChain * tree){
 
     nGenLepFromTau = 0;
 
-    // filling objects from tree
-    tree->Get(nGenLepFromTau,"ngenLepFromTau");// Lep from Tau decay
+    // filling objects from this
+    this->Get(nGenLepFromTau,"ngenLepFromTau");// Lep from Tau decay
 
-    tree->Get(genLep_pt[0],"genLepFromTau_pt");
-    tree->Get(genLep_mass[0],"genLepFromTau_mass");
-    tree->Get(genLep_eta[0],"genLepFromTau_eta");
-    tree->Get(genLep_phi[0],"genLepFromTau_phi");
-    tree->Get(genLep_pdgId[0],"genLepFromTau_pdgId");
+    this->Get(genLep_pt[0],"genLepFromTau_pt");
+    this->Get(genLep_mass[0],"genLepFromTau_mass");
+    this->Get(genLep_eta[0],"genLepFromTau_eta");
+    this->Get(genLep_phi[0],"genLepFromTau_phi");
+    this->Get(genLep_pdgId[0],"genLepFromTau_pdgId");
 
     for(int ilep = 0; ilep < nGenLepFromTau; ilep++){
 
@@ -272,19 +264,19 @@ void GetGenLeptonsFromTau(EasyChain * tree){
     }
 }
 
-void GetGenTaus(EasyChain * tree){
+void ObjectChain::GetGenTaus(vector<GenLepton> lepton){
 
     // clearing objects
     genTau.clear();
     nGenTau = 0;
 
-    // filling objects from tree
-    tree->Get(nGenTau,"ngenTau");// gen Tau
-    tree->Get(genLep_pt[0],"genTau_pt");
-    tree->Get(genLep_eta[0],"genTau_eta");
-    tree->Get(genLep_phi[0],"genTau_phi");
-    tree->Get(genLep_pdgId[0],"genTau_pdgId");
-    tree->Get(genLep_mass[0],"genTau_mass");
+    // filling objects from this
+    this->Get(nGenTau,"ngenTau");// gen Tau
+    this->Get(genLep_pt[0],"genTau_pt");
+    this->Get(genLep_eta[0],"genTau_eta");
+    this->Get(genLep_phi[0],"genTau_phi");
+    this->Get(genLep_pdgId[0],"genTau_pdgId");
+    this->Get(genLep_mass[0],"genTau_mass");
 
     for(int ilep = 0; ilep < nGenTau; ilep++){
 
@@ -297,23 +289,24 @@ void GetGenTaus(EasyChain * tree){
 	}
     }
 }
+*/
 
-void GetJets(EasyChain * tree){
+void ObjectChain::GetJets(vector<Jet> goodJet, vector<Jet> goodBJet){
     goodJet.clear();
     goodBJet.clear();
 
-    ST = 0;
-    HT40 = 0;
+    double ST = 0;
+    double HT40 = 0;
 
-    nJetGood = 0;
-    nBJetGood = 0;
+    double nJetGood = 0;
+    double nBJetGood = 0;
 
-    int nJet = tree->Get(nJet,"nJet");
-    tree->Get(Jet_pt[0],"Jet_pt");
-    tree->Get(Jet_eta[0],"Jet_eta");
-    tree->Get(Jet_phi[0],"Jet_phi");
-    tree->Get(Jet_mass[0],"Jet_mass");
-    tree->Get(Jet_btagCSV[0],"Jet_btagCSV");
+    int nJet = this->Get(nJet,"nJet");
+    this->Get(Jet_pt[0],"Jet_pt");
+    this->Get(Jet_eta[0],"Jet_eta");
+    this->Get(Jet_phi[0],"Jet_phi");
+    this->Get(Jet_mass[0],"Jet_mass");
+    this->Get(Jet_btagCSV[0],"Jet_btagCSV");
 
     for(int ijet = 0; ijet < nJet; ijet++)
     {
@@ -340,35 +333,35 @@ void GetJets(EasyChain * tree){
 */
 }
 
-void GetMET(EasyChain * tree){
+void ObjectChain::GetMET(TLorentzVector MET){
     MET.SetPtEtaPhiM(0,0,0,0);
 
-    tree->Get(met_pt,"met_pt");
-    tree->Get(met_eta,"met_eta");
-    tree->Get(met_phi,"met_phi");
-    tree->Get(met_mass,"met_mass");
+    this->Get(met_pt,"met_pt");
+    this->Get(met_eta,"met_eta");
+    this->Get(met_phi,"met_phi");
+    this->Get(met_mass,"met_mass");
 
     MET.SetPtEtaPhiM(met_pt,met_eta,met_phi,met_mass);
 }
 
-void GetGenMET(EasyChain * tree){
+void ObjectChain::GetGenMET(TLorentzVector genMET){
     genMET.SetPtEtaPhiM(0,0,0,0);
 
-    tree->Get(met_pt,"met_genPt");
-    tree->Get(met_eta,"met_genEta");
-    tree->Get(met_phi,"met_genPhi");
-    tree->Get(met_mass,"met_sumEt");
+    this->Get(met_pt,"met_genPt");
+    this->Get(met_eta,"met_genEta");
+    this->Get(met_phi,"met_genPhi");
+    this->Get(met_mass,"met_sumEt");
 
     genMET.SetPtEtaPhiM(met_pt,met_eta,met_phi,met_mass);
 }
 
-void GetMETnoPU(EasyChain * tree){
+void ObjectChain::GetMETnoPU(TLorentzVector METnoPU){
     METnoPU.SetPtEtaPhiM(0,0,0,0);
 
-    tree->Get(met_pt,"metNoPU_pt");
-    tree->Get(met_eta,"metNoPU_eta");
-    tree->Get(met_phi,"metNoPU_phi");
-    tree->Get(met_mass,"metNoPU_mass");
+    this->Get(met_pt,"metNoPU_pt");
+    this->Get(met_eta,"metNoPU_eta");
+    this->Get(met_phi,"metNoPU_phi");
+    this->Get(met_mass,"metNoPU_mass");
 
     METnoPU.SetPtEtaPhiM(met_pt,met_eta,met_phi,met_mass);
 }
