@@ -16,22 +16,37 @@
 
 using namespace std;
 
+// Map of Cuts. Instead of Cut Number use CutID (CutName):
+// Fill Histo of cutname as Histo[GetCutID("cutname")]->Fill();
+
+map<string, int> CutMap;
+map<string, int>::iterator itCutMap;
+// or vector -- but difficult to search in
+/*
+  vector<string> CutVect;
+  vector<string>::iterator itCutVect;
+
+  int CutID(string cutname){
+
+  return CutMap[cutname];
+  }
+*/
+
+// Fill Cut Map
 const int CutNumb = 26; // number of Cuts
+const char* CutList[CutNumb] = {"noCut",
+                                "== 1 Mu", "6Jet","HT>500","ST>250",
+                                "Nb>=1","Df<1","Df>1",
+                                "Nb=1, 250<ST<350,Df<1","Nb =1, 250<ST<350,Df>1",
+                                "Nb=1, 350<ST<450, Df<1","Nb =1, 350<ST<450,Df>1",
+                                "Nb=1, ST>450, Df<1","Nb =1, ST>450,Df>1",
+                                "Nb=2 ,250<ST<350, Df<1","Nb=2, 250<ST< 350,Df>1",
+                                "Nb=2 ,350<ST<450,Df<1","Nb=2,350<ST<450,Df>1",
+                                "Nb=2 ,ST>450, Df<1","Nb=2 ,ST>450,Df>1",
+                                "Nb>2 250<ST<350 ,Df<1","Nb>2,250<ST<350,Df>1",
+                                "Nb>2 350<ST<450,Df<1","Nb>2,350<ST<450, Df>1",
+                                "Nb>2 ST>450,Df<1","Nb>2 ST>450,Df>1"};
 
-const char * CutList[CutNumb] = {"noCut",
-                                 "== 1 Mu", "6Jet","HT>500","ST>250",
-                                 "Nb>=1","Df<1","Df>1",
-                                 "Nb=1, 250<ST<350,Df<1","Nb =1, 250<ST<350,Df>1",
-                                 "Nb=1, 350<ST<450, Df<1","Nb =1, 350<ST<450,Df>1",
-                                 "Nb=1, ST>450, Df<1","Nb =1, ST>450,Df>1",
-                                 "Nb=2 ,250<ST<350, Df<1","Nb=2, 250<ST< 350,Df>1",
-                                 "Nb=2 ,350<ST<450,Df<1","Nb=2,350<ST<450,Df>1",
-                                 "Nb=2 ,ST>450, Df<1","Nb=2 ,ST>450,Df>1",
-                                 "Nb>2 250<ST<350 ,Df<1","Nb>2,250<ST<350,Df>1",
-                                 "Nb>2 350<ST<450,Df<1","Nb>2,350<ST<450, Df>1",
-                                 "Nb>2 ST>450,Df<1","Nb>2 ST>450,Df>1",
-
-};
 
 // define global hists
 TH1F* CutFlow= new TH1F("CutFlow","Cut Flow",CutNumb,0.5,CutNumb+0.5);
@@ -281,16 +296,22 @@ void TreeAnalyzer(TString list, TString outname,bool useW=true){
 
     SetupHists(CutNumb);
 
+// Each cut name is mapped to its id (simple enumarate)
+    for(int icut = 0; icut < CutNumb; icut++){
+        string cutname = CutList[icut];
+
+        CutMap[cutname] = icut;
+    }
+
     /////////////   event loop   //////////////////////
-    for(int entry=0; entry <  Nevents/*min(100000,Nevents)*/; entry+=1){
-//    for(int entry=0; entry <  1000; entry+=1){
+//    for(int entry=0; entry <  Nevents/*min(100000,Nevents)*/; entry+=1){
+    for(int entry=0; entry <  1000; entry+=1){
 
         // Reset Cut counter
         iCut = 0;
-        // fill histos
+        itCutMap = CutMap.begin();
 
-
-        //tree->GetEntry(entry); // <<<<<<<<<<< dk
+        // Read Tree
         Float_t fw = tree->GetEntryW(entry);
         progressT();
 
@@ -310,7 +331,6 @@ void TreeAnalyzer(TString list, TString outname,bool useW=true){
 
         if((nGenLep+nGenLepFromTau ==2) || (nGenLep ==1 && nGenLepFromTau ==0 && nGenTau ==1) ||(nGenLep ==0 && nGenLepFromTau ==1 && nGenTau ==2))
             TwoLep = true;
-        //if((nGenLep+nGenLepFromTau ==2)) TwoLep = true;
 
         if (outnameStr.compare(TTbarModes[0]) ==0 )
             if(!(TwoLep)) //DiLep = true;
@@ -325,16 +345,18 @@ void TreeAnalyzer(TString list, TString outname,bool useW=true){
         // Fill main histograms
         FillMainHists(iCut, EvWeight);
 
-        // if(nGenLepFromTau ==1)cout<<"nTau:"<<nGenTau<<endl;
+        //if(nGenLepFromTau ==1)cout<<"nTau:"<<nGenTau<<endl;
         //if(nGenLepFromTau ==2)cout<<"nTau:"<<nGenTau<<endl;
 
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
 
-        iCut++;
+        iCut++; itCutMap++;
 
         // 1. Cut
-        //////////////////Require exactly one good lepton and two jets
+        ////////////////
+        //Require exactly one good lepton and two jets
+
         if (nMuGood != 1) continue;
         if(nMuVeto !=0 || nElVeto !=0) continue;
         if (nJetGood < 2) continue;
@@ -344,14 +366,8 @@ void TreeAnalyzer(TString list, TString outname,bool useW=true){
 
         // Fill special histos
 
-        //float DelPhiMetMu = TMath::ACos(TMath::Cos(MET.Phi() - goodMu[0].Phi()));
         float DelPhiMetMu = fabs(MET.Phi() - goodMu[0].Phi());
         if (DelPhiMetMu > acos(-1.0)) DelPhiMetMu -= 2*acos(-1.0);
-
-        //if (DelPhiMetMu < -TMath::Pi()) DelPhiMetMu += 2*TMath::Pi();
-        //float Wpt = TMath::Sqrt( TMath::Power(Met,2) + TMath::Power(goodMu[0].Pt(),2) + 2*goodMu[0].Pt()*Met*TMath::Cos(DelPhiMetMu));
-
-//        TLorentzVector METV;  METV.SetPtEtaPhiM(Met,0.0,MET.Phi(),0.0);
         TLorentzVector WBos = MET + goodMu[0];
 
         float  DelPhiWlep = (WBos.Phi() - goodMu[0].Phi());
@@ -361,7 +377,7 @@ void TreeAnalyzer(TString list, TString outname,bool useW=true){
             DelPhiWlep += 2*TMath::Pi();
 
         float Wpt = WBos.Pt();
-        float Wphi = WBos.Phi();
+//        float Wphi = WBos.Phi();
         float MT = sqrt(pow((goodMu[0].Et()+MET.Et()),2)-pow((goodMu[0].Px()+MET.Px()),2)-pow((goodMu[0].Py()+MET.Py()),2));
 
 //cout << nMuGood << "\t" << MET.Pt() << endl;
@@ -373,7 +389,7 @@ void TreeAnalyzer(TString list, TString outname,bool useW=true){
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
 
-        iCut++;
+        iCut++; itCutMap++;
 
         // 2. Cut
         ////////////////////////////
@@ -399,7 +415,7 @@ void TreeAnalyzer(TString list, TString outname,bool useW=true){
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
 
-        iCut++;
+        iCut++; itCutMap++;
 
         // 3. Cut
         ////////////////////////////
@@ -421,7 +437,7 @@ void TreeAnalyzer(TString list, TString outname,bool useW=true){
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
 
-        iCut++;
+        iCut++; itCutMap++;
 
 
         // 4. Cut
@@ -439,7 +455,7 @@ void TreeAnalyzer(TString list, TString outname,bool useW=true){
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
 
-        iCut++;
+        iCut++; itCutMap++;
 
         // 5. Cut
         ////////////////////////////
@@ -459,17 +475,24 @@ void TreeAnalyzer(TString list, TString outname,bool useW=true){
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
 
-        iCut++;
-/*
+        iCut++; itCutMap++;
+
 // REST
 
-if(fabs(DelPhiWlep) < 1){
-CFCounter[6]+= EvWeight;
-iCFCounter[6]++;}
-if(fabs(DelPhiWlep) >= 1){
-CFCounter[7]+= EvWeight;
-iCFCounter[7]++;}
+        if(fabs(DelPhiWlep) < 1){
 
+            iCut = CutMap["Df<1"];
+            CFCounter[iCut]+= EvWeight;
+            iCFCounter[iCut]++;
+        }
+        else{
+
+            iCut = CutMap["Df<1"];
+            CFCounter[iCut]+= EvWeight;
+            iCFCounter[iCut]++;
+        }
+
+/*
 ////// HT, NJ, ST ,Nb dependency of RCS
 if(fabs(DelPhiWlep) < 1){
 hRC[5]->Fill(nBJetGood,EvWeight);
@@ -706,51 +729,87 @@ iCFCounter[25]++;}
 
     for(int cj = 0; cj < CutNumb; cj++)
     {
-	outf->cd();
-	outf->mkdir(CutList[cj]);
-	outf->cd(CutList[cj]);
+        outf->cd();
+        outf->mkdir(CutList[cj]);
+        outf->cd(CutList[cj]);
 
-	h0JetpT[cj]->Write();
-        h1JetpT[cj]->Write();
-        h2JetpT[cj]->Write();
-        h3JetpT[cj]->Write();
-        h0BJetpT[cj]->Write();
-        h1BJetpT[cj]->Write();
-        h2BJetpT[cj]->Write();
-        h3BJetpT[cj]->Write();
+	if(h0JetpT[cj]->GetEntries() > 0)
+	    h0JetpT[cj]->Write();
+	if(h1JetpT[cj]->GetEntries() > 0)
+	    h1JetpT[cj]->Write();
+	if(h2JetpT[cj]->GetEntries() > 0)
+	    h2JetpT[cj]->Write();
+	if(h3JetpT[cj]->GetEntries() > 0)
+	    h3JetpT[cj]->Write();
+	if(h0BJetpT[cj]->GetEntries() > 0)
+	    h0BJetpT[cj]->Write();
+	if(h1BJetpT[cj]->GetEntries() > 0)
+	    h1BJetpT[cj]->Write();
+	if(h2BJetpT[cj]->GetEntries() > 0)
+	    h2BJetpT[cj]->Write();
+	if(h3BJetpT[cj]->GetEntries() > 0)
+	    h3BJetpT[cj]->Write();
 
-        hRS[cj]->Write();
-        hRC[cj]->Write();
-        hHTRS[cj]->Write();
-        hHTRC[cj]->Write();
-        hSTRS[cj]->Write();
-        hSTRC[cj]->Write();
-        hNJRS[cj]->Write();
-        hNJRC[cj]->Write();
-        hHT[cj]->Write();
-        hST[cj]->Write();
-        hWpT[cj]->Write();
-        hnJet[cj]->Write();
-        hnBJet[cj]->Write();
-        hnMu[cj]->Write();
-        hnEl[cj]->Write();
-        hMupt[cj]->Write();
-        hElpt[cj]->Write();
-        hnLep[cj]->Write();
+	if(hRS[cj]->GetEntries() > 0)
+	    hRS[cj]->Write();
+	if(hRC[cj]->GetEntries() > 0)
+	    hRC[cj]->Write();
+	if(hHTRS[cj]->GetEntries() > 0)
+	    hHTRS[cj]->Write();
+	if(hHTRC[cj]->GetEntries() > 0)
+	    hHTRC[cj]->Write();
+	if(hSTRS[cj]->GetEntries() > 0)
+	    hSTRS[cj]->Write();
+	if(hSTRC[cj]->GetEntries() > 0)
+	    hSTRC[cj]->Write();
+	if(hNJRS[cj]->GetEntries() > 0)
+	    hNJRS[cj]->Write();
+	if(hNJRC[cj]->GetEntries() > 0)
+	    hNJRC[cj]->Write();
+	if(hHT[cj]->GetEntries() > 0)
+	    hHT[cj]->Write();
+	if(hST[cj]->GetEntries() > 0)
+	    hST[cj]->Write();
+	if(hWpT[cj]->GetEntries() > 0)
+	    hWpT[cj]->Write();
+	if(hnJet[cj]->GetEntries() > 0)
+	    hnJet[cj]->Write();
+	if(hnBJet[cj]->GetEntries() > 0)
+	    hnBJet[cj]->Write();
+	if(hnMu[cj]->GetEntries() > 0)
+	    hnMu[cj]->Write();
+	if(hnEl[cj]->GetEntries() > 0)
+	    hnEl[cj]->Write();
+	if(hMupt[cj]->GetEntries() > 0)
+	    hMupt[cj]->Write();
+	if(hElpt[cj]->GetEntries() > 0)
+	    hElpt[cj]->Write();
+	if(hnLep[cj]->GetEntries() > 0)
+	    hnLep[cj]->Write();
         //hnGenLep[cj]->Write();
         //hnGenTau[cj]->Write();
         //hnGenLepFromTau[cj]->Write();
 
-        hLeppt[cj]->Write();
-        hLepeta[cj]->Write();
-        hMET[cj]->Write();
-        hdPhiWLep[cj]->Write();
-        hdPhi[cj]->Write();
-        hDfST[cj]->Write();
-        hDfHT[cj]->Write();
-        hHTST[cj]->Write();
-        hNJST[cj]->Write();
-        hMTMET[cj]->Write();
+	if(hLeppt[cj]->GetEntries() > 0)
+	    hLeppt[cj]->Write();
+	if(hLepeta[cj]->GetEntries() > 0)
+	    hLepeta[cj]->Write();
+	if(hMET[cj]->GetEntries() > 0)
+	    hMET[cj]->Write();
+	if(hdPhiWLep[cj]->GetEntries() > 0)
+	    hdPhiWLep[cj]->Write();
+	if(hdPhi[cj]->GetEntries() > 0)
+	    hdPhi[cj]->Write();
+	if(hDfST[cj]->GetEntries() > 0)
+	    hDfST[cj]->Write();
+	if(hDfHT[cj]->GetEntries() > 0)
+	    hDfHT[cj]->Write();
+	if(hHTST[cj]->GetEntries() > 0)
+	    hHTST[cj]->Write();
+	if(hNJST[cj]->GetEntries() > 0)
+	    hNJST[cj]->Write();
+	if(hMTMET[cj]->GetEntries() > 0)
+	    hMTMET[cj]->Write();
 
     }
 }
