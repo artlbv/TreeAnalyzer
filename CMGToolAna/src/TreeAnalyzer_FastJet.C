@@ -223,8 +223,24 @@ void FillMainHists(int CutIndex, float EvWeight, bool FillBJets = true){
   hnGenLepFromTau[CutIndex]->Fill(Obj.nGenLepFromTau,EvWeight);
 }
 
-
-
+std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > test;
+std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhST;
+std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhDelPhiWlep;
+std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhHT;
+std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhMJ;
+std::vector <std::vector <std::vector <std::vector <std::vector<TH2F* > > > > > vhMJ_vs_HT;
+std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhNjet;
+std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhNbjet;
+const int max_n = 8;
+const int max_b = 6;
+int Bmin[max_b] = {0,  1, 1, 2, 3};
+int Bmax[max_b] = {30,30, 2, 3, 30};
+const int max_h = 4;
+int HTmin[max_h] = {0,500,750,1000};
+const int max_m = 1;
+const int max_s = 6;
+int STmin[max_s] = {0,    250,    0, 250, 350, 450};
+int STmax[max_s] = {4000, 4000, 250, 350, 450,4000};
 int main (int argc, char* argv[]){
   if (argc < 4) {
     cout<<"usage ./TreeAnalyzer_example [INPUTFOLDER] [XSEC * LUMI] [SAMPLENAME]"<<endl;
@@ -252,7 +268,90 @@ int main (int argc, char* argv[]){
     weights.push_back( atof( arr->At(i+1)->GetName() ) );
   }
   
+char hNAME[99];
 
+for(int n=0; n<max_n; n++){
+  int iNjet=n+3;
+  for(int b=0; b<max_b; b++){
+    int iNbjetmin=Bmin[b];
+    int iNbjetmax=Bmax[b];
+    test.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
+    vhST.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
+    vhHT.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
+    vhMJ.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
+    vhDelPhiWlep.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
+    vhMJ_vs_HT.push_back(std::vector<std::vector<std::vector<std::vector<TH2F*> > > >());
+    vhNjet.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
+    vhNbjet.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
+    for(int h=0; h<max_h; h++){
+      int iHT=HTmin[h];
+      test[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
+      vhST[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
+      vhHT[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
+      vhMJ[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
+      vhDelPhiWlep[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
+      vhMJ_vs_HT[n].push_back(std::vector<std::vector<std::vector<TH2F*> > >());
+      vhNjet[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
+      vhNbjet[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
+      for(int m=0; m<max_m; m++){
+	int iMJ=100*m; 
+	test[n][b].push_back(std::vector<std::vector<TH1F*> >());
+	vhST[n][b].push_back(std::vector<std::vector<TH1F*> >());
+	vhHT[n][b].push_back(std::vector<std::vector<TH1F*> >());
+	vhMJ[n][b].push_back(std::vector<std::vector<TH1F*> >());
+	vhDelPhiWlep[n][b].push_back(std::vector<std::vector<TH1F*> >());
+	vhMJ_vs_HT[n][b].push_back(std::vector<std::vector<TH2F*> >());
+	vhNjet[n][b].push_back(std::vector<std::vector<TH1F*> >());
+	vhNbjet[n][b].push_back(std::vector<std::vector<TH1F*> >());
+	for(int s=0; s<max_s; s++){ 
+	  int iSTmin = STmin[s];
+	  int iSTmax = STmax[s];
+	  test[n][b][h].push_back(std::vector<TH1F*> ());
+	  sprintf(hNAME, "test_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  test[n][b][h][m].push_back(new TH1F(hNAME,hNAME,250,0,2500));
+	  test[n][b][h][m][s]->Sumw2();
+
+	  vhST[n][b][h].push_back(std::vector<TH1F*> ());
+	  sprintf(hNAME, "vhST_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  vhST[n][b][h][m].push_back(new TH1F(hNAME,hNAME,250,0,2500));
+	  vhST[n][b][h][m][s]->Sumw2();
+
+	  vhHT[n][b][h].push_back(std::vector<TH1F*> ());
+	  sprintf(hNAME, "vhHT_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  vhHT[n][b][h][m].push_back(new TH1F(hNAME,hNAME,250,0,2500));
+	  vhHT[n][b][h][m][s]->Sumw2();
+
+	  vhMJ[n][b][h].push_back(std::vector<TH1F*> ());
+	  sprintf(hNAME, "vhMJ_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  vhMJ[n][b][h][m].push_back(new TH1F(hNAME,hNAME,250,0,2500));
+	  vhMJ[n][b][h][m][s]->Sumw2();
+
+	  vhDelPhiWlep[n][b][h].push_back(std::vector<TH1F*> ());
+	  sprintf(hNAME, "vhDelPhiWlep_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  vhDelPhiWlep[n][b][h][m].push_back(new TH1F(hNAME,hNAME,31,0,3.1));
+	  vhDelPhiWlep[n][b][h][m][s]->Sumw2();
+
+	  vhMJ_vs_HT[n][b][h].push_back(std::vector<TH2F*> ());
+	  sprintf(hNAME, "vhMJ_vs_HT_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  vhMJ_vs_HT[n][b][h][m].push_back(new TH2F(hNAME,hNAME,250,0,2500,250,0,2500));
+	  vhMJ_vs_HT[n][b][h][m][s]->Sumw2();
+
+	  vhNjet[n][b][h].push_back(std::vector<TH1F*> ());
+	  sprintf(hNAME, "vhNjet_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  vhNjet[n][b][h][m].push_back(new TH1F(hNAME,hNAME,20,0,20));
+	  vhNjet[n][b][h][m][s]->Sumw2();
+
+	  vhNbjet[n][b][h].push_back(std::vector<TH1F*> ());
+	  sprintf(hNAME, "vhNbjet_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  vhNbjet[n][b][h][m].push_back(new TH1F(hNAME,hNAME,20,0,20));
+	  vhNbjet[n][b][h][m][s]->Sumw2();
+	}
+      }
+      
+    }
+  }
+ }
+ 
 
   EasyChain* tree = new EasyChain("treeProducerSusySingleLepton");
   for(unsigned i=0;i<files.size();i++){
@@ -318,6 +417,8 @@ int main (int argc, char* argv[]){
   if (Obj.nLepGood != 1) continue;
   if( Obj.nMuGood != 1) continue;
   if(Obj.nMuVeto !=0 || Obj.nElVeto !=0) continue;
+
+  
   //if (Obj.nJetGood < 2) continue;
   // Fill main histograms
     vector<PseudoJet> particles;
@@ -382,6 +483,46 @@ int main (int argc, char* argv[]){
     CFCounter[iCut]+= EvWeight;
     iCFCounter[iCut]++;
     iCut++;
+
+  for(int n=0; n<max_n; n++){   
+    int iNjet=n+3; 
+    //    if(Obj.nJetGood >= iNjet){
+    for (int b=0; b<max_b; b++) { 
+    int iNbjetmin=Bmin[b];
+    int iNbjetmax=Bmax[b]; 
+      for (int h=0; h<max_h; h++){ 
+	float iHT=HTmin[h];
+	for(int m=0; m<max_m; m++){
+	  float iMJ=100.0*m;
+	  for(int s=0; s<max_s; s++){
+	    float iSTmin = STmin[s];
+	    float iSTmax = STmax[s];
+	    if(Obj.nJetGood >= iNjet){
+	      if(Obj.nBJetGood >= iNbjetmin && Obj.nBJetGood < iNbjetmax){
+		if(Obj.HT40 > iHT){
+		  if(Obj.HT40 > iMJ){
+		    
+		    if(Obj.ST > iSTmin && Obj.ST < iSTmax){
+		      
+		      test[n][b][h][m][s]->Fill(Obj.ST, EvWeight);
+		      vhST[n][b][h][m][s]->Fill(Obj.ST, EvWeight);
+		      vhHT[n][b][h][m][s]->Fill(Obj.HT40, EvWeight);
+		      vhMJ[n][b][h][m][s]->Fill(MJ, EvWeight);
+		      vhDelPhiWlep[n][b][h][m][s]->Fill(DelPhiWlep, EvWeight);
+		      vhMJ_vs_HT[n][b][h][m][s]->Fill(Obj.HT40, MJ, EvWeight);
+		      vhNjet[n][b][h][m][s]->Fill(Obj.nJetGood, EvWeight);
+		      vhNbjet[n][b][h][m][s]->Fill(Obj.nBJetGood, EvWeight);
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+  
     // 2. Cut
     ////////////////////////////
     if (Obj.nJetGood < 6) continue;
@@ -456,6 +597,43 @@ int main (int argc, char* argv[]){
   TFile * outf;
   TString rootfilename = "CMG_"+outname+"_his.root";
   outf = new TFile(rootfilename,"RECREATE");
+  char FOLDER[100];
+  TDirectory* bins=outf->mkdir("Bins");
+  outf->cd("Bins");
+  for(int n=0; n<max_n; n++){
+    int iNjet=n+3;
+    sprintf(FOLDER, "Njet_%i", iNjet);
+    TDirectory* now=bins->mkdir(FOLDER);
+    bins->cd(FOLDER);
+    for (int b=0; b<max_b; b++) {
+      int iNbjetmin=Bmin[b];
+      int iNbjetmax=Bmax[b]; 
+      sprintf(FOLDER, "bjet_%i-bjet_%i", iNbjetmin,iNbjetmax);
+      TDirectory* now2=now->mkdir(FOLDER);
+      now->cd(FOLDER);
+      for (int h=0; h<max_h; h++){    
+	int iHT=HTmin[h];
+	sprintf(FOLDER,"HT_%i", iHT);
+	TDirectory* now3=now2->mkdir(FOLDER);                  
+	now2->cd(FOLDER);       
+	for(int m=0; m<max_m; m++){ 
+	  for(int s=0; s<max_s; s++){
+	  
+	    test[n][b][h][m][s]->Write();
+	    vhST[n][b][h][m][s]->Write();
+	    vhHT[n][b][h][m][s]->Write();
+	    vhMJ[n][b][h][m][s]->Write();
+	    vhDelPhiWlep[n][b][h][m][s]->Write();
+	    vhMJ_vs_HT[n][b][h][m][s]->Write();
+	    vhNjet[n][b][h][m][s]->Write();
+	    vhNbjet[n][b][h][m][s]->Write();
+	  }
+	}
+      }
+    }
+  }
+  
+
   for(int cj = 0; cj < CutNumb; cj++)
     {
       outf->cd();
