@@ -73,7 +73,7 @@ public:
     using ParticleObject::ParticleObject;
 
     int pdgID;
-    Double_t relIso03;
+    float relIso03;
     int tightID;
     int charge;
 };
@@ -95,7 +95,7 @@ private:
 
 public:
     bool btag;
-    Double_t btagCSV;
+    float btagCSV;
 };
 
 
@@ -162,8 +162,8 @@ class GetObjects{
   
   // global variables
   
-   Float_t HT40;
-   Float_t ST;  
+   float HT40;
+   float ST;  
 
 };
 

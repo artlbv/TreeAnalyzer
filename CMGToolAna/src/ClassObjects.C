@@ -102,7 +102,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
 	    continue;
 	// Muon cuts
 	if(abs(LepGood_pdgId[ilep]) == 13){
-	  if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep]==1 && LepGood_relIso03[ilep] < goodMu_relIso03){
+	  if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] && LepGood_relIso03[ilep] < goodMu_relIso03){
 			goodLep.push_back(dummyLep);
 			goodMu.push_back(dummyLep);
 			nMuGood++;
@@ -118,7 +118,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
 
 	// Electron cuts
 	if(abs(LepGood_pdgId[ilep]) == 11){
-	    if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep]==1 && LepGood_relIso03[ilep] < goodEl_relIso03){
+	    if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] && LepGood_relIso03[ilep] < goodEl_relIso03){
 //                    isGoodEl = true;
 			goodLep.push_back(dummyLep);
 			goodEl.push_back(dummyLep);
