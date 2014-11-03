@@ -25,27 +25,37 @@ map<string, int>::iterator itCutMap;
 /*
   vector<string> CutVect;
   vector<string>::iterator itCutVect;
-
-  int CutID(string cutname){
-
-  return CutMap[cutname];
-  }
 */
 
 // Fill Cut Map
 const int CutNumb = 26; // number of Cuts
 const char* CutList[CutNumb] = {"noCut",
-                                "== 1 Mu", "6Jet","HT>500","ST>250",
-                                "Nb>=1","Df<1","Df>1",
-                                "Nb=1, 250<ST<350,Df<1","Nb =1, 250<ST<350,Df>1",
-                                "Nb=1, 350<ST<450, Df<1","Nb =1, 350<ST<450,Df>1",
-                                "Nb=1, ST>450, Df<1","Nb =1, ST>450,Df>1",
-                                "Nb=2 ,250<ST<350, Df<1","Nb=2, 250<ST< 350,Df>1",
-                                "Nb=2 ,350<ST<450,Df<1","Nb=2,350<ST<450,Df>1",
-                                "Nb=2 ,ST>450, Df<1","Nb=2 ,ST>450,Df>1",
-                                "Nb>2 250<ST<350 ,Df<1","Nb>2,250<ST<350,Df>1",
-                                "Nb>2 350<ST<450,Df<1","Nb>2,350<ST<450, Df>1",
-                                "Nb>2 ST>450,Df<1","Nb>2 ST>450,Df>1"};
+                                "== 1 Mu",
+                                "6Jet",
+                                "HT>500",
+                                "ST>250",
+                                "Nb>=1",
+                                "Df<1",
+                                "Df>1",
+                                "Nb=1, 250<ST<350,Df<1",
+                                "Nb=1, 250<ST<350,Df>1",
+                                "Nb=1, 350<ST<450, Df<1",
+                                "Nb=1, 350<ST<450,Df>1",
+                                "Nb=1, ST>450, Df<1",
+                                "Nb=1, ST>450,Df>1",
+                                "Nb=2 ,250<ST<350, Df<1",
+                                "Nb=2, 250<ST< 350,Df>1",
+                                "Nb=2 ,350<ST<450,Df<1",
+                                "Nb=2,350<ST<450,Df>1",
+                                "Nb=2 ,ST>450, Df<1",
+                                "Nb=2 ,ST>450,Df>1",
+                                "Nb>2 250<ST<350 ,Df<1",
+                                "Nb>2,250<ST<350,Df>1",
+                                "Nb>2 350<ST<450,Df<1",
+                                "Nb>2,350<ST<450, Df>1",
+                                "Nb>2 ST>450,Df<1",
+                                "Nb>2 ST>450,Df>1"
+};
 
 
 // define global hists
@@ -304,8 +314,8 @@ void TreeAnalyzer(TString list, TString outname,bool useW=true){
     }
 
     /////////////   event loop   //////////////////////
-//    for(int entry=0; entry <  Nevents/*min(100000,Nevents)*/; entry+=1){
-    for(int entry=0; entry <  1000; entry+=1){
+    for(int entry=0; entry <  Nevents/*min(100000,Nevents)*/; entry+=1){
+//    for(int entry=0; entry <  1000; entry+=1){
 
         // Reset Cut counter
         iCut = 0;
@@ -480,228 +490,241 @@ void TreeAnalyzer(TString list, TString outname,bool useW=true){
 // REST
 
         if(fabs(DelPhiWlep) < 1){
-
+            // get cut number from cut name
             iCut = CutMap["Df<1"];
             CFCounter[iCut]+= EvWeight;
             iCFCounter[iCut]++;
+
+	    FillMainHists(iCut, EvWeight);
+
+            hRC[iCut]->Fill(nBJetGood,EvWeight);
+            hNJRC[iCut]->Fill(nJetGood,EvWeight);
+            hHTRC[iCut]->Fill(HT40,EvWeight);
+            hSTRC[iCut]->Fill(ST,EvWeight);
         }
         else{
-
             iCut = CutMap["Df<1"];
             CFCounter[iCut]+= EvWeight;
             iCFCounter[iCut]++;
+
+	    FillMainHists(iCut, EvWeight);
+
+            hRS[iCut]->Fill(nBJetGood,EvWeight);
+            hNJRS[iCut]->Fill(nJetGood,EvWeight);
+            hHTRS[iCut]->Fill(HT40,EvWeight);
+            hSTRS[iCut]->Fill(ST,EvWeight);
+        }
+
+
+////// HT, NJ, ST ,Nb dependency of RCS
+        if (ST > 250 && ST < 350 ) {
+            if(fabs(DelPhiWlep) < 1){
+
+                iCut = CutMap["Nb=1, 250<ST<350,Df<1"];
+                CFCounter[iCut]+= EvWeight;
+                iCFCounter[iCut]++;
+
+                hRC[iCut]->Fill(nBJetGood,EvWeight);
+                hNJRC[iCut]->Fill(nJetGood,EvWeight);
+                hHTRC[iCut]->Fill(HT40,EvWeight);
+                hSTRC[iCut]->Fill(ST,EvWeight);
+            }
+            else{
+
+                iCut = CutMap["Nb=1, 250<ST<350,Df>1"];
+                CFCounter[iCut]+= EvWeight;
+                iCFCounter[iCut]++;
+
+                hRS[iCut]->Fill(nBJetGood,EvWeight);
+                hNJRS[iCut]->Fill(nJetGood,EvWeight);
+                hHTRS[iCut]->Fill(HT40,EvWeight);
+                hSTRS[iCut]->Fill(ST,EvWeight);
+            }
         }
 
 /*
-////// HT, NJ, ST ,Nb dependency of RCS
-if(fabs(DelPhiWlep) < 1){
-hRC[5]->Fill(nBJetGood,EvWeight);
-hNJRC[5]->Fill(nJetGood,EvWeight);
-hHTRC[5]->Fill(HT40,EvWeight);
-hSTRC[5]->Fill(ST,EvWeight);
-
-}
-if(fabs(DelPhiWlep) >= 1) {
-hRS[5]->Fill(nBJetGood,EvWeight);
-hNJRS[5]->Fill(nJetGood,EvWeight);
-hHTRS[5]->Fill(HT40,EvWeight);
-hSTRS[5]->Fill(ST,EvWeight);
-}
-if (ST > 250 && ST < 350 ) {
-if(fabs(DelPhiWlep) < 1){
-hRC[6]->Fill(nBJetGood,EvWeight);
-hNJRC[6]->Fill(nJetGood,EvWeight);
-hHTRC[6]->Fill(HT40,EvWeight);
-hSTRC[6]->Fill(ST,EvWeight);
-}
-if(fabs(DelPhiWlep) >= 1){
-hRS[6]->Fill(nBJetGood,EvWeight);
-hNJRS[6]->Fill(nJetGood,EvWeight);
-hHTRS[6]->Fill(HT40,EvWeight);
-hSTRS[6]->Fill(ST,EvWeight);
-}
-}
-if (ST > 350 && ST < 450 ) {
-if(fabs(DelPhiWlep) < 1){
-hRC[7]->Fill(nBJetGood,EvWeight);
-hNJRC[7]->Fill(nJetGood,EvWeight);
-hHTRC[7]->Fill(HT40,EvWeight);
-hSTRC[7]->Fill(ST,EvWeight);
-}
-if(fabs(DelPhiWlep) >= 1){
-hRS[7]->Fill(nBJetGood,EvWeight);
-hNJRS[7]->Fill(nJetGood,EvWeight);
-hHTRS[7]->Fill(HT40,EvWeight);
-hSTRS[7]->Fill(ST,EvWeight);
-}
-}
-if (ST > 450  ) {
-if(fabs(DelPhiWlep) < 1){
-hRC[8]->Fill(nBJetGood,EvWeight);
-hNJRC[8]->Fill(nJetGood,EvWeight);
-hHTRC[8]->Fill(HT40,EvWeight);
-hSTRC[8]->Fill(ST,EvWeight);
-}
-if(fabs(DelPhiWlep) >= 1){
-hRS[8]->Fill(nBJetGood,EvWeight);
-hNJRS[8]->Fill(nJetGood,EvWeight);
-hHTRS[8]->Fill(HT40,EvWeight);
-hSTRS[8]->Fill(ST,EvWeight);
-}
-}
-
-
-////// End HT, NJ, ST ,Nb dependency of RCS
-
-if (nBJetGood == 1) {
-if (ST > 250 && ST <= 350 ) {
-hnBJet[6]->Fill(nBJetGood,EvWeight);
-hHT[6]->Fill(HT40,EvWeight);
-hST[6]->Fill(ST,EvWeight);
-hdPhiWLep[6]->Fill(fabs(DelPhiWlep),EvWeight);
-hWpT[6]->Fill(Wpt,EvWeight);
-if(fabs(DelPhiWlep) < 1.0)
-hRC[8]->Fill(nJetGood,EvWeight);
-if(fabs(DelPhiWlep) >= 1.0)
-hRS[8]->Fill(nJetGood,EvWeight);
-if(fabs(DelPhiWlep) < 1){
-CFCounter[8]+= EvWeight;
-iCFCounter[8]++;}
-if(fabs(DelPhiWlep) >= 1){
-CFCounter[9]+= EvWeight;
-iCFCounter[9]++;}
-}
-
-if (ST > 350 && ST <= 450 ) {
-hnBJet[7]->Fill(nBJetGood,EvWeight);
-hnJet[7]->Fill(nJetGood,EvWeight);
-hHT[7]->Fill(HT40,EvWeight);
-hST[7]->Fill(ST,EvWeight);
-hdPhiWLep[7]->Fill(fabs(DelPhiWlep),EvWeight);
-
-hWpT[7]->Fill(Wpt,EvWeight);
-if(fabs(DelPhiWlep) < 1.0)
-hRC[9]->Fill(nJetGood,EvWeight);
-if(fabs(DelPhiWlep) >= 1.0)
-hRS[9]->Fill(nJetGood,EvWeight);
-if(fabs(DelPhiWlep) < 1){
-CFCounter[10]+= EvWeight;
-iCFCounter[10]++;}
-if(fabs(DelPhiWlep) >= 1){
-CFCounter[11]+= EvWeight;
-iCFCounter[11]++;}
-}
-
-if (ST >= 450 ) {
-hnBJet[8]->Fill(nBJetGood,EvWeight);
-hnJet[8]->Fill(nJetGood,EvWeight);
-hHT[8]->Fill(HT40,EvWeight);
-hST[8]->Fill(ST,EvWeight);
-hdPhiWLep[8]->Fill(fabs(DelPhiWlep),EvWeight);
-
-hWpT[8]->Fill(Wpt,EvWeight);
-if(fabs(DelPhiWlep) < 0.5)
-hRC[10]->Fill(nJetGood,EvWeight);
-if(fabs(DelPhiWlep) >= 0.5)
-hRS[10]->Fill(nJetGood,EvWeight);
-
-if(fabs(DelPhiWlep) < 0.5){
-CFCounter[12]+= EvWeight;
-iCFCounter[12]++;}
-if(fabs(DelPhiWlep) >= 0.5){
-CFCounter[13]+= EvWeight;
-iCFCounter[13]++;}
-} //ST > 450 GeV
-}// Nb=1
-
-if (nBJetGood == 2) {
-
-if (ST > 250 && ST <= 350 ) {
-if(fabs(DelPhiWlep) < 1.0)
-hRC[11]->Fill(nJetGood,EvWeight);
-if(fabs(DelPhiWlep) >= 1.0)
-hRS[11]->Fill(nJetGood,EvWeight);
-if(fabs(DelPhiWlep) < 1.0){
-CFCounter[14]+= EvWeight;
-iCFCounter[14]++;}
-if(fabs(DelPhiWlep) >= 1.0){
-CFCounter[15]+= EvWeight;
-iCFCounter[15]++;}
-}
-if (ST > 350 && ST <= 450 ) {
-if(fabs(DelPhiWlep) < 1.0)
-hRC[12]->Fill(nJetGood,EvWeight);
-if(fabs(DelPhiWlep) >= 1.0)
-hRS[12]->Fill(nJetGood,EvWeight);
-if(fabs(DelPhiWlep) < 1.0){
-CFCounter[16]+= EvWeight;
-iCFCounter[16]++;}
-if(fabs(DelPhiWlep) >= 1.0){
-CFCounter[17]+= EvWeight;
-iCFCounter[17]++;}
-}
-if (ST > 450  ) {
-if(fabs(DelPhiWlep) < 1.0)
-hRC[13]->Fill(nJetGood,EvWeight);
-if(fabs(DelPhiWlep) >= 1.0)
-hRS[13]->Fill(nJetGood,EvWeight);
-if(fabs(DelPhiWlep) < 0.5){
-CFCounter[18]+= EvWeight;
-iCFCounter[18]++;}
-if(fabs(DelPhiWlep) >= 0.5){
-CFCounter[19]+= EvWeight;
-iCFCounter[19]++;}
-}
-
-}// Nb ==2
-
-if (nBJetGood > 2) {
-
-if (ST > 250 && ST <= 350 ) {
-if(fabs(DelPhiWlep) < 1.0)
-hRC[14]->Fill(nBJetGood,EvWeight);
-if(fabs(DelPhiWlep) >= 1.0)
-hRS[14]->Fill(nBJetGood,EvWeight);
-if(fabs(DelPhiWlep) < 1.0){
-CFCounter[20]+= EvWeight;
-iCFCounter[20]++;}
-if(fabs(DelPhiWlep) >= 1.0){
-CFCounter[21]+= EvWeight;
-iCFCounter[21]++;}
-}
-if (ST > 350 && ST <= 450 ) {
-if(fabs(DelPhiWlep) < 1.0)
-hRC[15]->Fill(nBJetGood,EvWeight);
-if(fabs(DelPhiWlep) >= 1.0)
-hRS[15]->Fill(nBJetGood,EvWeight);
-if(fabs(DelPhiWlep) < 1.0){
-CFCounter[22]+= EvWeight;
-iCFCounter[22]++;}
-if(fabs(DelPhiWlep) >= 1.0){
-CFCounter[23]+= EvWeight;
-iCFCounter[23]++;}
-}
-if (ST > 450  ) {
-if(fabs(DelPhiWlep) < 1.0)
-hRC[16]->Fill(nBJetGood,EvWeight);
-if(fabs(DelPhiWlep) >= 1.0)
-hRS[16]->Fill(nBJetGood,EvWeight);
-if(fabs(DelPhiWlep) < 0.5){
-CFCounter[24]+= EvWeight;
-iCFCounter[24]++;}
-if(fabs(DelPhiWlep) >= 0.5){
-CFCounter[25]+= EvWeight;
-iCFCounter[25]++;}
-}
-
-}// Nb >2
+  if (ST > 350 && ST < 450 ) {
+  if(fabs(DelPhiWlep) < 1){
+  hRC[7]->Fill(nBJetGood,EvWeight);
+  hNJRC[7]->Fill(nJetGood,EvWeight);
+  hHTRC[7]->Fill(HT40,EvWeight);
+  hSTRC[7]->Fill(ST,EvWeight);
+  }
+  if(fabs(DelPhiWlep) >= 1){
+  hRS[7]->Fill(nBJetGood,EvWeight);
+  hNJRS[7]->Fill(nJetGood,EvWeight);
+  hHTRS[7]->Fill(HT40,EvWeight);
+  hSTRS[7]->Fill(ST,EvWeight);
+  }
+  }
+  if (ST > 450  ) {
+  if(fabs(DelPhiWlep) < 1){
+  hRC[8]->Fill(nBJetGood,EvWeight);
+  hNJRC[8]->Fill(nJetGood,EvWeight);
+  hHTRC[8]->Fill(HT40,EvWeight);
+  hSTRC[8]->Fill(ST,EvWeight);
+  }
+  if(fabs(DelPhiWlep) >= 1){
+  hRS[8]->Fill(nBJetGood,EvWeight);
+  hNJRS[8]->Fill(nJetGood,EvWeight);
+  hHTRS[8]->Fill(HT40,EvWeight);
+  hSTRS[8]->Fill(ST,EvWeight);
+  }
+  }
 
 */
-        ////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////
+
+////// End HT, NJ, ST ,Nb dependency of RCS
+/*
+        if (nBJetGood == 1) {
+            if (ST > 250 && ST <= 350 ) {
+                hnBJet[6]->Fill(nBJetGood,EvWeight);
+                hHT[6]->Fill(HT40,EvWeight);
+                hST[6]->Fill(ST,EvWeight);
+                hdPhiWLep[6]->Fill(fabs(DelPhiWlep),EvWeight);
+                hWpT[6]->Fill(Wpt,EvWeight);
+                if(fabs(DelPhiWlep) < 1.0)
+                    hRC[8]->Fill(nJetGood,EvWeight);
+                if(fabs(DelPhiWlep) >= 1.0)
+                    hRS[8]->Fill(nJetGood,EvWeight);
+                if(fabs(DelPhiWlep) < 1){
+                    CFCounter[8]+= EvWeight;
+                    iCFCounter[8]++;}
+                if(fabs(DelPhiWlep) >= 1){
+                    CFCounter[9]+= EvWeight;
+                    iCFCounter[9]++;}
+            }
+
+            if (ST > 350 && ST <= 450 ) {
+                hnBJet[7]->Fill(nBJetGood,EvWeight);
+                hnJet[7]->Fill(nJetGood,EvWeight);
+                hHT[7]->Fill(HT40,EvWeight);
+                hST[7]->Fill(ST,EvWeight);
+                hdPhiWLep[7]->Fill(fabs(DelPhiWlep),EvWeight);
+
+                hWpT[7]->Fill(Wpt,EvWeight);
+                if(fabs(DelPhiWlep) < 1.0)
+                    hRC[9]->Fill(nJetGood,EvWeight);
+                if(fabs(DelPhiWlep) >= 1.0)
+                    hRS[9]->Fill(nJetGood,EvWeight);
+                if(fabs(DelPhiWlep) < 1){
+                    CFCounter[10]+= EvWeight;
+                    iCFCounter[10]++;}
+                if(fabs(DelPhiWlep) >= 1){
+                    CFCounter[11]+= EvWeight;
+                    iCFCounter[11]++;}
+            }
+
+            if (ST >= 450 ) {
+                hnBJet[8]->Fill(nBJetGood,EvWeight);
+                hnJet[8]->Fill(nJetGood,EvWeight);
+                hHT[8]->Fill(HT40,EvWeight);
+                hST[8]->Fill(ST,EvWeight);
+                hdPhiWLep[8]->Fill(fabs(DelPhiWlep),EvWeight);
+
+                hWpT[8]->Fill(Wpt,EvWeight);
+                if(fabs(DelPhiWlep) < 0.5)
+                    hRC[10]->Fill(nJetGood,EvWeight);
+                if(fabs(DelPhiWlep) >= 0.5)
+                    hRS[10]->Fill(nJetGood,EvWeight);
+
+                if(fabs(DelPhiWlep) < 0.5){
+                    CFCounter[12]+= EvWeight;
+                    iCFCounter[12]++;}
+                if(fabs(DelPhiWlep) >= 0.5){
+                    CFCounter[13]+= EvWeight;
+                    iCFCounter[13]++;}
+            } //ST > 450 GeV
+        }// Nb=1
+
+        if (nBJetGood == 2) {
+
+            if (ST > 250 && ST <= 350 ) {
+                if(fabs(DelPhiWlep) < 1.0)
+                    hRC[11]->Fill(nJetGood,EvWeight);
+                if(fabs(DelPhiWlep) >= 1.0)
+                    hRS[11]->Fill(nJetGood,EvWeight);
+                if(fabs(DelPhiWlep) < 1.0){
+                    CFCounter[14]+= EvWeight;
+                    iCFCounter[14]++;}
+                if(fabs(DelPhiWlep) >= 1.0){
+                    CFCounter[15]+= EvWeight;
+                    iCFCounter[15]++;}
+            }
+            if (ST > 350 && ST <= 450 ) {
+                if(fabs(DelPhiWlep) < 1.0)
+                    hRC[12]->Fill(nJetGood,EvWeight);
+                if(fabs(DelPhiWlep) >= 1.0)
+                    hRS[12]->Fill(nJetGood,EvWeight);
+                if(fabs(DelPhiWlep) < 1.0){
+                    CFCounter[16]+= EvWeight;
+                    iCFCounter[16]++;}
+                if(fabs(DelPhiWlep) >= 1.0){
+                    CFCounter[17]+= EvWeight;
+                    iCFCounter[17]++;}
+            }
+            if (ST > 450  ) {
+                if(fabs(DelPhiWlep) < 1.0)
+                    hRC[13]->Fill(nJetGood,EvWeight);
+                if(fabs(DelPhiWlep) >= 1.0)
+                    hRS[13]->Fill(nJetGood,EvWeight);
+                if(fabs(DelPhiWlep) < 0.5){
+                    CFCounter[18]+= EvWeight;
+                    iCFCounter[18]++;}
+                if(fabs(DelPhiWlep) >= 0.5){
+                    CFCounter[19]+= EvWeight;
+                    iCFCounter[19]++;}
+            }
+
+        }// Nb ==2
+
+        if (nBJetGood > 2) {
+
+            if (ST > 250 && ST <= 350 ) {
+                if(fabs(DelPhiWlep) < 1.0)
+                    hRC[14]->Fill(nBJetGood,EvWeight);
+                if(fabs(DelPhiWlep) >= 1.0)
+                    hRS[14]->Fill(nBJetGood,EvWeight);
+                if(fabs(DelPhiWlep) < 1.0){
+                    CFCounter[20]+= EvWeight;
+                    iCFCounter[20]++;}
+                if(fabs(DelPhiWlep) >= 1.0){
+                    CFCounter[21]+= EvWeight;
+                    iCFCounter[21]++;}
+            }
+            if (ST > 350 && ST <= 450 ) {
+                if(fabs(DelPhiWlep) < 1.0)
+                    hRC[15]->Fill(nBJetGood,EvWeight);
+                if(fabs(DelPhiWlep) >= 1.0)
+                    hRS[15]->Fill(nBJetGood,EvWeight);
+                if(fabs(DelPhiWlep) < 1.0){
+                    CFCounter[22]+= EvWeight;
+                    iCFCounter[22]++;}
+                if(fabs(DelPhiWlep) >= 1.0){
+                    CFCounter[23]+= EvWeight;
+                    iCFCounter[23]++;}
+            }
+            if (ST > 450  ) {
+                if(fabs(DelPhiWlep) < 1.0)
+                    hRC[16]->Fill(nBJetGood,EvWeight);
+                if(fabs(DelPhiWlep) >= 1.0)
+                    hRS[16]->Fill(nBJetGood,EvWeight);
+                if(fabs(DelPhiWlep) < 0.5){
+                    CFCounter[24]+= EvWeight;
+                    iCFCounter[24]++;}
+                if(fabs(DelPhiWlep) >= 0.5){
+                    CFCounter[25]+= EvWeight;
+                    iCFCounter[25]++;}
+            }
+
+        }// Nb >2
+
+        */
+            ////////////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////
 
 
-    }/////////////////////////////////////////END HERE
+            }/////////////////////////////////////////END HERE
 // ^loop end^
 
 
@@ -733,83 +756,83 @@ iCFCounter[25]++;}
         outf->mkdir(CutList[cj]);
         outf->cd(CutList[cj]);
 
-	if(h0JetpT[cj]->GetEntries() > 0)
-	    h0JetpT[cj]->Write();
-	if(h1JetpT[cj]->GetEntries() > 0)
-	    h1JetpT[cj]->Write();
-	if(h2JetpT[cj]->GetEntries() > 0)
-	    h2JetpT[cj]->Write();
-	if(h3JetpT[cj]->GetEntries() > 0)
-	    h3JetpT[cj]->Write();
-	if(h0BJetpT[cj]->GetEntries() > 0)
-	    h0BJetpT[cj]->Write();
-	if(h1BJetpT[cj]->GetEntries() > 0)
-	    h1BJetpT[cj]->Write();
-	if(h2BJetpT[cj]->GetEntries() > 0)
-	    h2BJetpT[cj]->Write();
-	if(h3BJetpT[cj]->GetEntries() > 0)
-	    h3BJetpT[cj]->Write();
+        if(h0JetpT[cj]->GetEntries() > 0)
+            h0JetpT[cj]->Write();
+        if(h1JetpT[cj]->GetEntries() > 0)
+            h1JetpT[cj]->Write();
+        if(h2JetpT[cj]->GetEntries() > 0)
+            h2JetpT[cj]->Write();
+        if(h3JetpT[cj]->GetEntries() > 0)
+            h3JetpT[cj]->Write();
+        if(h0BJetpT[cj]->GetEntries() > 0)
+            h0BJetpT[cj]->Write();
+        if(h1BJetpT[cj]->GetEntries() > 0)
+            h1BJetpT[cj]->Write();
+        if(h2BJetpT[cj]->GetEntries() > 0)
+            h2BJetpT[cj]->Write();
+        if(h3BJetpT[cj]->GetEntries() > 0)
+            h3BJetpT[cj]->Write();
 
-	if(hRS[cj]->GetEntries() > 0)
-	    hRS[cj]->Write();
-	if(hRC[cj]->GetEntries() > 0)
-	    hRC[cj]->Write();
-	if(hHTRS[cj]->GetEntries() > 0)
-	    hHTRS[cj]->Write();
-	if(hHTRC[cj]->GetEntries() > 0)
-	    hHTRC[cj]->Write();
-	if(hSTRS[cj]->GetEntries() > 0)
-	    hSTRS[cj]->Write();
-	if(hSTRC[cj]->GetEntries() > 0)
-	    hSTRC[cj]->Write();
-	if(hNJRS[cj]->GetEntries() > 0)
-	    hNJRS[cj]->Write();
-	if(hNJRC[cj]->GetEntries() > 0)
-	    hNJRC[cj]->Write();
-	if(hHT[cj]->GetEntries() > 0)
-	    hHT[cj]->Write();
-	if(hST[cj]->GetEntries() > 0)
-	    hST[cj]->Write();
-	if(hWpT[cj]->GetEntries() > 0)
-	    hWpT[cj]->Write();
-	if(hnJet[cj]->GetEntries() > 0)
-	    hnJet[cj]->Write();
-	if(hnBJet[cj]->GetEntries() > 0)
-	    hnBJet[cj]->Write();
-	if(hnMu[cj]->GetEntries() > 0)
-	    hnMu[cj]->Write();
-	if(hnEl[cj]->GetEntries() > 0)
-	    hnEl[cj]->Write();
-	if(hMupt[cj]->GetEntries() > 0)
-	    hMupt[cj]->Write();
-	if(hElpt[cj]->GetEntries() > 0)
-	    hElpt[cj]->Write();
-	if(hnLep[cj]->GetEntries() > 0)
-	    hnLep[cj]->Write();
+        if(hRS[cj]->GetEntries() > 0)
+            hRS[cj]->Write();
+        if(hRC[cj]->GetEntries() > 0)
+            hRC[cj]->Write();
+        if(hHTRS[cj]->GetEntries() > 0)
+            hHTRS[cj]->Write();
+        if(hHTRC[cj]->GetEntries() > 0)
+            hHTRC[cj]->Write();
+        if(hSTRS[cj]->GetEntries() > 0)
+            hSTRS[cj]->Write();
+        if(hSTRC[cj]->GetEntries() > 0)
+            hSTRC[cj]->Write();
+        if(hNJRS[cj]->GetEntries() > 0)
+            hNJRS[cj]->Write();
+        if(hNJRC[cj]->GetEntries() > 0)
+            hNJRC[cj]->Write();
+        if(hHT[cj]->GetEntries() > 0)
+            hHT[cj]->Write();
+        if(hST[cj]->GetEntries() > 0)
+            hST[cj]->Write();
+        if(hWpT[cj]->GetEntries() > 0)
+            hWpT[cj]->Write();
+        if(hnJet[cj]->GetEntries() > 0)
+            hnJet[cj]->Write();
+        if(hnBJet[cj]->GetEntries() > 0)
+            hnBJet[cj]->Write();
+        if(hnMu[cj]->GetEntries() > 0)
+            hnMu[cj]->Write();
+        if(hnEl[cj]->GetEntries() > 0)
+            hnEl[cj]->Write();
+        if(hMupt[cj]->GetEntries() > 0)
+            hMupt[cj]->Write();
+        if(hElpt[cj]->GetEntries() > 0)
+            hElpt[cj]->Write();
+        if(hnLep[cj]->GetEntries() > 0)
+            hnLep[cj]->Write();
         //hnGenLep[cj]->Write();
         //hnGenTau[cj]->Write();
         //hnGenLepFromTau[cj]->Write();
 
-	if(hLeppt[cj]->GetEntries() > 0)
-	    hLeppt[cj]->Write();
-	if(hLepeta[cj]->GetEntries() > 0)
-	    hLepeta[cj]->Write();
-	if(hMET[cj]->GetEntries() > 0)
-	    hMET[cj]->Write();
-	if(hdPhiWLep[cj]->GetEntries() > 0)
-	    hdPhiWLep[cj]->Write();
-	if(hdPhi[cj]->GetEntries() > 0)
-	    hdPhi[cj]->Write();
-	if(hDfST[cj]->GetEntries() > 0)
-	    hDfST[cj]->Write();
-	if(hDfHT[cj]->GetEntries() > 0)
-	    hDfHT[cj]->Write();
-	if(hHTST[cj]->GetEntries() > 0)
-	    hHTST[cj]->Write();
-	if(hNJST[cj]->GetEntries() > 0)
-	    hNJST[cj]->Write();
-	if(hMTMET[cj]->GetEntries() > 0)
-	    hMTMET[cj]->Write();
+        if(hLeppt[cj]->GetEntries() > 0)
+            hLeppt[cj]->Write();
+        if(hLepeta[cj]->GetEntries() > 0)
+            hLepeta[cj]->Write();
+        if(hMET[cj]->GetEntries() > 0)
+            hMET[cj]->Write();
+        if(hdPhiWLep[cj]->GetEntries() > 0)
+            hdPhiWLep[cj]->Write();
+        if(hdPhi[cj]->GetEntries() > 0)
+            hdPhi[cj]->Write();
+        if(hDfST[cj]->GetEntries() > 0)
+            hDfST[cj]->Write();
+        if(hDfHT[cj]->GetEntries() > 0)
+            hDfHT[cj]->Write();
+        if(hHTST[cj]->GetEntries() > 0)
+            hHTST[cj]->Write();
+        if(hNJST[cj]->GetEntries() > 0)
+            hNJST[cj]->Write();
+        if(hMTMET[cj]->GetEntries() > 0)
+            hMTMET[cj]->Write();
 
     }
 }
