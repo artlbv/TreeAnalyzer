@@ -60,6 +60,11 @@ if len(sys.argv)>1:
         elif sys.argv[1]=='TreeAnalyzer_BKG':  # single lepton testing version
                 gROOT.LoadMacro(srcdir+'TreeAnalyzer_BKG.C+')
                 from ROOT import TreeAnalyzer_BKG as reader
+        elif sys.argv[1]=='TreeOutput':  # test tree output
+                gROOT.LoadMacro(srcdir+'ClassObjects.C+')
+                gROOT.LoadMacro(srcdir+'TreeOutput.C+')
+                from ROOT import TreeWriter as reader
+
         else:
                 help()
 else:
