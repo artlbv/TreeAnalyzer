@@ -228,7 +228,12 @@ std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > 
 std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhDelPhiWlep;
 std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhHT;
 std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhMJ;
+std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhDPhi;
+std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhNFatJet;
+std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhFatJetPT;
+std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhMJ_lep;
 std::vector <std::vector <std::vector <std::vector <std::vector<TH2F* > > > > > vhMJ_vs_HT;
+std::vector <std::vector <std::vector <std::vector <std::vector<TH2F* > > > > > vhMJ_lep_vs_HT;
 std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhNjet;
 std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > vhNbjet;
 const int max_n = 8;
@@ -237,10 +242,13 @@ int Bmin[max_b] = {0,  1, 1, 2, 3};
 int Bmax[max_b] = {30,30, 2, 3, 30};
 const int max_h = 4;
 int HTmin[max_h] = {0,500,750,1000};
-const int max_m = 1;
+const int max_m = 3;
 const int max_s = 6;
 int STmin[max_s] = {0,    250,    0, 250, 350, 450};
 int STmax[max_s] = {4000, 4000, 250, 350, 450,4000};
+float MJmin[max_s] = {0,1,0};
+float MJmax[max_s] = {1,3.5,3,5};
+
 int main (int argc, char* argv[]){
   if (argc < 4) {
     cout<<"usage ./TreeAnalyzer_example [INPUTFOLDER] [XSEC * LUMI] [SAMPLENAME]"<<endl;
@@ -279,8 +287,13 @@ for(int n=0; n<max_n; n++){
     vhST.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
     vhHT.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
     vhMJ.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
+    vhNFatJet.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
+    vhDPhi.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
+    vhFatJetPT.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
+    vhMJ_lep.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
     vhDelPhiWlep.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
     vhMJ_vs_HT.push_back(std::vector<std::vector<std::vector<std::vector<TH2F*> > > >());
+    vhMJ_lep_vs_HT.push_back(std::vector<std::vector<std::vector<std::vector<TH2F*> > > >());
     vhNjet.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
     vhNbjet.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
     for(int h=0; h<max_h; h++){
@@ -289,60 +302,97 @@ for(int n=0; n<max_n; n++){
       vhST[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
       vhHT[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
       vhMJ[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
+      vhNFatJet[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
+      vhDPhi[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
+      vhFatJetPT[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
+      vhMJ_lep[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
       vhDelPhiWlep[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
       vhMJ_vs_HT[n].push_back(std::vector<std::vector<std::vector<TH2F*> > >());
+      vhMJ_lep_vs_HT[n].push_back(std::vector<std::vector<std::vector<TH2F*> > >());
       vhNjet[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
       vhNbjet[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
       for(int m=0; m<max_m; m++){
-	int iMJ=100*m; 
+	//delphi replacement int iMJ=100*m; 
+	int iMJ=m; 
 	test[n][b].push_back(std::vector<std::vector<TH1F*> >());
 	vhST[n][b].push_back(std::vector<std::vector<TH1F*> >());
 	vhHT[n][b].push_back(std::vector<std::vector<TH1F*> >());
 	vhMJ[n][b].push_back(std::vector<std::vector<TH1F*> >());
+	vhNFatJet[n][b].push_back(std::vector<std::vector<TH1F*> >());
+	vhDPhi[n][b].push_back(std::vector<std::vector<TH1F*> >());
+	vhFatJetPT[n][b].push_back(std::vector<std::vector<TH1F*> >());
+	vhMJ_lep[n][b].push_back(std::vector<std::vector<TH1F*> >());
 	vhDelPhiWlep[n][b].push_back(std::vector<std::vector<TH1F*> >());
 	vhMJ_vs_HT[n][b].push_back(std::vector<std::vector<TH2F*> >());
+	vhMJ_lep_vs_HT[n][b].push_back(std::vector<std::vector<TH2F*> >());
 	vhNjet[n][b].push_back(std::vector<std::vector<TH1F*> >());
 	vhNbjet[n][b].push_back(std::vector<std::vector<TH1F*> >());
 	for(int s=0; s<max_s; s++){ 
 	  int iSTmin = STmin[s];
 	  int iSTmax = STmax[s];
 	  test[n][b][h].push_back(std::vector<TH1F*> ());
-	  sprintf(hNAME, "test_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  sprintf(hNAME, "test_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
 	  test[n][b][h][m].push_back(new TH1F(hNAME,hNAME,250,0,2500));
 	  test[n][b][h][m][s]->Sumw2();
 
 	  vhST[n][b][h].push_back(std::vector<TH1F*> ());
-	  sprintf(hNAME, "vhST_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  sprintf(hNAME, "vhST_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
 	  vhST[n][b][h][m].push_back(new TH1F(hNAME,hNAME,250,0,2500));
 	  vhST[n][b][h][m][s]->Sumw2();
 
 	  vhHT[n][b][h].push_back(std::vector<TH1F*> ());
-	  sprintf(hNAME, "vhHT_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  sprintf(hNAME, "vhHT_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
 	  vhHT[n][b][h][m].push_back(new TH1F(hNAME,hNAME,250,0,2500));
 	  vhHT[n][b][h][m][s]->Sumw2();
 
 	  vhMJ[n][b][h].push_back(std::vector<TH1F*> ());
-	  sprintf(hNAME, "vhMJ_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  sprintf(hNAME, "vhMJ_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
 	  vhMJ[n][b][h][m].push_back(new TH1F(hNAME,hNAME,250,0,2500));
 	  vhMJ[n][b][h][m][s]->Sumw2();
 
+	  vhNFatJet[n][b][h].push_back(std::vector<TH1F*> ());
+	  sprintf(hNAME, "vhNFatJet_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  vhNFatJet[n][b][h][m].push_back(new TH1F(hNAME,hNAME,20,0,20));
+	  vhNFatJet[n][b][h][m][s]->Sumw2();
+
+	  vhDPhi[n][b][h].push_back(std::vector<TH1F*> ());
+	  sprintf(hNAME, "vhDPhi_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  vhDPhi[n][b][h][m].push_back(new TH1F(hNAME,hNAME,40,0,4));
+	  vhDPhi[n][b][h][m][s]->Sumw2();
+
+	  vhFatJetPT[n][b][h].push_back(std::vector<TH1F*> ());
+	  sprintf(hNAME, "vhFatJetPT_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  vhFatJetPT[n][b][h][m].push_back(new TH1F(hNAME,hNAME,250,0,2500));
+	  vhFatJetPT[n][b][h][m][s]->Sumw2();
+
+	  vhMJ_lep[n][b][h].push_back(std::vector<TH1F*> ());
+	  sprintf(hNAME, "vhMJ_lep_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  vhMJ_lep[n][b][h][m].push_back(new TH1F(hNAME,hNAME,250,0,2500));
+	  vhMJ_lep[n][b][h][m][s]->Sumw2();
+
 	  vhDelPhiWlep[n][b][h].push_back(std::vector<TH1F*> ());
-	  sprintf(hNAME, "vhDelPhiWlep_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  sprintf(hNAME, "vhDelPhiWlep_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
 	  vhDelPhiWlep[n][b][h][m].push_back(new TH1F(hNAME,hNAME,31,0,3.1));
 	  vhDelPhiWlep[n][b][h][m][s]->Sumw2();
 
 	  vhMJ_vs_HT[n][b][h].push_back(std::vector<TH2F*> ());
-	  sprintf(hNAME, "vhMJ_vs_HT_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  sprintf(hNAME, "vhMJ_vs_HT_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
 	  vhMJ_vs_HT[n][b][h][m].push_back(new TH2F(hNAME,hNAME,250,0,2500,250,0,2500));
 	  vhMJ_vs_HT[n][b][h][m][s]->Sumw2();
 
+
+	  vhMJ_lep_vs_HT[n][b][h].push_back(std::vector<TH2F*> ());
+	  sprintf(hNAME, "vhMJ_lep_vs_HT_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  vhMJ_lep_vs_HT[n][b][h][m].push_back(new TH2F(hNAME,hNAME,250,0,2500,250,0,2500));
+	  vhMJ_lep_vs_HT[n][b][h][m][s]->Sumw2();
+
 	  vhNjet[n][b][h].push_back(std::vector<TH1F*> ());
-	  sprintf(hNAME, "vhNjet_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  sprintf(hNAME, "vhNjet_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
 	  vhNjet[n][b][h][m].push_back(new TH1F(hNAME,hNAME,20,0,20));
 	  vhNjet[n][b][h][m][s]->Sumw2();
 
 	  vhNbjet[n][b][h].push_back(std::vector<TH1F*> ());
-	  sprintf(hNAME, "vhNbjet_njet%i_bjet%i-bjet%i_HT%i_MJ%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
+	  sprintf(hNAME, "vhNbjet_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
 	  vhNbjet[n][b][h][m].push_back(new TH1F(hNAME,hNAME,20,0,20));
 	  vhNbjet[n][b][h][m][s]->Sumw2();
 	}
@@ -374,7 +424,7 @@ for(int n=0; n<max_n; n++){
   string outnameStr = (string)outname;
   string TTbarModes[2] = {"MC_TTbar_DiLep","MC_TTbar_SinLep"};
 
-  for(int entry=0; entry < Nevents/*min(1000,Nevents)*/; entry+=1){
+  for(int entry=0; entry < Nevents/*min(1000000,Nevents)*/; entry+=1){
 
     if (entry % 10000 == 0) {
       printf("\n=================Processing entry: %i\n", entry);
@@ -450,10 +500,16 @@ for(int n=0; n<max_n; n++){
 
     // print the jets
     //    cout <<   "        pt y phi" << endl;
+    int NFatJet=0;
     for (unsigned i = 0; i < jets.size(); i++) {
-      MJ = MJ + jets[i].m(); 
+      if(jets[i].pt() > 120.0){
+	MJ = MJ + jets[i].m(); 
+	NFatJet++;
+	}
       //vector<PseudoJet> constituents = jets[i].constituents();
     }
+
+
     for (unsigned i = 0; i < jets_lep.size(); i++) {
       MJ_lep = MJ_lep + jets_lep[i].m(); 
       //vector<PseudoJet> constituents = jets[i].constituents();
@@ -493,14 +549,16 @@ for(int n=0; n<max_n; n++){
       for (int h=0; h<max_h; h++){ 
 	float iHT=HTmin[h];
 	for(int m=0; m<max_m; m++){
-	  float iMJ=100.0*m;
+	  //float iMJ=100.0*m;
+	  float iMJmin=MJmin[m];
+	  float iMJmax=MJmax[m];
 	  for(int s=0; s<max_s; s++){
 	    float iSTmin = STmin[s];
 	    float iSTmax = STmax[s];
 	    if(Obj.nJetGood >= iNjet){
 	      if(Obj.nBJetGood >= iNbjetmin && Obj.nBJetGood < iNbjetmax){
 		if(Obj.HT40 > iHT){
-		  if(Obj.HT40 > iMJ){
+		  if(fabs(DelPhiWlep) >= iMJmin && fabs(DelPhiWlep) <= iMJmax){
 		    
 		    if(Obj.ST > iSTmin && Obj.ST < iSTmax){
 		      
@@ -508,11 +566,20 @@ for(int n=0; n<max_n; n++){
 		      vhST[n][b][h][m][s]->Fill(Obj.ST, EvWeight);
 		      vhHT[n][b][h][m][s]->Fill(Obj.HT40, EvWeight);
 		      vhMJ[n][b][h][m][s]->Fill(MJ, EvWeight);
+		      vhNFatJet[n][b][h][m][s]->Fill(NFatJet, EvWeight);
+		      vhDPhi[n][b][h][m][s]->Fill(fabs(DelPhiWlep), EvWeight);
+
+		      if(NFatJet >= 1)
+		      vhFatJetPT[n][b][h][m][s]->Fill(jets[0].pt(), EvWeight);
+
+		      vhMJ_lep[n][b][h][m][s]->Fill(MJ_lep, EvWeight);
 		      vhDelPhiWlep[n][b][h][m][s]->Fill(DelPhiWlep, EvWeight);
 		      vhMJ_vs_HT[n][b][h][m][s]->Fill(Obj.HT40, MJ, EvWeight);
+		      vhMJ_lep_vs_HT[n][b][h][m][s]->Fill(Obj.HT40, MJ_lep, EvWeight);
 		      vhNjet[n][b][h][m][s]->Fill(Obj.nJetGood, EvWeight);
 		      vhNbjet[n][b][h][m][s]->Fill(Obj.nBJetGood, EvWeight);
 		    }
+		    
 		  }
 		}
 	      }
@@ -623,8 +690,13 @@ for(int n=0; n<max_n; n++){
 	    vhST[n][b][h][m][s]->Write();
 	    vhHT[n][b][h][m][s]->Write();
 	    vhMJ[n][b][h][m][s]->Write();
+	    vhNFatJet[n][b][h][m][s]->Write();
+	    vhDPhi[n][b][h][m][s]->Write();
+	    vhFatJetPT[n][b][h][m][s]->Write();
+	    vhMJ_lep[n][b][h][m][s]->Write();
 	    vhDelPhiWlep[n][b][h][m][s]->Write();
 	    vhMJ_vs_HT[n][b][h][m][s]->Write();
+	    vhMJ_lep_vs_HT[n][b][h][m][s]->Write();
 	    vhNjet[n][b][h][m][s]->Write();
 	    vhNbjet[n][b][h][m][s]->Write();
 	  }
