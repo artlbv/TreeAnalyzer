@@ -6,7 +6,7 @@ from ROOT import gROOT
 # scenarios and samples
 scenarios = ['MC','data']
 #samples   = ['TTbar','T1tttt_1500_100','T1tttt_1200_800']
-samples   = ['QCD','WJets','TTbar','TTbar_DiLep','TTbar_SinLep','T1tttt_1500_100','T1tttt_1200_800','T1tttt_800_450','T1tttt_1300_100']
+samples   = ['Test','QCD','WJets','TTbar','TTbar_DiLep','TTbar_SinLep','T1tttt_1500_100','T1tttt_1200_800','T1tttt_800_450','T1tttt_1300_100']
 treename = 'treeProducerSusySingleLepton/'
 Lumi = 1 #given in fb^-1
 Lumi = Lumi * 1000
@@ -94,17 +94,24 @@ for scene in scenarios:
 sample = 'TTbar'
 dirsHT[sample]  = ['/']
 xsec_lumi[sample] = [809.1*Lumi] #cross section in pb
-inDir['MC'][sample] = '/afs/desy.de/user/s/safarzad/dust/13TeV/ISOTrck/TTJets/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170/'
+inDir['MC'][sample] = '/nfs/dust/cms/group/susy-desy/ISOTrck/TTJets/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170/'
 evtgen[sample]  =  [GetNevents(inDir['MC'][sample])]
+
+sample = 'Test'
+dirsHT[sample]  = ['/']
+xsec_lumi[sample] = [809.1*Lumi] #cross section in pb
+inDir['MC'][sample] = '/nfs/dust/cms/group/susy-desy/Test/TTJets_PU20bx25_1/'
+evtgen[sample]  =  [GetNevents(inDir['MC'][sample])]
+
 sample = 'TTbar_SinLep'
 dirsHT[sample]  = ['/']
 xsec_lumi[sample] = [809.1*Lumi] #cross section in pb
-inDir['MC'][sample] = '/afs/desy.de/user/s/safarzad/dust/13TeV/ISOTrck/TTJets/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170/'
+inDir['MC'][sample] = '/nfs/dust/cms/group/susy-desy/ISOTrck/TTJets/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170/'
 evtgen[sample]  =  [GetNevents(inDir['MC'][sample])]
 sample = 'TTbar_DiLep'
 dirsHT[sample]  = ['/']
 xsec_lumi[sample] = [809.1*Lumi] #cross section in pb
-inDir['MC'][sample] = '/afs/desy.de/user/s/safarzad/dust/13TeV/ISOTrck/TTJets/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170/'
+inDir['MC'][sample] = '/nfs/dust/cms/group/susy-desy/ISOTrck/TTJets/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170/'
 print (inDir['MC'][sample])
 evtgen[sample]  =  [GetNevents(inDir['MC'][sample])]
 
@@ -112,7 +119,7 @@ sample = 'WJets'
 dirsHT[sample]  = ['100-200/','200-400/','400-600/','600-Inf/']
 xsec_lumi[sample] = [2234.9,580.06,68.38,23.14] 
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
-inDir['MC'][sample] = '/afs/desy.de/user/s/safarzad/dust/13TeV/ISOTrck/WJets/' 
+inDir['MC'][sample] = '/nfs/dust/cms/group/susy-desy/ISOTrck/WJets/' 
 print inDir['MC'][sample]
 evtgen[sample] = {}
 k=0
@@ -128,7 +135,7 @@ sample = 'QCD'
 dirsHT[sample]  = ['Pt170to300/','Pt300to470/','Pt470to600/','Pt600to800/','Pt800to1000/','Pt1000to1400/','Pt1400to1800/','Pt1800/']
 xsec_lumi[sample] = [120300, 7475, 587, 167, 28.25, 8.195, 0.7346, 0.1091]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
-inDir['MC'][sample] = '/afs/desy.de/user/s/safarzad/dust/13TeV/ISOTrck/QCD/' 
+inDir['MC'][sample] = '/nfs/dust/cms/group/susy-desy/ISOTrck/QCD/' 
 print inDir['MC'][sample]
 evtgen[sample] = {}
 k=0
@@ -142,23 +149,23 @@ for HT in dirsHT[sample]:
 sample = 'T1tttt_1500_100'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.0141903*Lumi]
-inDir['MC'][sample] = '/afs/desy.de/user/s/safarzad/dust/13TeV/ISOTrck/T1tttt/SMS_T1tttt_2J_mGl1500_mLSP100_PU_S14_POSTLS170/'
+inDir['MC'][sample] = '/nfs/dust/cms/group/susy-desy/ISOTrck/T1tttt/SMS_T1tttt_2J_mGl1500_mLSP100_PU_S14_POSTLS170/'
 evtgen[sample] = [GetNevents(inDir['MC'][sample])]
 
 sample = 'T1tttt_1200_800'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.085641*Lumi]
-inDir['MC'][sample] = '/afs/desy.de/user/s/safarzad/dust/13TeV/ISOTrck/T1tttt/SMS_T1tttt_2J_mGl1200_mLSP800_PU_S14_POSTLS170/'
+inDir['MC'][sample] = '/nfs/dust/cms/group/susy-desy/ISOTrck/T1tttt/SMS_T1tttt_2J_mGl1200_mLSP800_PU_S14_POSTLS170/'
 evtgen[sample] = [GetNevents(inDir['MC'][sample])]
 sample = 'T1tttt_800_450'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [1.489*Lumi]
-inDir['MC'][sample] = '/afs/desy.de/user/s/safarzad/dust/13TeV/ISOTrck/T1tttt/SMS_T1tttt_2J_mGl800_mLSP450_PU_S14_POSTLS170/'
+inDir['MC'][sample] = '/nfs/dust/cms/group/susy-desy/ISOTrck/T1tttt/SMS_T1tttt_2J_mGl800_mLSP450_PU_S14_POSTLS170/'
 evtgen[sample] = [GetNevents(inDir['MC'][sample])]
 sample = 'T1tttt_1300_100'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.044*Lumi]
-inDir['MC'][sample] = '/afs/desy.de/user/s/safarzad/dust/13TeV/ISOTrck/T1tttt/SMS_T1tttt_2J_mGl1300_mLSP100_PU_S14_POSTLS170/'
+inDir['MC'][sample] = '/nfs/dust/cms/group/susy-desy/ISOTrck/T1tttt/SMS_T1tttt_2J_mGl1300_mLSP100_PU_S14_POSTLS170/'
 evtgen[sample] = [GetNevents(inDir['MC'][sample])]
 
 from ROOT import TFile
