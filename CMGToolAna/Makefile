@@ -7,7 +7,7 @@
 # we compile all *.C and *.cpp defined in SOURCES
 #
 
-  SOURCES =  src/ClassObjects.C
+  SOURCES =  src/ClassObjects.cc
   SOURCES += src/testReader.C
 
 # and create this executable
