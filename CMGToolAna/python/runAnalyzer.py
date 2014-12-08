@@ -39,7 +39,7 @@ def GetNevents(loc):
 #gROOT.LoadMacro('Objects.C+')
 srcdir = '../src/'
 
-gROOT.LoadMacro(srcdir+'Objects.C+')
+#gROOT.LoadMacro(srcdir+'Objects.C+')
 
 if len(sys.argv)>1:
         if sys.argv[1]=='SingleS_P':  # single lepton testing version
@@ -58,6 +58,9 @@ if len(sys.argv)>1:
                 from ROOT import TreeAnalyzer_ext as reader
         elif sys.argv[1]=='TreeAnalyzer_BKG':  # single lepton testing version
                 gROOT.LoadMacro(srcdir+'TreeAnalyzer_BKG.C+')
+                from ROOT import TreeAnalyzer_BKG as reader
+        elif sys.argv[1]=='test':  # single lepton testing version
+                gROOT.LoadMacro(srcdir+'testReader.C')
                 from ROOT import TreeAnalyzer_BKG as reader
         else:
                 help()
