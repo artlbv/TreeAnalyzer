@@ -26,13 +26,6 @@ public:
 // inherit baseclass constructors (C++11)
     using TLorentzVector::TLorentzVector;
     ParticleObject() {}
-/*
-// conflict with default constructor?
-ParticleObject(Double_t pt, Double_t eta, Double_t phi, Double_t mass){
-SetPtEtaPhiM(pt,eta,phi,mass);
-
-}
-*/
 // common variables for all obejcts, except TLV
 };
 
@@ -85,16 +78,20 @@ public:
     using EasyChain::EasyChain;
     ObjectChain(const char* tname) : EasyChain(tname){}
 
-    void GetMET(TLorentzVector MET);
-    void GetGenMET(TLorentzVector genMET);
-    void GetMETnoPU(TLorentzVector METnoPU);
+    bool debug_ = false;
 
-    void GetLeptons(vector<Lepton> lepton, vector<Lepton> electron, vector<Lepton> muon);
+    void GetMET(TLorentzVector & MET);
+    void GetGenMET(TLorentzVector & genMET);
+    void GetMETnoPU(TLorentzVector & METnoPU);
+
+    void GetLeptons(vector<Lepton> * leptons, vector<Lepton> *electrons, vector<Lepton> *muons, vector<Lepton> * vetolep);
     void GetGenLeptons(vector<GenLepton> lepton, vector<GenLepton> electron, vector<GenLepton> muon);
     void GetGenLeptonsFromTau(vector<GenLepton> lepton, vector<GenLepton> electron, vector<GenLepton> muon);
     void GetGenTaus(vector<GenLepton> lepton);
 
-    void GetJets(vector<Jet> goodJet, vector<Jet> goodBJet);
+//    void GetJets(vector<Jet> goodJet, vector<Jet> goodBJet);
+    void GetJets(vector<Jet>* jets, vector<Jet>* bjets);
+
 // to be written ?
 /*
   void GetElectrons(vector<Object> object);
@@ -109,31 +106,6 @@ public:
 
 // non class objects
 /*
-// global object variables
-extern std::vector<Jet> goodJet;
-extern std::vector<Jet> goodBJet;
-
-//extern TLorentzVector MET;
-extern TLorentzVector genMET;
-extern TLorentzVector METnoPU;
-
-extern std::vector<Lepton> goodLep;
-extern std::vector<Lepton> goodEl;
-extern std::vector<Lepton> goodMu;
-
-extern std::vector<Lepton> vetoLep;
-extern std::vector<Lepton> vetoEl;
-extern std::vector<Lepton> vetoMu;
-
-extern std::vector<GenLepton> genLep;
-extern std::vector<GenLepton> genEl;
-extern std::vector<GenLepton> genMu;
-extern std::vector<GenLepton> genTau;
-
-extern std::vector<GenLepton> genLepFromTau;
-extern std::vector<GenLepton> genElFromTau;
-extern std::vector<GenLepton> genMuFromTau;
-
 // objects number can be aslo detemined as object.size()
 
 Int_t nLepGood;
@@ -153,39 +125,18 @@ Int_t nGenLepFromTau;
 
 // global variables
 
-Float_t HT40;
 Float_t ST;
+double HT = 0;
 */
-
-
 
 #endif //__CLOBJECTS_H___
 
 
 /*
-  class ParticleObject{
+#ifndef CLOBJVAR_H //__CLOBJVAR_H___
+#define CLOBJVAR_H
 
-  private:
-// constructor
-ParticleObject() {}
+double HT = 0;
 
-public:
-TLorentzVector vect;
-
-void SetVect(Double_t pt, Double_t eta, Double_t phi, Double_t mass){
-vect.SetPtEtaPhiM(pt,eta,phi,mass);
-}
-
-// for fast access to kinematic variables
-Double_t Pt(){ return vect.Pt() }
-Double_t Eta(){ return vect.Eta() }
-Double_t Phi(){ return vect.Phi() }
-
-};
-
-// constuctor as TLV SetPtEtaPhiM
-ParticleObject::ParticleObject(Double_t pt, Double_t eta, Double_t phi, Double_t mass){
-SetVect(pt,eta,phi,mass);
-}
-
+#endif CLOBJVAR_H //__CLOBJVAR_H___
 */

@@ -86,25 +86,23 @@ Float_t met_phi;
 Float_t met_pt;
 Float_t met_mass;
 
-/*
-void ObjectChain::GetLeptons(vector<Lepton> lepton, vector<Lepton> electron, vector<Lepton> muon){
+void ObjectChain::GetLeptons(vector<Lepton> *leptons, vector<Lepton> *electrons, vector<Lepton> *muons, vector<Lepton> *vetolep){
 
     // clearing objects
-    goodLep.clear();
-    goodEl.clear();
-    goodMu.clear();
+    leptons->clear();
+    vetolep->clear();
+    electrons->clear();
+    muons->clear();
 
-    vetoLep.clear();
-    vetoEl.clear();
-    vetoMu.clear();
+//    vector<Lepton> * vetoLep;
 
-    nLepGood = 0;
-    nMuGood = 0;
-    nElGood = 0;
+    int nLepGood = 0;
+    int nMuGood = 0;
+    int nElGood = 0;
 
-    nLepVeto = 0;
-    nElVeto = 0;
-    nMuVeto = 0;
+    int nLepVeto = 0;
+    int nElVeto = 0;
+    int nMuVeto = 0;
 
     // filling objects from fTree
     int nLep = Get(nLep,"nLepGood");
@@ -133,8 +131,8 @@ void ObjectChain::GetLeptons(vector<Lepton> lepton, vector<Lepton> electron, vec
 	// Muon cuts
 	if(abs(LepGood_pdgId[ilep]) == 13){
 	    if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] && LepGood_relIso03[ilep] < goodMu_relIso03){
-			goodLep.push_back(dummyLep);
-			goodMu.push_back(dummyLep);
+			leptons->push_back(dummyLep);
+			muons->push_back(dummyLep);
 			nMuGood++;
 			nLepGood++;
 
@@ -150,8 +148,8 @@ void ObjectChain::GetLeptons(vector<Lepton> lepton, vector<Lepton> electron, vec
 	if(abs(LepGood_pdgId[ilep]) == 11){
 	    if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] && LepGood_relIso03[ilep] < goodEl_relIso03){
 //                    isGoodEl = true;
-			goodLep.push_back(dummyLep);
-			goodEl.push_back(dummyLep);
+			leptons->push_back(dummyLep);
+			electrons->push_back(dummyLep);
 			nElGood++;
 			nLepGood++;
 
@@ -166,18 +164,20 @@ void ObjectChain::GetLeptons(vector<Lepton> lepton, vector<Lepton> electron, vec
 
 	// Only non-good El or Mu will pass => veto leptons
 	if(isVetoEl || isVetoMu){
-	    vetoLep.push_back(dummyLep);
+	    vetolep->push_back(dummyLep);
 	    nLepVeto++;
 	}
     }
 
-
-// cout << "Get leptons summary: total number of Leptons = \t" << nLep << endl;
-//  cout << "Number of good Muons = \t" << nMuGood << " and veto Mu = \t" << nMuVeto << endl;
-//  cout << "Number of good Electrons = \t" << nElGood  << " and veto El = \t" << nElVeto << endl;
-//  cout << "Number of veto leptons = \t" << nLepVeto << endl;
-
+    if(debug_){
+	cout << "Get leptons summary: total number of good Leptons = \t" << nLepGood << endl;
+	cout << "Number of good Muons = \t" << nMuGood << " and veto Mu = \t" << nMuVeto << endl;
+	cout << "Number of good Electrons = \t" << nElGood  << " and veto El = \t" << nElVeto << endl;
+	cout << "Number of veto leptons = \t" << nLepVeto << endl;
+    }
 }
+
+/*
 
 void ObjectChain::GetGenLeptons(vector<GenLepton> lepton, vector<GenLepton> electron, vector<GenLepton> muon){
 
@@ -291,10 +291,10 @@ void ObjectChain::GetGenTaus(vector<GenLepton> lepton){
 }
 */
 
-void ObjectChain::GetJets(vector<Jet> goodJet, vector<Jet> goodBJet){
+void ObjectChain::GetJets(vector<Jet> * jets, vector<Jet> * bjets){
 
-    goodJet.clear();
-    goodBJet.clear();
+    jets->clear();
+    bjets->clear();
 
     double ST = 0;
     double HT40 = 0;
@@ -316,26 +316,26 @@ void ObjectChain::GetJets(vector<Jet> goodJet, vector<Jet> goodBJet){
 	//put pt, eta, cuts and other stuff
 	//jets are already cleaned from all loose leptons that are in LepGood
 	if(dummyJet.Pt() > goodJetPt && fabs(dummyJet.Eta()) < goodEta){
-	    goodJet.push_back(dummyJet);
+	    jets->push_back(dummyJet);
 	    nJetGood++;
 	    HT40 = HT40 + dummyJet.Pt();
 
 	    // filling B jets
 	    if(Jet_btagCSV[ijet] > goodJetBtagCSV){
-		goodBJet.push_back(dummyJet);
+		bjets->push_back(dummyJet);
 		nBJetGood++;
 	    }
 	}
     }
 
-//*
-  cout << "Get jets summary: total number of jets = \t" << nJet << endl;
-  cout << "Number of good jets = \t" << nJetGood  << " and b jets = \t" << nBJetGood << endl;
-//  cout << "Number of good jets = \t" << goodJet.size()  << " and b jets = \t" << goodBJet.size() << endl;
-//*/
+    if(debug_){
+	cout << "Get jets summary: total number of jets = \t" << nJet << endl;
+	cout << "Number of good jets = \t" << nJetGood  << " and b jets = \t" << nBJetGood << endl;
+	cout << "Number of good jets = \t" << jets->size()  << " and b jets = \t" << bjets->size() << endl;
+    }
 }
 
-void ObjectChain::GetMET(TLorentzVector MET){
+void ObjectChain::GetMET(TLorentzVector & MET){
     MET.SetPtEtaPhiM(0,0,0,0);
 
     Get(met_pt,"met_pt");
@@ -346,7 +346,7 @@ void ObjectChain::GetMET(TLorentzVector MET){
     MET.SetPtEtaPhiM(met_pt,met_eta,met_phi,met_mass);
 }
 
-void ObjectChain::GetGenMET(TLorentzVector genMET){
+void ObjectChain::GetGenMET(TLorentzVector & genMET){
     genMET.SetPtEtaPhiM(0,0,0,0);
 
     Get(met_pt,"met_genPt");
@@ -357,7 +357,7 @@ void ObjectChain::GetGenMET(TLorentzVector genMET){
     genMET.SetPtEtaPhiM(met_pt,met_eta,met_phi,met_mass);
 }
 
-void ObjectChain::GetMETnoPU(TLorentzVector METnoPU){
+void ObjectChain::GetMETnoPU(TLorentzVector & METnoPU){
     METnoPU.SetPtEtaPhiM(0,0,0,0);
 
     Get(met_pt,"metNoPU_pt");
