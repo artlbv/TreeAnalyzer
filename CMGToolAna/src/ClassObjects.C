@@ -107,14 +107,14 @@ void ObjectChain::GetLeptons(vector<Lepton> lepton, vector<Lepton> electron, vec
     nMuVeto = 0;
 
     // filling objects from fTree
-    int nLep = this->Get(nLep,"nLepGood");
-    this->Get(LepGood_pt[0],"LepGood_pt");
-    this->Get(LepGood_eta[0],"LepGood_eta");
-    this->Get(LepGood_phi[0],"LepGood_phi");
-    this->Get(LepGood_mass[0],"LepGood_mass");
-    this->Get(LepGood_relIso03[0],"LepGood_relIso03");
-    this->Get(LepGood_pdgId[0],"LepGood_pdgId");
-    this->Get(LepGood_tightID[0],"LepGood_tightId");
+    int nLep = Get(nLep,"nLepGood");
+    Get(LepGood_pt[0],"LepGood_pt");
+    Get(LepGood_eta[0],"LepGood_eta");
+    Get(LepGood_phi[0],"LepGood_phi");
+    Get(LepGood_mass[0],"LepGood_mass");
+    Get(LepGood_relIso03[0],"LepGood_relIso03");
+    Get(LepGood_pdgId[0],"LepGood_pdgId");
+    Get(LepGood_tightID[0],"LepGood_tightId");
 
     for(int ilep = 0; ilep < nLep; ilep++){
 
@@ -186,12 +186,12 @@ void ObjectChain::GetGenLeptons(vector<GenLepton> lepton, vector<GenLepton> elec
     nGenLep = 0;
 
     // filling objects from this
-    this->Get(nGenLep,"ngenLep"); //n prompt Lep
-    this->Get(genLep_pt[0],"genLep_pt");
-    this->Get(genLep_mass[0],"genLep_mass");
-    this->Get(genLep_eta[0],"genLep_eta");
-    this->Get(genLep_phi[0],"genLep_phi");
-    this->Get(genLep_pdgId[0],"genLep_pdgId");
+    Get(nGenLep,"ngenLep"); //n prompt Lep
+    Get(genLep_pt[0],"genLep_pt");
+    Get(genLep_mass[0],"genLep_mass");
+    Get(genLep_eta[0],"genLep_eta");
+    Get(genLep_phi[0],"genLep_phi");
+    Get(genLep_pdgId[0],"genLep_pdgId");
 
     for(int ilep = 0; ilep < nGenLep; ilep++){
 
@@ -232,13 +232,13 @@ void ObjectChain::GetGenLeptonsFromTau(vector<GenLepton> lepton, vector<GenLepto
     nGenLepFromTau = 0;
 
     // filling objects from this
-    this->Get(nGenLepFromTau,"ngenLepFromTau");// Lep from Tau decay
+    Get(nGenLepFromTau,"ngenLepFromTau");// Lep from Tau decay
 
-    this->Get(genLep_pt[0],"genLepFromTau_pt");
-    this->Get(genLep_mass[0],"genLepFromTau_mass");
-    this->Get(genLep_eta[0],"genLepFromTau_eta");
-    this->Get(genLep_phi[0],"genLepFromTau_phi");
-    this->Get(genLep_pdgId[0],"genLepFromTau_pdgId");
+    Get(genLep_pt[0],"genLepFromTau_pt");
+    Get(genLep_mass[0],"genLepFromTau_mass");
+    Get(genLep_eta[0],"genLepFromTau_eta");
+    Get(genLep_phi[0],"genLepFromTau_phi");
+    Get(genLep_pdgId[0],"genLepFromTau_pdgId");
 
     for(int ilep = 0; ilep < nGenLepFromTau; ilep++){
 
@@ -271,12 +271,12 @@ void ObjectChain::GetGenTaus(vector<GenLepton> lepton){
     nGenTau = 0;
 
     // filling objects from this
-    this->Get(nGenTau,"ngenTau");// gen Tau
-    this->Get(genLep_pt[0],"genTau_pt");
-    this->Get(genLep_eta[0],"genTau_eta");
-    this->Get(genLep_phi[0],"genTau_phi");
-    this->Get(genLep_pdgId[0],"genTau_pdgId");
-    this->Get(genLep_mass[0],"genTau_mass");
+    Get(nGenTau,"ngenTau");// gen Tau
+    Get(genLep_pt[0],"genTau_pt");
+    Get(genLep_eta[0],"genTau_eta");
+    Get(genLep_phi[0],"genTau_phi");
+    Get(genLep_pdgId[0],"genTau_pdgId");
+    Get(genLep_mass[0],"genTau_mass");
 
     for(int ilep = 0; ilep < nGenTau; ilep++){
 
@@ -292,6 +292,7 @@ void ObjectChain::GetGenTaus(vector<GenLepton> lepton){
 */
 
 void ObjectChain::GetJets(vector<Jet> goodJet, vector<Jet> goodBJet){
+
     goodJet.clear();
     goodBJet.clear();
 
@@ -301,19 +302,19 @@ void ObjectChain::GetJets(vector<Jet> goodJet, vector<Jet> goodBJet){
     double nJetGood = 0;
     double nBJetGood = 0;
 
-    int nJet = this->Get(nJet,"nJet");
-    this->Get(Jet_pt[0],"Jet_pt");
-    this->Get(Jet_eta[0],"Jet_eta");
-    this->Get(Jet_phi[0],"Jet_phi");
-    this->Get(Jet_mass[0],"Jet_mass");
-    this->Get(Jet_btagCSV[0],"Jet_btagCSV");
+    int nJet = Get(nJet,"nJet");
+    Get(Jet_pt[0],"Jet_pt");
+    Get(Jet_eta[0],"Jet_eta");
+    Get(Jet_phi[0],"Jet_phi");
+    Get(Jet_mass[0],"Jet_mass");
+    Get(Jet_btagCSV[0],"Jet_btagCSV");
 
     for(int ijet = 0; ijet < nJet; ijet++)
     {
 	Jet dummyJet;
 	dummyJet.SetPtEtaPhiM(Jet_pt[ijet],Jet_eta[ijet],Jet_phi[ijet],Jet_mass[ijet]);
 	//put pt, eta, cuts and other stuff
-	//jet are already cleaned from all loose leptons that are in LepGood
+	//jets are already cleaned from all loose leptons that are in LepGood
 	if(dummyJet.Pt() > goodJetPt && fabs(dummyJet.Eta()) < goodEta){
 	    goodJet.push_back(dummyJet);
 	    nJetGood++;
@@ -327,19 +328,20 @@ void ObjectChain::GetJets(vector<Jet> goodJet, vector<Jet> goodBJet){
 	}
     }
 
-/*
+//*
   cout << "Get jets summary: total number of jets = \t" << nJet << endl;
   cout << "Number of good jets = \t" << nJetGood  << " and b jets = \t" << nBJetGood << endl;
-*/
+//  cout << "Number of good jets = \t" << goodJet.size()  << " and b jets = \t" << goodBJet.size() << endl;
+//*/
 }
 
 void ObjectChain::GetMET(TLorentzVector MET){
     MET.SetPtEtaPhiM(0,0,0,0);
 
-    this->Get(met_pt,"met_pt");
-    this->Get(met_eta,"met_eta");
-    this->Get(met_phi,"met_phi");
-    this->Get(met_mass,"met_mass");
+    Get(met_pt,"met_pt");
+    Get(met_eta,"met_eta");
+    Get(met_phi,"met_phi");
+    Get(met_mass,"met_mass");
 
     MET.SetPtEtaPhiM(met_pt,met_eta,met_phi,met_mass);
 }
@@ -347,10 +349,10 @@ void ObjectChain::GetMET(TLorentzVector MET){
 void ObjectChain::GetGenMET(TLorentzVector genMET){
     genMET.SetPtEtaPhiM(0,0,0,0);
 
-    this->Get(met_pt,"met_genPt");
-    this->Get(met_eta,"met_genEta");
-    this->Get(met_phi,"met_genPhi");
-    this->Get(met_mass,"met_sumEt");
+    Get(met_pt,"met_genPt");
+    Get(met_eta,"met_genEta");
+    Get(met_phi,"met_genPhi");
+    Get(met_mass,"met_sumEt");
 
     genMET.SetPtEtaPhiM(met_pt,met_eta,met_phi,met_mass);
 }
@@ -358,10 +360,10 @@ void ObjectChain::GetGenMET(TLorentzVector genMET){
 void ObjectChain::GetMETnoPU(TLorentzVector METnoPU){
     METnoPU.SetPtEtaPhiM(0,0,0,0);
 
-    this->Get(met_pt,"metNoPU_pt");
-    this->Get(met_eta,"metNoPU_eta");
-    this->Get(met_phi,"metNoPU_phi");
-    this->Get(met_mass,"metNoPU_mass");
+    Get(met_pt,"metNoPU_pt");
+    Get(met_eta,"metNoPU_eta");
+    Get(met_phi,"metNoPU_phi");
+    Get(met_mass,"metNoPU_mass");
 
     METnoPU.SetPtEtaPhiM(met_pt,met_eta,met_phi,met_mass);
 }
