@@ -23,6 +23,7 @@
 OBJS	  = $(SOURCES)
 OBJS     := $(OBJS:.cpp=.o)
 OBJS     := $(OBJS:.C=.o)
+OBJS     := $(OBJS:.cc=.o)
 
 $(info Using the following files: $(SOURCES) )
 $(info Using the following files: $(OBJS) )
@@ -41,7 +42,7 @@ CXXFLAGS    = -g `root-config --cflags` -std=c++11 -stdlib=libstdc++ -I./
 LD          = clang++
 LDFLAGS     = `root-config --ldflags`
 
-.SUFFIXES: .cpp .C .o .so
+.SUFFIXES: .cpp .cc .C .o .so
 
 #------------------------------------------------------------------------------
 
