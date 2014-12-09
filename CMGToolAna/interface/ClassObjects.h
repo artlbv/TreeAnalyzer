@@ -35,7 +35,7 @@ public:
     using ParticleObject::ParticleObject;
 
     int pdgID;
-    Double_t relIso03;
+    double relIso03;
     bool tightID;
     int charge;
 };
@@ -57,7 +57,7 @@ private:
 
 public:
     bool btag;
-    Double_t btagCSV;
+    double btagCSV;
 };
 
 
@@ -66,9 +66,9 @@ public:
 class MET: public ParticleObject{
 public:
 
-//    Double_t met(){ return TLorentzVector::Pt() }
-    Double_t met(){ return Pt(); }
-    Double_t HT;
+//    double met(){ return TLorentzVector::Pt() }
+    double met(){ return Pt(); }
+    double HT;
 };
 */
 
@@ -108,24 +108,24 @@ public:
 /*
 // objects number can be aslo detemined as object.size()
 
-Int_t nLepGood;
-Int_t nMuGood;
-Int_t nElGood;
+int nLepGood;
+int nMuGood;
+int nElGood;
 
-Int_t nLepVeto;
-Int_t nElVeto;
-Int_t nMuVeto;
+int nLepVeto;
+int nElVeto;
+int nMuVeto;
 
-Int_t nJetGood;
-Int_t nBJetGood;
+int nJetGood;
+int nBJetGood;
 
-Int_t nGenTau;
-Int_t nGenLep;
-Int_t nGenLepFromTau;
+int nGenTau;
+int nGenLep;
+int nGenLepFromTau;
 
 // global variables
 
-Float_t ST;
+double ST = 0;
 double HT = 0;
 */
 
