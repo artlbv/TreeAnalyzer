@@ -14,7 +14,7 @@ using namespace std;
 // instance of the Objects class with functionality defined in ClassObjects.C
 GetObjects Obj;
 bool debug = false;
-const int CutNumb = 26; // number of Cuts
+const int CutNumb = 6; // number of Cuts
 const char * CutList[CutNumb] = {"noCut",
                                  "== 1 Mu", "6Jet","HT>500","ST>250",
                                  "Nb>=1"
@@ -172,7 +172,7 @@ int main (int argc, char* argv[]){
 
     cout << "Starting event loop" << endl;
 
-    for(int entry=0; entry < Nevents/*min(1000000,Nevents)*/; entry+=1){
+    for(int entry=0; entry < min(10000,Nevents); entry+=1){
 
         if (entry % 1000 == 0)
             cout << "================= Processing entry: " << entry << '\r' << flush;
@@ -181,8 +181,6 @@ int main (int argc, char* argv[]){
         Double_t fw = tree->GetEntryW(entry);
         Double_t EvWeight = 1.0;
         EvWeight *= fw ;
-
-        iCut = 0;
 
         //get all objects
         if(debug) cout<<"GetLeptons" <<endl;
@@ -201,67 +199,79 @@ int main (int argc, char* argv[]){
         if(debug) cout<<" GetKinVariables"<<endl;
         Obj.GetKinVariables();
 
-        // Define ST (needs to fixed for general use)
+        bool SoftHard_over =false;
 
+        ///////////////////////////////////////////////////////
+        ////////////START CUTFLOW//////////////////////////////
+        ///////////////////////////////////////////////////////
 
+        // 0. No Cuts (i.e. CMG tuple skim only)
         // Fill main histograms
+        iCut = 0;
         FillMainHists(iCut, EvWeight);
 
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
         iCut++;
-        bool SoftHard_over =false;
+
         // 1. Cut
         //////////////////Require exactly one good Muon
         if (Obj.nLepGood != 1) continue;
-        if( Obj.nMuGood != 1) continue;
-        if(Obj.nMuVeto !=0 || Obj.nElVeto !=0) continue;
+        if ( Obj.nElGood != 1) continue;
+        if (Obj.nMuVeto !=0 || Obj.nElVeto !=0) continue;
         // replace LepGood collection with SoftLepGood if you want to do the soft lep analysis
         /*
           if (Obj.nSoftLepGood != 1) continue;
-          if( Obj.nSoftMuGood != 1) continue;
+          if( Obj.nSoftElGood != 1) continue;
           if(Obj.nSoftMuVeto !=0 || Obj.nSoftElVeto !=0) continue;
         */
+
         FillMainHists(iCut, EvWeight);
 
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
         iCut++;
 
-        //example for filling nested histograms
-        for(int n=0; n<max_n; n++){
-            int iNjet=n+3;
-            //    if(Obj.nJetGood >= iNjet){
-            for (int b=0; b<max_b; b++) {
-                int iNbjetmin=Bmin[b];
-                int iNbjetmax=Bmax[b];
-                for (int h=0; h<max_h; h++){
-                    double iHT=HTmin[h];
-                    for(int m=0; m<max_m; m++){
-                        //double iMJ=100.0*m;
-                        double iMJmin=MJmin[m];
-                        double iMJmax=MJmax[m];
-                        for(int s=0; s<max_s; s++){
-                            double iSTmin = STmin[s];
-                            double iSTmax = STmax[s];
-                            if(Obj.nJetGood >= iNjet){
-                                if(Obj.nBJetGood >= iNbjetmin && Obj.nBJetGood < iNbjetmax){
-                                    if(Obj.HT40 > iHT){
-                                        if(fabs(Obj.DelPhiWLep) >= iMJmin && fabs(Obj.DelPhiWLep) <= iMJmax){
+/*
+  if (do_nested){
+  // should be replaced by a funciton!
 
-                                            if(Obj.ST > iSTmin && Obj.ST < iSTmax){
-                                                test[n][b][h][m][s]->Fill(Obj.ST, EvWeight);
+  //example for filling nested histograms
+  for(int n=0; n<max_n; n++){
+  int iNjet=n+3;
+  //    if(Obj.nJetGood >= iNjet){
+  for (int b=0; b<max_b; b++) {
+  int iNbjetmin=Bmin[b];
+  int iNbjetmax=Bmax[b];
+  for (int h=0; h<max_h; h++){
+  double iHT=HTmin[h];
+  for(int m=0; m<max_m; m++){
+  //double iMJ=100.0*m;
+  double iMJmin=MJmin[m];
+  double iMJmax=MJmax[m];
+  for(int s=0; s<max_s; s++){
+  double iSTmin = STmin[s];
+  double iSTmax = STmax[s];
+  if(Obj.nJetGood >= iNjet){
+  if(Obj.nBJetGood >= iNbjetmin && Obj.nBJetGood < iNbjetmax){
+  if(Obj.HT40 > iHT){
+  if(fabs(Obj.DelPhiWLep) >= iMJmin && fabs(Obj.DelPhiWLep) <= iMJmax){
 
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+  if(Obj.ST > iSTmin && Obj.ST < iSTmax){
+  test[n][b][h][m][s]->Fill(Obj.ST, EvWeight);
+
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+*/
 
         // 2. Cut
         ////////////////////////////
@@ -271,6 +281,7 @@ int main (int argc, char* argv[]){
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
         iCut++;
+
         // 3. Cut
         ////////////////////////////
         if (Obj.HT40 < 500) continue;
@@ -278,6 +289,7 @@ int main (int argc, char* argv[]){
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
         iCut++;
+
         // 4. Cut
         ////////////////////////////
         if (Obj.ST < 250 ) continue;
@@ -285,6 +297,7 @@ int main (int argc, char* argv[]){
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
         iCut++;
+
         // 5. Cut
         ////////////////////////////
         if (Obj.nBJetGood < 1) continue;
@@ -304,10 +317,12 @@ int main (int argc, char* argv[]){
     tfile.open(textfilename);
     tfile << "########################################" << endl;
     tfile << "Cut efficiency numbers:" << endl;
+
     for(int ci = 0; ci < CutNumb; ci++)
     {
-        tfile << "After cut " << CutList[ci] << "\t\t"
-              << CFCounter[ci] << "\t events left\t"<< iCFCounter[ci] <<" cnt\t"<< endl;
+	tfile << "After cut\t"
+	      << CutList[ci] << "\t\t"
+	      << CFCounter[ci] << "\tevents left\t"<< iCFCounter[ci] <<"\tcnt"<< endl;
         CutFlow->SetBinContent(1+ci,CFCounter[ci]);
     }
 
@@ -334,34 +349,37 @@ int main (int argc, char* argv[]){
 
     }
     cout<<"done with normal histograms"<<endl;
-    TDirectory* bins=outf->mkdir("Bins");
-    outf->cd("Bins");
-    for(int n=0; n<max_n; n++){
-        int iNjet=n+3;
-        sprintf(FOLDER, "Njet_%i", iNjet);
-        TDirectory* now=bins->mkdir(FOLDER);
-        bins->cd(FOLDER);
-        for (int b=0; b<max_b; b++) {
-            int iNbjetmin=Bmin[b];
-            int iNbjetmax=Bmax[b];
-            sprintf(FOLDER, "bjet_%i-bjet_%i", iNbjetmin,iNbjetmax);
-            TDirectory* now2=now->mkdir(FOLDER);
-            now->cd(FOLDER);
-            for (int h=0; h<max_h; h++){
-                int iHT=HTmin[h];
-                sprintf(FOLDER,"HT_%i", iHT);
-                TDirectory* now3=now2->mkdir(FOLDER);
-                now2->cd(FOLDER);
-                for(int m=0; m<max_m; m++){
-                    for(int s=0; s<max_s; s++){
 
-                        test[n][b][h][m][s]->Write();
+/*
+    if(do_nested){
+        TDirectory* bins=outf->mkdir("Bins");
+        outf->cd("Bins");
+        for(int n=0; n<max_n; n++){
+            int iNjet=n+3;
+            sprintf(FOLDER, "Njet_%i", iNjet);
+            TDirectory* now=bins->mkdir(FOLDER);
+            bins->cd(FOLDER);
+            for (int b=0; b<max_b; b++) {
+                int iNbjetmin=Bmin[b];
+                int iNbjetmax=Bmax[b];
+                sprintf(FOLDER, "bjet_%i-bjet_%i", iNbjetmin,iNbjetmax);
+                TDirectory* now2=now->mkdir(FOLDER);
+                now->cd(FOLDER);
+                for (int h=0; h<max_h; h++){
+                    int iHT=HTmin[h];
+                    sprintf(FOLDER,"HT_%i", iHT);
+                    TDirectory* now3=now2->mkdir(FOLDER);
+                    now2->cd(FOLDER);
+                    for(int m=0; m<max_m; m++){
+                        for(int s=0; s<max_s; s++){
+
+                            test[n][b][h][m][s]->Write();
+                        }
                     }
                 }
             }
         }
+        cout<<"done with nested histograms"<<endl;
     }
-    cout<<"done with nested histograms"<<endl;
-
-
+*/
 }
