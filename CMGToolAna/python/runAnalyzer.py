@@ -60,6 +60,8 @@ if len(sys.argv)>1:
         from ROOT import TreeWriter as reader
     elif sys.argv[1]=='TreeAnalyzer_example':  # example with compiled executable
         exe = 'TreeAnalyzer_example.exe'
+    elif sys.argv[1]=='TreeAnalyzer_SingleEl':  # Single Electron with compiled executable
+        exe = 'TreeAnalyzer_SingleEl.exe'
     else:
         help()
 else:
