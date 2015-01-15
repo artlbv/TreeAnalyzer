@@ -197,9 +197,8 @@ int main (int argc, char* argv[]){
         Obj.GetMET(tree);
         if(debug) cout<<" GetGenMET"<<endl;
         Obj.GetGenMET(tree);
-        if(debug) cout<<" GetKinVariables"<<endl;
         //check src/ClassObjects.C for what is available and implement new variables in there
-        //Obj.GetKinVariables(Obj.goodLep,Obj.goodJet,Obj.MET);
+        if(debug) cout<<" GetKinVariables"<<endl;
         Obj.GetKinVariables();
 
         // Define ST (needs to fixed for general use)
