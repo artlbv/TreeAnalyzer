@@ -11,6 +11,13 @@
 #include <iostream>
 
 using namespace std;
+
+// Map of Cuts. Instead of Cut Number use CutID (CutName):
+// Fill Histo of cutname as Histo[GetCutID("cutname")]->Fill();
+
+map<string, int> CutMap;
+map<string, int>::iterator itCutMap;
+
 // instance of the Objects class with functionality defined in ClassObjects.C
 GetObjects Obj;
 bool debug = false;
@@ -107,7 +114,7 @@ int main (int argc, char* argv[]){
         list.Append(argv[i]);
     }
     TString outname = argv[argc-1];
-    SetupHists(CutNumb);
+
     TObjArray* arr = list.Tokenize(" ");
     int size=arr->GetEntries();
     if(size%2!=0) {
@@ -121,6 +128,7 @@ int main (int argc, char* argv[]){
         weights.push_back( atof( arr->At(i+1)->GetName() ) );
     }
 
+/*
     char hNAME[99];
 
     for(int n=0; n<max_n; n++){
@@ -148,7 +156,7 @@ int main (int argc, char* argv[]){
             }
         }
     }
-
+*/
 
     EasyChain* tree = new EasyChain("tree");
     for(unsigned i=0;i<files.size();i++){
@@ -157,6 +165,19 @@ int main (int argc, char* argv[]){
     }
     int Nevents=tree->GetEntries();
     cout<<">>>>>>>>>>>>>>>>>>>>>>> total number of events:\t" << Nevents <<endl;
+
+    SetupHists(CutNumb);
+
+    // Each cut name is mapped to its id (simple enumarate)
+    for(int icut = 0; icut < CutNumb; icut++){
+        string cutname = CutList[icut];
+
+        CutMap[cutname] = icut;
+
+	cout << "Mapping cuts" << endl;
+	cout << "Cut name\t" << cutname << "\tcut number\t" << icut << endl;
+    }
+
     // CutFlow variables
     int iCut = 0;
     double CFCounter[CutNumb];
@@ -165,7 +186,6 @@ int main (int argc, char* argv[]){
         CFCounter[i] = 0;
         iCFCounter[i] = 0;
     }
-
 
     string outnameStr = (string)outname;
     string TTbarModes[2] = {"MC_TTbar_DiLep","MC_TTbar_SinLep"};
@@ -231,47 +251,6 @@ int main (int argc, char* argv[]){
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
         iCut++;
-
-/*
-  if (do_nested){
-  // should be replaced by a funciton!
-
-  //example for filling nested histograms
-  for(int n=0; n<max_n; n++){
-  int iNjet=n+3;
-  //    if(Obj.nJetGood >= iNjet){
-  for (int b=0; b<max_b; b++) {
-  int iNbjetmin=Bmin[b];
-  int iNbjetmax=Bmax[b];
-  for (int h=0; h<max_h; h++){
-  double iHT=HTmin[h];
-  for(int m=0; m<max_m; m++){
-  //double iMJ=100.0*m;
-  double iMJmin=MJmin[m];
-  double iMJmax=MJmax[m];
-  for(int s=0; s<max_s; s++){
-  double iSTmin = STmin[s];
-  double iSTmax = STmax[s];
-  if(Obj.nJetGood >= iNjet){
-  if(Obj.nBJetGood >= iNbjetmin && Obj.nBJetGood < iNbjetmax){
-  if(Obj.HT40 > iHT){
-  if(fabs(Obj.DelPhiWLep) >= iMJmin && fabs(Obj.DelPhiWLep) <= iMJmax){
-
-  if(Obj.ST > iSTmin && Obj.ST < iSTmax){
-  test[n][b][h][m][s]->Fill(Obj.ST, EvWeight);
-
-  }
-  }
-  }
-  }
-  }
-  }
-  }
-  }
-  }
-  }
-  }
-*/
 
         // 2. Cut
         ////////////////////////////
@@ -349,6 +328,49 @@ int main (int argc, char* argv[]){
 
     }
     cout<<"done with normal histograms"<<endl;
+
+
+/*
+  if (do_nested){
+  // should be replaced by a funciton!
+
+  //example for filling nested histograms
+  for(int n=0; n<max_n; n++){
+  int iNjet=n+3;
+  //    if(Obj.nJetGood >= iNjet){
+  for (int b=0; b<max_b; b++) {
+  int iNbjetmin=Bmin[b];
+  int iNbjetmax=Bmax[b];
+  for (int h=0; h<max_h; h++){
+  double iHT=HTmin[h];
+  for(int m=0; m<max_m; m++){
+  //double iMJ=100.0*m;
+  double iMJmin=MJmin[m];
+  double iMJmax=MJmax[m];
+  for(int s=0; s<max_s; s++){
+  double iSTmin = STmin[s];
+  double iSTmax = STmax[s];
+  if(Obj.nJetGood >= iNjet){
+  if(Obj.nBJetGood >= iNbjetmin && Obj.nBJetGood < iNbjetmax){
+  if(Obj.HT40 > iHT){
+  if(fabs(Obj.DelPhiWLep) >= iMJmin && fabs(Obj.DelPhiWLep) <= iMJmax){
+
+  if(Obj.ST > iSTmin && Obj.ST < iSTmax){
+  test[n][b][h][m][s]->Fill(Obj.ST, EvWeight);
+
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+*/
+
 
 /*
     if(do_nested){
