@@ -62,7 +62,7 @@ which root
 #../python/./runAnalyzer.py XXXX YYYY
 $EXE XXXX YYYY
 
-mv CMG*XXXX* Output
+mv CMG* Output
 
 echo
 echo job done at `date`
