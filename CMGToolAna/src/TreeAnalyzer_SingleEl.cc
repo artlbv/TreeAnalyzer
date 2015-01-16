@@ -86,21 +86,6 @@ void FillMainHists(int CutIndex, double EvWeight, bool FillBJets = true){
     hST[CutIndex]->Fill(Obj.ST,EvWeight);
 }
 
-//example for nested histograms for different cut combinations
-std::vector <std::vector <std::vector <std::vector <std::vector<TH1F* > > > > > test;
-//define binning and how many steps for each cut
-const int max_n = 8;
-const int max_b = 6;
-int Bmin[max_b] = {0,  1, 1, 2, 3};
-int Bmax[max_b] = {30,30, 2, 3, 30};
-const int max_h = 4;
-int HTmin[max_h] = {0,500,750,1000};
-const int max_m = 3;
-const int max_s = 6;
-int STmin[max_s] = {0,    250,    0, 250, 350, 450};
-int STmax[max_s] = {4000, 4000, 250, 350, 450,4000};
-double MJmin[max_s] = {0,1,0};
-double MJmax[max_s] = {1,3.5,3,5};
 
 int main (int argc, char* argv[]){
     if (argc < 4) {
@@ -127,36 +112,6 @@ int main (int argc, char* argv[]){
         files.push_back( arr->At(i)->GetName() );
         weights.push_back( atof( arr->At(i+1)->GetName() ) );
     }
-
-/*
-    char hNAME[99];
-
-    for(int n=0; n<max_n; n++){
-        int iNjet=n+3;
-        for(int b=0; b<max_b; b++){
-            int iNbjetmin=Bmin[b];
-            int iNbjetmax=Bmax[b];
-            test.push_back(std::vector<std::vector<std::vector<std::vector<TH1F*> > > >());
-            for(int h=0; h<max_h; h++){
-                int iHT=HTmin[h];
-                test[n].push_back(std::vector<std::vector<std::vector<TH1F*> > >());
-                for(int m=0; m<max_m; m++){
-                    //delphi replacement int iMJ=100*m;
-                    int iMJ=m;
-                    test[n][b].push_back(std::vector<std::vector<TH1F*> >());
-                    for(int s=0; s<max_s; s++){
-                        int iSTmin = STmin[s];
-                        int iSTmax = STmax[s];
-                        test[n][b][h].push_back(std::vector<TH1F*> ());
-                        sprintf(hNAME, "test_njet%i_bjet%i-bjet%i_HT%i_Dphi%i_ST%i-ST%i", iNjet,iNbjetmin,iNbjetmax,iHT,iMJ,iSTmin,iSTmax);
-                        test[n][b][h][m].push_back(new TH1F(hNAME,hNAME,250,0,2500));
-                        test[n][b][h][m][s]->Sumw2();
-                    }
-                }
-            }
-        }
-    }
-*/
 
     EasyChain* tree = new EasyChain("tree");
     for(unsigned i=0;i<files.size();i++){
@@ -329,79 +284,4 @@ int main (int argc, char* argv[]){
     }
     cout<<"done with normal histograms"<<endl;
 
-
-/*
-  if (do_nested){
-  // should be replaced by a funciton!
-
-  //example for filling nested histograms
-  for(int n=0; n<max_n; n++){
-  int iNjet=n+3;
-  //    if(Obj.nJetGood >= iNjet){
-  for (int b=0; b<max_b; b++) {
-  int iNbjetmin=Bmin[b];
-  int iNbjetmax=Bmax[b];
-  for (int h=0; h<max_h; h++){
-  double iHT=HTmin[h];
-  for(int m=0; m<max_m; m++){
-  //double iMJ=100.0*m;
-  double iMJmin=MJmin[m];
-  double iMJmax=MJmax[m];
-  for(int s=0; s<max_s; s++){
-  double iSTmin = STmin[s];
-  double iSTmax = STmax[s];
-  if(Obj.nJetGood >= iNjet){
-  if(Obj.nBJetGood >= iNbjetmin && Obj.nBJetGood < iNbjetmax){
-  if(Obj.HT40 > iHT){
-  if(fabs(Obj.DelPhiWLep) >= iMJmin && fabs(Obj.DelPhiWLep) <= iMJmax){
-
-  if(Obj.ST > iSTmin && Obj.ST < iSTmax){
-  test[n][b][h][m][s]->Fill(Obj.ST, EvWeight);
-
-  }
-  }
-  }
-  }
-  }
-  }
-  }
-  }
-  }
-  }
-  }
-*/
-
-
-/*
-    if(do_nested){
-        TDirectory* bins=outf->mkdir("Bins");
-        outf->cd("Bins");
-        for(int n=0; n<max_n; n++){
-            int iNjet=n+3;
-            sprintf(FOLDER, "Njet_%i", iNjet);
-            TDirectory* now=bins->mkdir(FOLDER);
-            bins->cd(FOLDER);
-            for (int b=0; b<max_b; b++) {
-                int iNbjetmin=Bmin[b];
-                int iNbjetmax=Bmax[b];
-                sprintf(FOLDER, "bjet_%i-bjet_%i", iNbjetmin,iNbjetmax);
-                TDirectory* now2=now->mkdir(FOLDER);
-                now->cd(FOLDER);
-                for (int h=0; h<max_h; h++){
-                    int iHT=HTmin[h];
-                    sprintf(FOLDER,"HT_%i", iHT);
-                    TDirectory* now3=now2->mkdir(FOLDER);
-                    now2->cd(FOLDER);
-                    for(int m=0; m<max_m; m++){
-                        for(int s=0; s<max_s; s++){
-
-                            test[n][b][h][m][s]->Write();
-                        }
-                    }
-                }
-            }
-        }
-        cout<<"done with nested histograms"<<endl;
-    }
-*/
 }
