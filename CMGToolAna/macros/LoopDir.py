@@ -24,79 +24,70 @@ def checkType(fname):
 
     fname = trimName(fname)
 
-    if "X" in fname:
-        print fname, "is a signal"
+    if "T1" in fname:
+        #        print fname, "is a signal"
         return 'sig'
 
     else:
-        print fname, "is a bkg"
+        #        print fname, "is a bkg"
         return 'bkg'
 
 '''
 def doStack(histlist):
 
-    hs = THStack()
+hs = THStack()
 
-    for i,hist in enumerate(histlist):
+for i,hist in enumerate(histlist):
 
-        # Init canvas/stack
-        if i == 0:
-            canv=TCanvas(hist.GetName(),hist.GetTitle(),800,600)
-            hist.Draw("hist")
-        else:
-            hist.Draw("hist same")
+# Init canvas/stack
+if i == 0:
+canv=TCanvas(hist.GetName(),hist.GetTitle(),800,600)
+hist.Draw("hist")
+else:
+hist.Draw("hist same")
 
-    return canv
+return canv
 '''
 
 def doLegend(histDict):
 
-	leg = TLegend(0.63,0.525,0.87,0.875)
-        leg.SetBorderSize(1)
-        leg.SetTextFont(62)
-        leg.SetTextSize(0.03321678)
-        leg.SetLineColor(0)
-        leg.SetLineStyle(1)
-        leg.SetLineWidth(1)
-        leg.SetFillColor(0)
-        leg.SetFillStyle(1001)
+    leg = TLegend(0.63,0.525,0.87,0.875)
+    leg.SetBorderSize(1)
+    leg.SetTextFont(62)
+    leg.SetTextSize(0.03321678)
+    leg.SetLineColor(0)
+    leg.SetLineStyle(1)
+    leg.SetLineWidth(1)
+    leg.SetFillColor(0)
+    leg.SetFillStyle(1001)
 
-        for name, hist in histDict.items():
-            hname = trimName(name)
+    for name, hist in histDict.items():
+        leg.AddEntry(hist,trimName(name),'lf')
 
-            leg.AddEntry(hist,hname,'l')
-            '''
-            if "TTbar" in name: leg.AddEntry(hist,hname,'l')
-            if "WJets" in name: leg.AddEntry(hist,hname,'l')
-            if "QCD" in name:   leg.AddEntry(hist,hname,'l')
-            if "1200" in name:  leg.AddEntry(hist,hname,'l')
-            if "1500" in name:  leg.AddEntry(hist,hname,'l')
-            if "800" in name:   leg.AddEntry(hist,hname,'l')
-            if "1300" in name:  leg.AddEntry(hist,hname,'l')
-            '''
-        return leg
+    return leg
 
 def paintHist(hist, lineCol,lineWid, lineSty, fillCol ):
 
-        hist.SetLineColor(lineCol)
-        hist.SetLineWidth(lineWid)
-        hist.SetLineStyle(lineSty)
-#        hist.SetFillColor(fillCol)
+    hist.SetLineColor(lineCol)
+    hist.SetLineWidth(lineWid)
+    hist.SetLineStyle(lineSty)
+    hist.SetFillColor(fillCol)
 
 #        return hist
 
 def paintHists(histDict):
 
     for name, hist in histDict.items():
-#        print 'Hist file name', name
+        #        print 'Hist file name', name
+        hist.SetStats(0)
 
         if "TTbar" in name: paintHist(hist, 1,1,1, kAzure-4)
         if "WJets" in name: paintHist(hist, 1,1,1, kViolet+5)
         if "QCD" in name:   paintHist(hist, 1,1,1, kCyan-6)
-        if "1200" in name:  paintHist(hist, 2,1,0, kBlack)
-        if "1500" in name:  paintHist(hist, 2,1,0, kMagenta)
-        if "800" in name:   paintHist(hist, 2,1,0, 2)
-        if "1300" in name:  paintHist(hist, 2,1,0, 4)
+        if "1200" in name:  paintHist(hist, kBlack, 2,1,0)
+        if "1500" in name:  paintHist(hist, kMagenta, 2,1,0)
+        if "800" in name:   paintHist(hist, 2,2,1,0)
+        if "1300" in name:  paintHist(hist, 4,2,1,0)
 
     return histDict
 
@@ -106,9 +97,6 @@ def doStack(histList):
         # Init stack
         if i == 0:
             hs = THStack(hist.GetName(),hist.GetTitle())
-            print 'Creating stack', hs
-        #add to stack
-        print 'Adding to stack', hist
         hs.Add(hist)
 
     if 'hs' in locals():
@@ -117,9 +105,58 @@ def doStack(histList):
         print 'Error in doStack: dict empty?'
         return 0
 
+def custCanv(canv):
+
+    canv.SetLogy()
+    canv.SetTicky()
+    canv.SetTickx()
+    canv.SetBottomMargin(0.1306294);
+
+    histList = canv.GetListOfPrimitives()
+    # filter out TH1s
+    histList = filter(lambda x: 'TH1' in str(type(x)), histList)
+
+    '''
+    for h in histList:
+        if 'TH1' in str(type(h)):
+            print h, h.Integral()
+    '''
+
+    # work with first drawn histogram
+    hist = histList[0]
+    xunit = hist.GetName()
+
+    # sort hists accord to event number
+    histList.sort(key=lambda x: x.Integral(), reverse = False)
+    ymin = histList[0].GetMinimum()
+#    ymax = histList[-1].GetMaximum() * 1.3
+
+    # sum of events:
+    evsum = sum([x.Integral() for x in histList])
+    ymax = evsum * 1.2
+
+    # sort hists accord to last non zero bin --> find Xmax
+    histList.sort(key=lambda x: x.FindLastBinAbove(0), reverse = True)
+    lasthist=histList[0]
+#    xmax = lasthist.GetBinCenter(lasthist.FindLastBinAbove())
+    xmaxi = lasthist.FindLastBinAbove()
+
+    print xunit, xmaxi, ymin, ymax
+
+#    hist.SetMinimum(minY)
+#    hist.SetMaximum(maxY)
+    hist.GetXaxis().SetRange(1,xmaxi)
+    hist.GetXaxis().SetTitle(xunit)
+    hist.GetYaxis().SetRangeUser(ymin,ymax)
+    hist.GetXaxis().SetTitleSize(0.06)
+    hist.GetYaxis().SetTitleSize(0.06)
+    hist.GetXaxis().SetLabelSize(0.05)
+    hist.GetYaxis().SetLabelSize(0.05)
+    hist.GetXaxis().SetTitleOffset(0.95)
+    #hist.GetYaxis().SetTitleOffset(0.85)
+
 def doPlot(histDict):
 
-    print histDict
     # separate hists in sig/bkg
     sigList = []
     bkgList = []
@@ -132,61 +169,56 @@ def doPlot(histDict):
 
         if 'canv' not in locals():
             canv=TCanvas(hist.GetName(),hist.GetTitle(),800,600)
-            canv.SetLogy()
 
     # sort lists according to the number of Entries
-    sigList.sort(key=lambda x: x.Integral(), reverse = True)
-    bkgList.sort(key=lambda x: x.Integral(), reverse = True)
-
+    sigList.sort(key=lambda x: x.Integral(), reverse = False)
+    bkgList.sort(key=lambda x: x.Integral(), reverse = False)
 
     hbkg = doStack(bkgList)
+
     if hbkg:
-        for h in  hbkg.GetHists():
-            print 'Stack hist:', h
-
-#        print 'Stack len', len(hbkg.GetHists())
-    '''
-    hbkg = 0
-    hist = sigList[0]
-    hs = THStack(hist.GetName(),hist.GetTitle())
-
-    hs.Add(sigList[0])
-    hs.Add(sigList[1])
-    '''
-
-    hbkg.Print()
+        # important to set in pyRoot:
+        SetOwnership( hbkg, 0 )
+#        hbkg.Print()
 
     canv.cd()
 
     # first histogram on canvas
     if len(bkgList) > 0:
-        print 'Starting from bkg stack', hbkg
-        bkgList[0].Draw('hist')
+        #        print 'Drawing first highest histo'
+        bkgList[-1].Draw('hist')
+#        print 'Starting from bkg stack', hbkg
         hbkg.Draw('hist same')
-        print '-> Done'
+
     elif len(sigList) > 0:
         sigList[0].Draw('hist')
+
     else:
         print "Error: no histos provided"
         exit(0)
 
     for hist in sigList:
-        print 'Drawing', hist
+        #        print 'Drawing', hist
         hist.Draw('hist same')
 
-#        hbkg.Draw('hist same')
-#    hs.GetStack().Last().Draw('hist')
-#    hs.Draw('hist same')
-
     leg = doLegend(histDict)
-
+    # important to set in pyRoot:
+    SetOwnership( leg, 0 )
     leg.Draw()
+#    canv.RedrawAxis()
+
+    # Customize canvas
+    custCanv(canv)
 
     if canv:
         return canv
     else:
         print "Error: can't make canvas"
         return 0
+
+'''
+Here the functions for file handling are defined
+'''
 
 def findHisto(file,name):
     for cutKey in file.GetListOfKeys():
@@ -208,7 +240,7 @@ def getHist(file,name,dir=''):
 
 def copyStruct(infile,outfile):
     indirlist = infile.GetListOfKeys()
-    outdirlist = outfile.GetListOfKeys()
+#    outdirlist = outfile.GetListOfKeys()
 
     for cutKey in indirlist:
 
@@ -219,36 +251,12 @@ def copyStruct(infile,outfile):
             #if(outfile)
             outfile.mkdir(histDir.GetName())
 
-#copy(file1, outfile)
+def copyHist(fileList,outfile,histname,dirname=''):
 
-if __name__ == "__main__":
+    # go to outfile target dir
+    outfile.cd(dirname)
 
-    fileDir = '../subEl/Output/'
-    pattern = '*.root'
-
-    print sys.argv
-
-    # first argument is '-b' == for batch mode
-
-    if len(sys.argv) > 2:
-        fileDir = sys.argv[1]
-
-    if len(sys.argv) > 3:
-        pattern = sys.argv[2] + pattern
-
-    print fileDir, pattern
-    nameList = glob.glob(fileDir+'*'+pattern)
-
-    fileList = []
-    # open files
-    for name in nameList:
-        fileList.append(TFile.Open(name))
-
-    outfile  = TFile("StackPlots.root", "recreate")
-
-    histname = 'MET_0'
-#    histname = 'CutFlow'
-
+    # empty file hist dict
     histDict = {}
 
     for tfile in fileList:
@@ -256,23 +264,114 @@ if __name__ == "__main__":
 
     paintHists(histDict)
 
-    ca = doPlot(histDict)
-    print 'writing'
-    ca.Write()
+    canv = doPlot(histDict)
 
+    if dirname=='':
+        print 'Writing canvas for histo', histname, 'in root'
+    else:
+        print 'Writing canvas for histo', histname, 'in', dirname
+    canv.Write()
+
+    return 1
+
+def walkCopyHists(fileList,outfile):
+
+    if len(fileList) == 0:
+        print 'Error: empty file list'
+        exit(0)
+
+    # reference file
+    reffile = fileList[0]
+    refdirlist = reffile.GetListOfKeys()
+
+    for refKey in refdirlist:
+        #if a folder
+        if refKey.IsFolder() == 2:
+            # create same folder
+            histDir = refKey.ReadObj()
+            outfile.mkdir(histDir.GetName())
+
+            #loop over histos inside
+            for histKey in histDir.GetListOfKeys():
+                hist = histKey.ReadObj()
+                # check whether histo
+                if 'TH' in str(type(hist)):
+                    copyHist(fileList,outfile,hist.GetName(),histDir.GetName())
+        # if not a folder
+        else:
+            refHist = refKey.ReadObj()
+            # check whether histo
+            if 'TH' in str(type(refHist)):
+                copyHist(fileList,outfile,refHist.GetName())
+
+    return 1
+
+#copy(file1, outfile)
+
+if __name__ == "__main__":
+
+    fileDir = '../subEl/Output/'
+    pattern = '*.root'
+
+    # first argument is '-b' == for batch mode
+    #    print sys.argv
+
+    if len(sys.argv) > 2:
+        fileDir = sys.argv[1]
+
+    if len(sys.argv) > 3:
+        pattern = sys.argv[2] + pattern
+
+    print 'FileDir:', fileDir
+    print 'Pattern', pattern
+    nameList = glob.glob(fileDir+'*'+pattern)
+    print 'Found', len(nameList), 'files'
+    print 80*'#'
+
+    fileList = []
+    # open files
+    for name in nameList:
+        fileList.append(TFile.Open(name))
+
+    outfile  = TFile("StackPlots.root", "RECREATE")
+
+    walkCopyHists(fileList,outfile)
     for tfile in fileList:
         tfile.Close()
 
     outfile.Close()
 
-    '''
-    c1=TCanvas(histname,hist1.GetTitle(),800,600)
-    hist1.Draw("hist")
-    hist2.Draw("hist same")
+    print 80*'#'
+    print 'Finished writing and closed files'
+'''
+END OF MAIN
+'''
 
-    outfile.cd()
-    c1.Write()
-    '''
+'''
+histname = 'MET_0'
+#    histname = 'CutFlow'
+
+histDict = {}
+
+for tfile in fileList:
+histDict[tfile.GetName()] = findHisto(tfile,histname)
+
+paintHists(histDict)
+
+ca = doPlot(histDict)
+print 'writing'
+ca.Write()
+'''
+
+
+'''
+c1=TCanvas(histname,hist1.GetTitle(),800,600)
+hist1.Draw("hist")
+hist2.Draw("hist same")
+
+outfile.cd()
+c1.Write()
+'''
 
 #    histList = [hist1,hist2]
 
@@ -284,12 +383,12 @@ if __name__ == "__main__":
 #    c2.Write()
 #    outfile.cd()
 
-    '''
-    hist1 = findHisto(file1,histname)
-    hist2 = findHisto(file2,histname)
-    hist3 = findHisto(file3,histname)
+'''
+hist1 = findHisto(file1,histname)
+hist2 = findHisto(file2,histname)
+hist3 = findHisto(file3,histname)
 
-    histDict[file1.GetName()] = hist1
-    histDict[file2.GetName()] = hist2
-    histDict[file3.GetName()] = hist3
-    '''
+histDict[file1.GetName()] = hist1
+histDict[file2.GetName()] = hist2
+histDict[file3.GetName()] = hist3
+'''
