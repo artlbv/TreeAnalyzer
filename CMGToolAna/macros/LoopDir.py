@@ -24,7 +24,11 @@ def checkType(fname):
 
     fname = trimName(fname)
 
-    if "T1" in fname:
+    # exclude sample pattern from plotting
+    if 'T5' in fname:
+        return 'nan'
+
+    elif "T1" in fname:
         #        print fname, "is a signal"
         return 'sig'
 
@@ -49,7 +53,7 @@ hist.Draw("hist same")
 return canv
 '''
 
-def doLegend(histDict):
+def doLegend(nameDict = {}, sigList = [], bkgList = []):
 
     leg = TLegend(0.63,0.525,0.87,0.875)
     leg.SetBorderSize(1)
@@ -61,8 +65,8 @@ def doLegend(histDict):
     leg.SetFillColor(0)
     leg.SetFillStyle(1001)
 
-    for name, hist in histDict.items():
-        leg.AddEntry(hist,trimName(name),'lf')
+    for hist in sigList+bkgList:
+        leg.AddEntry(hist,nameDict[hist],'lf')
 
     return leg
 
@@ -81,13 +85,21 @@ def paintHists(histDict):
         #        print 'Hist file name', name
         hist.SetStats(0)
 
-        if "TTbar" in name: paintHist(hist, 1,1,1, kAzure-4)
-        if "WJets" in name: paintHist(hist, 1,1,1, kViolet+5)
-        if "QCD" in name:   paintHist(hist, 1,1,1, kCyan-6)
-        if "1200" in name:  paintHist(hist, kBlack, 2,1,0)
-        if "1500" in name:  paintHist(hist, kMagenta, 2,1,0)
-        if "800" in name:   paintHist(hist, 2,2,1,0)
-        if "1300" in name:  paintHist(hist, 4,2,1,0)
+        name = trimName(name)
+
+        if "TT"  in name:     paintHist(hist, 1,1,1, kAzure-4)
+        elif "Top"  in name:  paintHist(hist, 1,1,1, kAzure-3)
+        elif "WJets" in name: paintHist(hist, 1,1,1, kViolet+5)
+        elif "QCD"  in name:   paintHist(hist, 1,1,1, kCyan-6)
+        elif "DY"  in name:   paintHist(hist, 1,1,1, kYellow)
+        elif "1200" in name:  paintHist(hist, kBlack, 2,1,0)
+        elif "1500" in name:  paintHist(hist, kMagenta, 2,1,0)
+        elif "800" in name:   paintHist(hist, 2,2,1,0)
+        elif "1300" in name:  paintHist(hist, 4,2,1,0)
+        else:  paintHist(hist, 1,2,1,0)
+
+        if checkType(name) == 'sig':
+            hist.Scale(10)
 
     return histDict
 
@@ -116,12 +128,6 @@ def custCanv(canv):
     # filter out TH1s
     histList = filter(lambda x: 'TH1' in str(type(x)), histList)
 
-    '''
-    for h in histList:
-        if 'TH1' in str(type(h)):
-            print h, h.Integral()
-    '''
-
     # work with first drawn histogram
     hist = histList[0]
     xunit = hist.GetName()
@@ -129,11 +135,12 @@ def custCanv(canv):
     # sort hists accord to event number
     histList.sort(key=lambda x: x.Integral(), reverse = False)
     ymin = histList[0].GetMinimum()
-#    ymax = histList[-1].GetMaximum() * 1.3
+    ymin = max([ymin,0.01])
+    ymax = histList[-1].GetMaximum() * 1.3
 
-    # sum of events:
-    evsum = sum([x.Integral() for x in histList])
-    ymax = evsum * 1.2
+    # sum of events in maximum bin:
+#    evsum = sum([int(x.GetMaximum()) for x in histList])
+#    ymax = evsum * 1.5
 
     # sort hists accord to last non zero bin --> find Xmax
     histList.sort(key=lambda x: x.FindLastBinAbove(0), reverse = True)
@@ -141,7 +148,7 @@ def custCanv(canv):
 #    xmax = lasthist.GetBinCenter(lasthist.FindLastBinAbove())
     xmaxi = lasthist.FindLastBinAbove()
 
-    print xunit, xmaxi, ymin, ymax
+#    print xunit, xmaxi, ymin, ymax
 
 #    hist.SetMinimum(minY)
 #    hist.SetMaximum(maxY)
@@ -160,12 +167,16 @@ def doPlot(histDict):
     # separate hists in sig/bkg
     sigList = []
     bkgList = []
+    nameDict = {}
 
     for name, hist in histDict.items():
 
         htype = checkType(name)
         if htype == 'bkg': bkgList += [hist]
         if htype == 'sig': sigList += [hist]
+
+        # save inverted hjist dict: d[hist] = name
+        nameDict[hist] = trimName(name)
 
         if 'canv' not in locals():
             canv=TCanvas(hist.GetName(),hist.GetTitle(),800,600)
@@ -201,7 +212,8 @@ def doPlot(histDict):
         #        print 'Drawing', hist
         hist.Draw('hist same')
 
-    leg = doLegend(histDict)
+#    leg = doLegend(histDict)
+    leg = doLegend(nameDict, sigList, bkgList)
     # important to set in pyRoot:
     SetOwnership( leg, 0 )
     leg.Draw()
@@ -285,8 +297,8 @@ def walkCopyHists(fileList,outfile):
     refdirlist = reffile.GetListOfKeys()
 
     for refKey in refdirlist:
-        #if a folder
-        if refKey.IsFolder() == 2:
+        #if a folder #switch
+        if refKey.IsFolder() == 1:
             # create same folder
             histDir = refKey.ReadObj()
             outfile.mkdir(histDir.GetName())
@@ -297,6 +309,8 @@ def walkCopyHists(fileList,outfile):
                 # check whether histo
                 if 'TH' in str(type(hist)):
                     copyHist(fileList,outfile,hist.GetName(),histDir.GetName())
+
+#            break
         # if not a folder
         else:
             refHist = refKey.ReadObj()
@@ -326,6 +340,7 @@ if __name__ == "__main__":
     print 'Pattern', pattern
     nameList = glob.glob(fileDir+'*'+pattern)
     print 'Found', len(nameList), 'files'
+    print [trimName(x) for x in nameList]
     print 80*'#'
 
     fileList = []
