@@ -28,10 +28,6 @@
 ## stderr and stdout are merged together to stdout
 #$ -j y
 ## define input dir,output dir,executable LD_LIBRARY_PATH
-##$ -v INDIR=ZZZZ
-##$ -v OUTDIR=ZZZZ
-##$ -o ZZZZ
-##$ -v LD_LIBRARY_PATH=ZZZZ:/opt/d-cache/dcap/lib64:/nfs/cms/usernaf.desy.de/products/root/amd64_rhel50/5.34.00/lib:./:
 #
 #######################################################
 ### bird ###
@@ -60,7 +56,7 @@ echo start at `date`
 echo $ROOTSYS
 which root
 #../python/./runAnalyzer.py XXXX YYYY
-$EXE XXXX YYYY
+EXE XXXX YYYY
 
 mv CMG* Output
 
