@@ -25,33 +25,17 @@ def checkType(fname):
     fname = trimName(fname)
 
     # exclude sample pattern from plotting
-    if 'T5' in fname:
+    if 'X' in fname:
         return 'nan'
 
     elif "T1" in fname:
-        #        print fname, "is a signal"
+        return 'sig'
+    elif "T5" in fname:
         return 'sig'
 
-    else:
+    elif "" in fname:
         #        print fname, "is a bkg"
         return 'bkg'
-
-'''
-def doStack(histlist):
-
-hs = THStack()
-
-for i,hist in enumerate(histlist):
-
-# Init canvas/stack
-if i == 0:
-canv=TCanvas(hist.GetName(),hist.GetTitle(),800,600)
-hist.Draw("hist")
-else:
-hist.Draw("hist same")
-
-return canv
-'''
 
 def doLegend(nameDict = {}, sigList = [], bkgList = []):
 
@@ -59,7 +43,7 @@ def doLegend(nameDict = {}, sigList = [], bkgList = []):
     leg.SetBorderSize(1)
     leg.SetTextFont(62)
     leg.SetTextSize(0.03321678)
-    leg.SetLineColor(0)
+    leg.SetLineColor(1)
     leg.SetLineStyle(1)
     leg.SetLineWidth(1)
     leg.SetFillColor(0)
@@ -75,15 +59,24 @@ def paintHist(hist, lineCol,lineWid, lineSty, fillCol ):
     hist.SetLineColor(lineCol)
     hist.SetLineWidth(lineWid)
     hist.SetLineStyle(lineSty)
+#    if not fillCol == 0:
     hist.SetFillColor(fillCol)
 
 #        return hist
 
-def paintHists(histDict):
+def custHists(histDict):
 
     for name, hist in histDict.items():
         #        print 'Hist file name', name
         hist.SetStats(0)
+
+        # rebin histo
+        hname = hist.GetName()
+
+        if '_' in hname:
+            cutnumb = int(hname[hname.find('_')+1:])
+            if cutnumb > 2:
+                hist.Rebin(4)
 
         name = trimName(name)
 
@@ -114,7 +107,7 @@ def doStack(histList):
     if 'hs' in locals():
         return hs
     else:
-        print 'Error in doStack: dict empty?'
+        print 'Error in doStack, dict empty. No BKG given?'
         return 0
 
 def custCanv(canv):
@@ -182,7 +175,7 @@ def doPlot(histDict):
             canv=TCanvas(hist.GetName(),hist.GetTitle(),800,600)
 
     # sort lists according to the number of Entries
-    sigList.sort(key=lambda x: x.Integral(), reverse = False)
+    sigList.sort(key=lambda x: x.Integral(), reverse = True)
     bkgList.sort(key=lambda x: x.Integral(), reverse = False)
 
     hbkg = doStack(bkgList)
@@ -274,7 +267,7 @@ def copyHist(fileList,outfile,histname,dirname=''):
     for tfile in fileList:
         histDict[tfile.GetName()] = findHisto(tfile,histname)
 
-    paintHists(histDict)
+    custHists(histDict)
 
     canv = doPlot(histDict)
 
@@ -296,6 +289,9 @@ def walkCopyHists(fileList,outfile):
     reffile = fileList[0]
     refdirlist = reffile.GetListOfKeys()
 
+    # set to 1 for normal, 2 for test
+    switch = 0
+
     for refKey in refdirlist:
         #if a folder #switch
         if refKey.IsFolder() == 1:
@@ -310,7 +306,8 @@ def walkCopyHists(fileList,outfile):
                 if 'TH' in str(type(hist)):
                     copyHist(fileList,outfile,hist.GetName(),histDir.GetName())
 
-#            break
+            if switch:
+                break
         # if not a folder
         else:
             refHist = refKey.ReadObj()
@@ -351,6 +348,8 @@ if __name__ == "__main__":
     outfile  = TFile("StackPlots.root", "RECREATE")
 
     walkCopyHists(fileList,outfile)
+
+    print 'Closing files'
     for tfile in fileList:
         tfile.Close()
 
@@ -371,7 +370,7 @@ histDict = {}
 for tfile in fileList:
 histDict[tfile.GetName()] = findHisto(tfile,histname)
 
-paintHists(histDict)
+custHists(histDict)
 
 ca = doPlot(histDict)
 print 'writing'
