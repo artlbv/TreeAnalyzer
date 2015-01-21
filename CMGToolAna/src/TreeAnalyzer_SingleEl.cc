@@ -62,12 +62,6 @@ TH1F *hnOver[CutNumb];
 
 // Set Up histograms and Cut Flow variables
 void SetupHists(int CutNumber){
-/*
-  double xbinNJ[5] ={3,5,6,7,20};
-  double xbinNJn[3] ={3,6,12};
-  double xbinHT[4] ={500,750,1000,3000};
-  double xbinST[4] ={250,350,450,2000};
-*/
     for(int cj = 0; cj < CutNumber; cj++)
     {
         CutFlow->GetXaxis()->SetBinLabel(cj+1,CutList[cj]);
@@ -80,9 +74,8 @@ void SetupHists(int CutNumber){
         hST[cj] = new TH1F ("ST_"+nCut,"ST "+cutName,400,0.0,4000.0);        hST[cj]->Sumw2();
         hMET[cj] = new TH1F("MET_"+nCut,"MET "+cutName,200.0,0.0,4000.0);    hMET[cj]->Sumw2();
 
-        hdPhiMetLep[cj] = new TH1F("dPhi_"+nCut,"dPhi "+cutName,80,0,3.2);         hdPhiMetLep[cj]->Sumw2();
+        hdPhiMetLep[cj] = new TH1F("dPhiMetLep_"+nCut,"dPhiMetLep "+cutName,80,0,3.2);         hdPhiMetLep[cj]->Sumw2();
         hdPhiWLep[cj] = new TH1F("dPhiWLep_"+nCut,"dPhiWLep "+cutName,64,0.0,3.2);        hdPhiWLep[cj]->Sumw2();
-
 
         // JETS
         hnJet[cj] = new TH1F ("nJet_"+nCut,"nJet "+cutName,20,0,20);        hnJet[cj]->Sumw2();
@@ -111,7 +104,10 @@ void FillMainHists(int CutIndex, double EvWeight, bool FillBJets = true){
     hnJet[CutIndex]->Fill(Obj.nJetGood,EvWeight);
     hnLep[CutIndex]->Fill(Obj.nLepGood,EvWeight);
 
-    if (Obj.nJetGood > 0) h0JetpT[CutIndex]->Fill(Obj.goodJet[0].Pt(),EvWeight);
+    if (Obj.nJetGood > 0) {
+	h0JetpT[CutIndex]->Fill(Obj.goodJet[0].Pt(),EvWeight);
+	hHT[CutIndex]->Fill(Obj.HT40,EvWeight);
+    }
     if (Obj.nJetGood > 1) h1JetpT[CutIndex]->Fill(Obj.goodJet[1].Pt(),EvWeight);
     if (Obj.nJetGood > 2) h2JetpT[CutIndex]->Fill(Obj.goodJet[2].Pt(),EvWeight);
     if (Obj.nJetGood > 3) h3JetpT[CutIndex]->Fill(Obj.goodJet[3].Pt(),EvWeight);
@@ -131,11 +127,11 @@ void FillMainHists(int CutIndex, double EvWeight, bool FillBJets = true){
 
         hdPhiWLep[CutIndex]->Fill(Obj.DelPhiWLep,EvWeight);
         hdPhiMetLep[CutIndex]->Fill(Obj.DelPhiMetLep,EvWeight);
+
+	hST[CutIndex]->Fill(Obj.ST,EvWeight);
     }
 
     hMET[CutIndex]->Fill(Obj.MET.Pt(),EvWeight);
-    hHT[CutIndex]->Fill(Obj.HT40,EvWeight);
-    hST[CutIndex]->Fill(Obj.ST,EvWeight);
 }
 
 
@@ -263,6 +259,7 @@ int main (int argc, char* argv[]){
         // 2. Cut
         ////////////////////////////
         if (Obj.nJetGood < 6) continue;
+	if(!(Obj.goodJet[0].Pt()> 80 && Obj.goodJet[1].Pt()> 80)) continue;
         // Fill main histograms
         FillMainHists(iCut, EvWeight);
         CFCounter[iCut]+= EvWeight;
