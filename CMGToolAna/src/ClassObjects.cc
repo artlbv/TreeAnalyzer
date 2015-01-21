@@ -410,7 +410,8 @@ void GetObjects::GetJets(EasyChain * tree){
 	    nJetGood++;
 
 	    // filling B jets
-	    if(Jet_btagCSV[ijet] > goodJetBtagCSV){
+	    //if(Jet_btagCSV[ijet] > goodJetBtagCSV){
+	    if(Jet_btagCMVA[ijet] > goodJetBtagCMVA){
 		goodBJet.push_back(dummyJet);
 		nBJetGood++;
 	    }
