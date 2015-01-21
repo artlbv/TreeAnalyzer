@@ -50,7 +50,7 @@ def doLegend(nameDict = {}, sigList = [], bkgList = []):
 
 def doLumi(lumi = 1.0):
 
-    lumitext = "13 TeV, %d fb^{-1}, 50ns 40 PU" % lumi
+    lumitext = "13 TeV, %d fb^{-1}, 25ns 20 PU" % lumi
 
     tex = TLatex(0.90,0.93,lumitext)
     tex.SetNDC()
@@ -303,7 +303,7 @@ def walkCopyHists(fileList,outfile):
     refdirlist = reffile.GetListOfKeys()
 
     # set to 0 for normal, 1 for test
-    switch = 1
+    switch = 0
 
     for refKey in refdirlist:
         #if a folder
@@ -348,7 +348,7 @@ if __name__ == "__main__":
 
     print 'FileDir:', fileDir
     print 'Pattern', pattern
-    nameList = glob.glob(fileDir+'*'+pattern)
+    nameList = glob.glob(fileDir+'/*'+pattern)
     print 'Found', len(nameList), 'files'
     print [trimName(x) for x in nameList]
     print 80*'#'
