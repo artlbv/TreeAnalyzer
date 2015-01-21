@@ -6,6 +6,9 @@ sys.argv.append( '-b' )
 
 from ROOT import *
 
+# globals
+firstPlot = True
+
 def trimName(fname):
 
     prefix = 'CMG_MC_'
@@ -27,7 +30,7 @@ def checkType(fname):
     elif 'Xttbb' in fname:     return 'nan'
     elif "XT1" in fname:  return 'sig'
     elif "X" in fname:  return 'sig'
-    elif "QCD" in fname:    return 'bkg'
+    elif "" in fname:    return 'bkg'
 
 def doLegend(nameDict = {}, sigList = [], bkgList = []):
 
@@ -183,8 +186,22 @@ def doPlot(histDict):
     sigList.sort(key=lambda x: x.Integral(), reverse = True)
     bkgList.sort(key=lambda x: x.Integral(), reverse = False)
 
-    hbkg = doStack(bkgList)
+    # print info for first plot
+    global firstPlot
+    if firstPlot:
+        print 'Information about the samples'
+        print 80*'_'
+        print 'Signal samples:'
+        for hist in sigList:
+            print nameDict[hist],
 
+        print 'Background samples:'
+        for hist in bkgList:
+            print nameDict[hist],
+        print 80*'_'
+
+    # prepare BKG stack
+    hbkg = doStack(bkgList)
     if hbkg:
         # important to set in pyRoot:
         SetOwnership( hbkg, 0 )
@@ -269,11 +286,16 @@ def copyHist(fileList,outfile,histname,dirname=''):
     histDict = {}
 
     for tfile in fileList:
-        histDict[tfile.GetName()] = findHisto(tfile,histname)
+        hist = findHisto(tfile,histname)
+        if hist:
+            histDict[tfile.GetName()] = findHisto(tfile,histname)
 
+    # customise histograms
     custHists(histDict)
 
+    global firstPlot
     canv = doPlot(histDict)
+    firstPlot = False
 
     if dirname=='':
         print 'Writing canvas for histo', histname, 'in root'
@@ -318,6 +340,8 @@ def walkCopyHists(fileList,outfile):
             # check whether histo
             if 'TH' in str(type(refHist)):
                 copyHist(fileList,outfile,refHist.GetName())
+
+        print 80*'#'
 
     return 1
 
