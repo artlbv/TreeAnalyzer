@@ -1,7 +1,7 @@
 #Make file to compile TreeAnalzyer
 #define code to be compiled
-#  CODE = TreeAnalyzer_example.exe
   CODE = TreeAnalyzer_SingleEl
+#  CODE = TreeAnalyzer_example
 #define sources
   SOURCE = src/$(CODE).cc
   EXTRA =  src/ClassObjects.cc

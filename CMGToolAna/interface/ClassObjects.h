@@ -156,6 +156,8 @@ class GetObjects{
    std::vector<Jet> goodBJet;
    std::vector<FatJet> goodFatJet;
    std::vector<FatJet> goodTopTagJet;
+   std::vector<FatJet> goodWTagJet;
+   std::vector<FatJet> goodWmassTagJet;
   
    TLorentzVector MET;
    TLorentzVector genMET;
@@ -211,6 +213,8 @@ class GetObjects{
    Int_t nJetGood;
    Int_t nFatJetGood;
    Int_t nTopTagJetGood;
+   Int_t nWmassTagJetGood;
+   Int_t nWTagJetGood;
    Int_t nBJetGood;
   
    Int_t nGenTau;
@@ -222,10 +226,10 @@ class GetObjects{
    Double_t ST;  
    Double_t DelPhiWLep;  
    Double_t DelPhiMetLep;  
-   Double_t DelPhibMet;  
-   Double_t DelPhiJMet;  
-   Double_t DelPhibW;  
-   Double_t DelPhibLep;  
+   Double_t minDelPhibMet;  
+   Double_t minDelPhiJMet;  
+   Double_t minDelPhibW;  
+   Double_t minDelPhibLep;  
    
    Double_t MTMetLep;
    Double_t MTbMet;
@@ -235,8 +239,8 @@ class GetObjects{
    Double_t  DelRJMet1;
    Double_t  DelRJMet2;
    Double_t  DelRJMet01;
-   Double_t  DelRJLep;
-   Double_t  DelRbL ;
+   Double_t  minDelRJLep;
+   Double_t  minDelRbL ;
 
 
 };

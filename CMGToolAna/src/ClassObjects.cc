@@ -151,7 +151,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
 	    continue;
 	// Muon cuts
 	if(abs(LepGood_pdgId[ilep]) == 13){
-	    if( dummyLep.Pt() > softMuPt &&  dummyLep.Pt() < softLepPtUp && LepGood_tightID[ilep] && LepGood_relIso03[ilep] < softLep_relIso03){
+	    if( dummyLep.Pt() > softMuPt &&  dummyLep.Pt() < softLepPtUp && LepGood_tightID[ilep]==1 && LepGood_relIso03[ilep] < softLep_relIso03){
 		softLep.push_back(dummyLep);
 		softMu.push_back(dummyLep);
 		nSoftMuGood++;
@@ -167,7 +167,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
 
 	// Electron cuts
 	if(abs(LepGood_pdgId[ilep]) == 11){
-	    if( dummyLep.Pt() > softElPt && dummyLep.Pt() < softLepPtUp && LepGood_tightID[ilep] && LepGood_relIso03[ilep] < softLep_relIso03){
+	    if( dummyLep.Pt() > softElPt && dummyLep.Pt() < softLepPtUp && LepGood_tightID[ilep] > 2 && LepGood_relIso03[ilep] < softLep_relIso03){
 //                    isGoodEl = true;
 		softLep.push_back(dummyLep);
 		softEl.push_back(dummyLep);
@@ -192,7 +192,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
 	    continue;
 	// Muon cuts
 	if(abs(LepGood_pdgId[ilep]) == 13){
-	    if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] && LepGood_relIso03[ilep] < goodMu_relIso03){
+	    if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] ==1 && LepGood_relIso03[ilep] < goodMu_relIso03){
 		goodLep.push_back(dummyLep);
 		goodMu.push_back(dummyLep);
 		nMuGood++;
@@ -208,7 +208,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
 
 	// Electron cuts
 	if(abs(LepGood_pdgId[ilep]) == 11){
-	    if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] && LepGood_relIso03[ilep] < goodEl_relIso03){
+	    if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] > 2 && LepGood_relIso03[ilep] < goodEl_relIso03){
 //                    isGoodEl = true;
 		goodLep.push_back(dummyLep);
 		goodEl.push_back(dummyLep);
@@ -426,9 +426,13 @@ void GetObjects::GetJets(EasyChain * tree){
 void GetObjects::GetFatJets(EasyChain * tree){
     goodFatJet.clear();
     goodTopTagJet.clear();
+    goodWTagJet.clear();
+    goodWmassTagJet.clear();
 
     nFatJetGood = 0;
     nTopTagJetGood = 0;
+    nWTagJetGood = 0;
+    nWmassTagJetGood = 0;
     int nFatJet = tree->Get(nFatJet,"nFatJet");
     tree->Get(FatJet_pt[0],"FatJet_pt");
     tree->Get(FatJet_eta[0],"FatJet_eta");
@@ -462,6 +466,14 @@ void GetObjects::GetFatJets(EasyChain * tree){
 
 	
 	if(dummyJet.Pt() > goodFatJetPt && fabs(dummyJet.Eta()) < goodEta){
+	  if ( ((dummyJet.tau2)/(dummyJet.tau1)) < 0.6 && dummyJet.prunedMass > 70.0 &&  dummyJet.prunedMass < 100.0 ){ //&& dummyJet.prunedMass < 100.0 ){
+	    nWmassTagJetGood++;
+	    goodWmassTagJet.push_back(dummyJet);	    
+	  }
+	  if (((dummyJet.tau2)/(dummyJet.tau1)) < 0.6 && dummyJet.prunedMass > 50.0 ){ //&& dummyJet.prunedMass < 100.0 ){
+	    nWTagJetGood++;
+	    goodWTagJet.push_back(dummyJet);	    
+	  }
 	  if ( dummyJet.nSubJets > 2 && dummyJet.minMass > 50.0 && dummyJet.topMass > 150.0 ){
 	    dummyJet.topTagged = true;
 	    nTopTagJetGood++;
@@ -517,20 +529,20 @@ void GetObjects::GetKinVariables(){
 
   //use leading LEPTON for everything, need to define cuts to make sure that 
   //there is only one lepton
-    HT40 = -99;
-    ST = -99;
-    DelPhiWLep = 999;  
-    DelPhiMetLep = 999;  
-    DelPhibMet = 999;  
-    DelPhiJMet = 999;  
-    DelPhibW = 999;  
-    DelPhibLep = 999;  
-    MTMetLep = -99;
-    MTbMet = -99;
-    MTbW = -99;
-    MTbLep = -99;
-    DelRJLep = 999;
-    DelRbL = 999;
+    HT40 = 0;
+    ST   = 0;
+    DelPhiWLep   = -99999.9;  
+    DelPhiMetLep = -99999.9;  
+    minDelPhibMet   =  99999.9;  //  we want to minimize this variable  
+    minDelPhiJMet   =  99999.9;  //  we want to minimize this variable 
+    minDelPhibW     =  99999.9;  //  we want to minimize this variable 
+    minDelPhibLep   =  99999.9;  //  we want to minimize this variable 
+    minDelRJLep     =  99999.9;  //  we want to minimize this variable 
+    minDelRbL       =  99999.9;  //  we want to minimize this variable 
+    MTMetLep     = -99999.9;
+    MTbMet       = -99999.9;
+    MTbW         = -99999.9;
+    MTbLep       = -99999.9;
 
 
     if(SelectedLep.size() > 0)
@@ -560,11 +572,11 @@ void GetObjects::GetKinVariables(){
               Double_t   DelPhibiW = fabs(WBos.DeltaPhi(goodBJet[ib]));
               Double_t   DelPhibiLep = fabs(SelectedLep[0].DeltaPhi(goodBJet[ib]));
               Double_t  MTbMETMin =sqrt(pow((goodBJet[ib].Et()+MET.Et()),2)-pow((goodBJet[ib].Px()+MET.Px()),2)-pow((goodBJet[ib].Py()+MET.Py()),2));
-                if ( DelPhibiLep < DelPhibLep ) DelPhibLep = DelPhibiLep;
-                if ( DelPhibiMet < DelPhibMet ) {DelPhibMet = DelPhibiMet;
+                if ( DelPhibiLep < minDelPhibLep ) minDelPhibLep = DelPhibiLep;
+                if ( DelPhibiMet < minDelPhibMet ) {minDelPhibMet = DelPhibiMet;
                          bC = ib;
                    }
-                if ( DelPhibiW < DelPhibW ) {DelPhibW = DelPhibiW;
+                if ( DelPhibiW < minDelPhibW ) {minDelPhibW = DelPhibiW;
                          bCW = ib;
                   }
                }
@@ -573,16 +585,13 @@ void GetObjects::GetKinVariables(){
             int bCl =-1;
           for(int ib =0; ib < goodBJet.size(); ib++){
               Double_t   DelRbiL = (SelectedLep[0].DeltaR(goodBJet[ib]));
-                if ( DelRbiL< DelRbL ) {DelRbL = DelRbiL;
+                if ( DelRbiL< minDelRbL ) {minDelRbL = DelRbiL;
                          bCl = ib;
                    }
                   }
-
-
 	
 	//Transverse mass of Lep, MET
 	   MTMetLep = sqrt(pow((SelectedLep[0].Et()+MET.Et()),2)-pow((SelectedLep[0].Px()+MET.Px()),2)-pow((SelectedLep[0].Py()+MET.Py()),2));
-
 	//Transverse mass of closest b to MET (Delta phi), MET, Lep, W
            if(goodBJet.size() >0) {
                     MTbMet =sqrt(pow((goodBJet[bC].Et()+MET.Et()),2)-pow((goodBJet[bC].Px()+MET.Px()),2)-pow((goodBJet[bC].Py()+MET.Py()),2));
@@ -596,11 +605,11 @@ void GetObjects::GetKinVariables(){
               Double_t   DelPhijiMet = fabs(MET.DeltaPhi(goodJet[ij]));
               Double_t   DelRjiLep = fabs(SelectedLep[0].DeltaR(goodJet[ij]));
               if(ij >2) continue;
-              if ( DelPhijiMet < DelPhiJMet ) {DelPhiJMet = DelPhijiMet;
+              if ( DelPhijiMet < minDelPhiJMet ) {minDelPhiJMet = DelPhijiMet;
               JC = ij;
               }
             
-              if ( DelRjiLep < DelRJLep ) {DelRJLep = DelRjiLep;
+              if ( DelRjiLep < minDelRJLep ) {minDelRJLep = DelRjiLep;
              }
           }
 
