@@ -26,10 +26,8 @@ def checkType(fname):
     fname = trimName(fname)
 
     # exclude sample pattern from plotting
-    if 'X' in fname:     return 'nan'
-    elif 'Xttbb' in fname:     return 'nan'
-    elif "XT1" in fname:  return 'sig'
-    elif "X" in fname:  return 'sig'
+    if 'Lep' in fname:     return 'nan'
+    elif "T1" in fname:  return 'sig'
     elif "" in fname:    return 'bkg'
 
 def doLegend(nameDict = {}, sigList = [], bkgList = []):
@@ -126,33 +124,26 @@ def custCanv(canv):
     canv.SetBottomMargin(0.1306294);
 
     histList = canv.GetListOfPrimitives()
-    # filter out TH1s
-    histList = filter(lambda x: 'TH1' in str(type(x)), histList)
+    # filter out non THs
+    histList = filter(lambda x: 'TH' in str(type(x)), histList)
+
+    ymax = max([x.GetMaximum() for x in histList])
+    ymax *= 1.3
 
     # work with first drawn histogram
     hist = histList[0]
     xunit = hist.GetName()
 
-    # sort hists accord to event number
-    histList.sort(key=lambda x: x.Integral(), reverse = False)
-    ymin = histList[0].GetMinimum()
-    ymin = max([ymin,0.01])
-    ymax = histList[-1].GetMaximum() * 1.3
+    # filter out TH1s
+    histList = filter(lambda x: 'TH1' in str(type(x)), histList)
 
-    # sum of events in maximum bin:
-    #    evsum = sum([int(x.GetMaximum()) for x in histList])
-    #    ymax = evsum * 1.5
+    # find last x bin above 0
+    xmaxi = max([x.FindLastBinAbove(0) for x in histList])
 
-    # sort hists accord to last non zero bin --> find Xmax
-    histList.sort(key=lambda x: x.FindLastBinAbove(0), reverse = True)
-    lasthist=histList[0]
-#    xmax = lasthist.GetBinCenter(lasthist.FindLastBinAbove())
-    xmaxi = lasthist.FindLastBinAbove()
+    ymin = min([x.GetMinimum(0) for x in histList])
 
 #    print xunit, xmaxi, ymin, ymax
 
-#    hist.SetMinimum(minY)
-#    hist.SetMaximum(maxY)
     hist.GetXaxis().SetRange(1,xmaxi)
     hist.GetXaxis().SetTitle(xunit)
     hist.GetYaxis().SetRangeUser(ymin,ymax)
@@ -193,11 +184,11 @@ def doPlot(histDict):
         print 80*'_'
         print 'Signal samples:'
         for hist in sigList:
-            print nameDict[hist],
-
+            print nameDict[hist], '\t', hist.Integral(), 'events'
+        print '---'
         print 'Background samples:'
         for hist in bkgList:
-            print nameDict[hist],
+            print nameDict[hist], '\t', hist.Integral(), 'events'
         print 80*'_'
 
     # prepare BKG stack
