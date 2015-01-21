@@ -25,17 +25,11 @@ def checkType(fname):
     fname = trimName(fname)
 
     # exclude sample pattern from plotting
-    if 'X' in fname:
-        return 'nan'
-
-    elif "T1" in fname:
-        return 'sig'
-    elif "T5" in fname:
-        return 'sig'
-
-    elif "" in fname:
-        #        print fname, "is a bkg"
-        return 'bkg'
+    if 'X' in fname:     return 'nan'
+    elif 'Xttbb' in fname:     return 'nan'
+    elif "XT1" in fname:  return 'sig'
+    elif "X" in fname:  return 'sig'
+    elif "QCD" in fname:    return 'bkg'
 
 def doLegend(nameDict = {}, sigList = [], bkgList = []):
 
@@ -54,6 +48,19 @@ def doLegend(nameDict = {}, sigList = [], bkgList = []):
 
     return leg
 
+def doLumi(lumi = 1.0):
+
+    lumitext = "13 TeV, %d fb^{-1}, 50ns 40 PU" % lumi
+
+    tex = TLatex(0.90,0.93,lumitext)
+    tex.SetNDC()
+    tex.SetTextAlign(31)
+    tex.SetTextFont(42)
+    tex.SetTextSize(0.048)
+    tex.SetLineWidth(2)
+
+    return tex
+
 def paintHist(hist, lineCol,lineWid, lineSty, fillCol ):
 
     hist.SetLineColor(lineCol)
@@ -69,11 +76,14 @@ def custHists(histDict):
     for name, hist in histDict.items():
         #        print 'Hist file name', name
         hist.SetStats(0)
+        hist.SetTitle("")
 
         # rebin histo
         hname = hist.GetName()
+        nbins = hist.GetNbinsX()
 
-        if '_' in hname:
+        # hack related to our naming convention as HName_X, where X - cut number
+        if nbins > 50 and '_' in hname:
             cutnumb = int(hname[hname.find('_')+1:])
             if cutnumb > 2:
                 hist.Rebin(4)
@@ -132,8 +142,8 @@ def custCanv(canv):
     ymax = histList[-1].GetMaximum() * 1.3
 
     # sum of events in maximum bin:
-#    evsum = sum([int(x.GetMaximum()) for x in histList])
-#    ymax = evsum * 1.5
+    #    evsum = sum([int(x.GetMaximum()) for x in histList])
+    #    ymax = evsum * 1.5
 
     # sort hists accord to last non zero bin --> find Xmax
     histList.sort(key=lambda x: x.FindLastBinAbove(0), reverse = True)
@@ -205,12 +215,15 @@ def doPlot(histDict):
         #        print 'Drawing', hist
         hist.Draw('hist same')
 
-#    leg = doLegend(histDict)
+    # TLegend
     leg = doLegend(nameDict, sigList, bkgList)
-    # important to set in pyRoot:
     SetOwnership( leg, 0 )
     leg.Draw()
-#    canv.RedrawAxis()
+
+    # Lumi, etc.
+    lumi = doLumi(1.0)
+    SetOwnership( lumi, 0 )
+    lumi.Draw()
 
     # Customize canvas
     custCanv(canv)
@@ -289,11 +302,11 @@ def walkCopyHists(fileList,outfile):
     reffile = fileList[0]
     refdirlist = reffile.GetListOfKeys()
 
-    # set to 1 for normal, 2 for test
-    switch = 0
+    # set to 0 for normal, 1 for test
+    switch = 1
 
     for refKey in refdirlist:
-        #if a folder #switch
+        #if a folder
         if refKey.IsFolder() == 1:
             # create same folder
             histDir = refKey.ReadObj()
