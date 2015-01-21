@@ -1,9 +1,7 @@
 #!/usr/bin/python
 
 import sys
-import os
 import glob
-#sys.argv.insert(1, '-b' )
 sys.argv.append( '-b' )
 
 from ROOT import *
@@ -66,10 +64,7 @@ def paintHist(hist, lineCol,lineWid, lineSty, fillCol ):
     hist.SetLineColor(lineCol)
     hist.SetLineWidth(lineWid)
     hist.SetLineStyle(lineSty)
-#    if not fillCol == 0:
     hist.SetFillColor(fillCol)
-
-#        return hist
 
 def custHists(histDict):
 
@@ -193,15 +188,12 @@ def doPlot(histDict):
     if hbkg:
         # important to set in pyRoot:
         SetOwnership( hbkg, 0 )
-#        hbkg.Print()
 
     canv.cd()
 
     # first histogram on canvas
     if len(bkgList) > 0:
-        #        print 'Drawing first highest histo'
         bkgList[-1].Draw('hist')
-#        print 'Starting from bkg stack', hbkg
         hbkg.Draw('hist same')
 
     elif len(sigList) > 0:
@@ -212,7 +204,6 @@ def doPlot(histDict):
         exit(0)
 
     for hist in sigList:
-        #        print 'Drawing', hist
         hist.Draw('hist same')
 
     # TLegend
@@ -370,52 +361,3 @@ if __name__ == "__main__":
 
     print 80*'#'
     print 'Finished writing and closed files'
-'''
-END OF MAIN
-'''
-
-'''
-histname = 'MET_0'
-#    histname = 'CutFlow'
-
-histDict = {}
-
-for tfile in fileList:
-histDict[tfile.GetName()] = findHisto(tfile,histname)
-
-custHists(histDict)
-
-ca = doPlot(histDict)
-print 'writing'
-ca.Write()
-'''
-
-
-'''
-c1=TCanvas(histname,hist1.GetTitle(),800,600)
-hist1.Draw("hist")
-hist2.Draw("hist same")
-
-outfile.cd()
-c1.Write()
-'''
-
-#    histList = [hist1,hist2]
-
-#    print histList
-#    histList.sort(key=lambda x: x.Integral())
-#    print histList
-
-#    c2 = doStack(histList)
-#    c2.Write()
-#    outfile.cd()
-
-'''
-hist1 = findHisto(file1,histname)
-hist2 = findHisto(file2,histname)
-hist3 = findHisto(file3,histname)
-
-histDict[file1.GetName()] = hist1
-histDict[file2.GetName()] = hist2
-histDict[file3.GetName()] = hist3
-'''
