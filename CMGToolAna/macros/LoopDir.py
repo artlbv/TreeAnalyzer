@@ -287,8 +287,9 @@ def copyHist(fileList,outfile,histname,dirname=''):
 
     for tfile in fileList:
         hist = findHisto(tfile,histname)
-        if hist:
-            histDict[tfile.GetName()] = findHisto(tfile,histname)
+        fname = tfile.GetName()
+        if hist and checkType(fname) != 'nan':
+            histDict[fname] = findHisto(tfile,histname)
 
     # customise histograms
     custHists(histDict)
