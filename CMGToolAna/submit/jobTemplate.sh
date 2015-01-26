@@ -15,12 +15,10 @@
 #$ -N JBNAME
 ## the cpu time for this job
 #$ -l h_cpu=02:00:00
-##$ -l h_cpu=05:00:00
-#$ -l site=hh
-#$ -l distro=sld6
 ## the maximum memory usage of this job
 #$ -l h_vmem=1900M
-##$ -l h_vmem=3000M
+#$ -l site=hh
+#$ -l distro=sld6
 ## Use the submitting hosts env variables
 #$ -V
 ## Use same dir as submission script
@@ -53,16 +51,14 @@ EXE=$(find .. -name "runAnalyzer.py")
 EXE=$(readlink -f $EXE)
 
 if [ $# -eq 1 ]; then
-    OutDir = $1
+    OutDir=$1
 else
-    OutDir = $PWD/"Output"
+    OutDir="."
 fi
 
-#cd $OutDir
+echo "Outdir is" $OutDir
 
 echo start at `date`
-echo $ROOTSYS
-which root
 
 #../python/./runAnalyzer.py XXXX YYYY
 $EXE XXXX YYYY
