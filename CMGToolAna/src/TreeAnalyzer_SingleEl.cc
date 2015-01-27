@@ -21,12 +21,15 @@ map<string, int>::iterator itCutMap;
 // instance of the Objects class with functionality defined in ClassObjects.C
 GetObjects Obj;
 bool debug = false;
-const int CutNumb = 8; // number of Cuts
+const int CutNumb = 11; // number of Cuts
 const char * CutList[CutNumb] = {"noCut",
-                                 "== 1 El",
-                                 "6Jet",
+                                 "1 lep",
+				 "veto l",
+				 "Nj > 2",
+				 "Nj > 6",
+				 "JpT>80",
                                  "HT>500",
-                                 "ST>250",
+                                 "ST>200",
                                  "Nb>=1",
 				 "dPhi<1",
 				 "dPhi>1"
@@ -43,10 +46,10 @@ TH1F *hdPhiWLep[CutNumb];
 
 // JETS
 TH1F *hnJet[CutNumb];
-TH1F *h0JetpT[CutNumb];
 TH1F *h1JetpT[CutNumb];
 TH1F *h2JetpT[CutNumb];
 TH1F *h3JetpT[CutNumb];
+TH1F *h4JetpT[CutNumb];
 
 TH1F *hnBJet[CutNumb];
 TH1F *h0BJetpT[CutNumb];
@@ -81,10 +84,10 @@ void SetupHists(int CutNumber){
         hnJet[cj] = new TH1F ("nJet_"+nCut,"nJet "+cutName,20,0,20);        hnJet[cj]->Sumw2();
         hnBJet[cj] = new TH1F ("nBJet_"+nCut,"nBJet "+cutName,20,0,20);        hnBJet[cj]->Sumw2();
 
-        h0JetpT[cj] = new TH1F ("0JetpT_"+nCut,"0JetpT "+cutName,200,0.0,2000.0);        h0JetpT[cj]->Sumw2();
         h1JetpT[cj] = new TH1F ("1JetpT_"+nCut,"1JetpT "+cutName,200,0.0,2000.0);        h1JetpT[cj]->Sumw2();
         h2JetpT[cj] = new TH1F ("2JetpT_"+nCut,"2JetpT "+cutName,200,0.0,2000.0);        h2JetpT[cj]->Sumw2();
         h3JetpT[cj] = new TH1F ("3JetpT_"+nCut,"3JetpT "+cutName,200,0.0,2000.0);        h3JetpT[cj]->Sumw2();
+        h4JetpT[cj] = new TH1F ("4JetpT_"+nCut,"4JetpT "+cutName,200,0.0,2000.0);        h4JetpT[cj]->Sumw2();
 
         h0BJetpT[cj] = new TH1F ("0BJetpT_"+nCut,"0BJetpT "+cutName,200,0.0,2000.0);        h0BJetpT[cj]->Sumw2();
         h1BJetpT[cj] = new TH1F ("1BJetpT_"+nCut,"1BJetpT "+cutName,200,0.0,2000.0);        h1BJetpT[cj]->Sumw2();
@@ -93,9 +96,9 @@ void SetupHists(int CutNumber){
 
         // Leptons
         hnLep[cj] = new TH1F ("nLep_"+nCut,"nLep "+cutName,10,0,10);        hnLep[cj]->Sumw2();
-        hLepPt[cj] = new TH1F ("LeppT_"+nCut,"Lep pT "+cutName,100,0,1000);        hLepPt[cj]->Sumw2();
+        hLepPt[cj] = new TH1F ("LepPt_"+nCut,"Lep pT "+cutName,100,0,1000);        hLepPt[cj]->Sumw2();
         hnOver[cj] = new TH1F ("nOver_"+nCut,"nOver "+cutName,2,0,2);       hnOver[cj]->Sumw2();
-        hLepEta[cj] = new TH1F ("LepEta_"+nCut,"Lep eta "+cutName,100,-4,4);        hLepEta[cj]->Sumw2();
+        hLepEta[cj] = new TH1F ("LepEta_"+nCut,"Lep eta "+cutName,100,-2.5,2.5);        hLepEta[cj]->Sumw2();
 
     }
 }
@@ -105,12 +108,12 @@ void FillMainHists(int CutIndex, double EvWeight, bool FillBJets = true){
     hnLep[CutIndex]->Fill(Obj.nLepGood,EvWeight);
 
     if (Obj.nJetGood > 0) {
-	h0JetpT[CutIndex]->Fill(Obj.goodJet[0].Pt(),EvWeight);
+	h1JetpT[CutIndex]->Fill(Obj.goodJet[0].Pt(),EvWeight);
 	hHT[CutIndex]->Fill(Obj.HT40,EvWeight);
     }
-    if (Obj.nJetGood > 1) h1JetpT[CutIndex]->Fill(Obj.goodJet[1].Pt(),EvWeight);
-    if (Obj.nJetGood > 2) h2JetpT[CutIndex]->Fill(Obj.goodJet[2].Pt(),EvWeight);
-    if (Obj.nJetGood > 3) h3JetpT[CutIndex]->Fill(Obj.goodJet[3].Pt(),EvWeight);
+    if (Obj.nJetGood > 1) h2JetpT[CutIndex]->Fill(Obj.goodJet[1].Pt(),EvWeight);
+    if (Obj.nJetGood > 2) h3JetpT[CutIndex]->Fill(Obj.goodJet[2].Pt(),EvWeight);
+    if (Obj.nJetGood > 3) h4JetpT[CutIndex]->Fill(Obj.goodJet[3].Pt(),EvWeight);
 
     if(FillBJets){
         hnBJet[CutIndex]->Fill(Obj.nBJetGood,EvWeight);
@@ -219,6 +222,7 @@ int main (int argc, char* argv[]){
         Obj.GetMET(tree);
         if(debug) cout<<" GetGenMET"<<endl;
 //        Obj.GetGenMET(tree);
+
         //check src/ClassObjects.C for what is available and implement new variables in there
         if(debug) cout<<" GetKinVariables"<<endl;
         Obj.GetKinVariables();
@@ -238,11 +242,12 @@ int main (int argc, char* argv[]){
         iCFCounter[iCut]++;
         iCut++;
 
-        // 1. Cut
-        //////////////////Require exactly one good Electron
+        // 1. Cut (Require exactly one good Electron)
+        //////////////////
         if (Obj.nLepGood != 1) continue;
+//        if ( Obj.nMuGood != 1) continue;
         if ( Obj.nElGood != 1) continue;
-        if (Obj.nMuVeto !=0 || Obj.nElVeto !=0) continue;
+
         // replace LepGood collection with SoftLepGood if you want to do the soft lep analysis
         /*
           if (Obj.nSoftLepGood != 1) continue;
@@ -256,9 +261,35 @@ int main (int argc, char* argv[]){
         iCFCounter[iCut]++;
         iCut++;
 
-        // 2. Cut
+        // 2. Cut (Lepton veto)
+        ////////////////////////////
+        if (Obj.nMuVeto !=0 || Obj.nElVeto !=0) continue;
+        // Fill main histograms
+        FillMainHists(iCut, EvWeight);
+        CFCounter[iCut]+= EvWeight;
+        iCFCounter[iCut]++;
+        iCut++;
+
+        // 3. Cut (Njets >= 2)
+        ////////////////////////////
+        if (Obj.nJetGood < 2) continue;
+        // Fill main histograms
+        FillMainHists(iCut, EvWeight);
+        CFCounter[iCut]+= EvWeight;
+        iCFCounter[iCut]++;
+        iCut++;
+
+        // 4. Cut (Njets >= 6)
         ////////////////////////////
         if (Obj.nJetGood < 6) continue;
+        // Fill main histograms
+        FillMainHists(iCut, EvWeight);
+        CFCounter[iCut]+= EvWeight;
+        iCFCounter[iCut]++;
+        iCut++;
+
+        // 5. Cut (leading jets pT > 80)
+        ////////////////////////////
 	if(!(Obj.goodJet[0].Pt()> 80 && Obj.goodJet[1].Pt()> 80)) continue;
         // Fill main histograms
         FillMainHists(iCut, EvWeight);
@@ -266,28 +297,29 @@ int main (int argc, char* argv[]){
         iCFCounter[iCut]++;
         iCut++;
 
-        // 3. Cut
+        // 6. Cut
         ////////////////////////////
         if (Obj.HT40 < 500) continue;
+        // Fill main histograms
         FillMainHists(iCut, EvWeight);
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
         iCut++;
 
-        // 4. Cut
+        // 7. Cut
         ////////////////////////////
-        if (Obj.ST < 250 ) continue;
+        if (Obj.ST < 200 ) continue;
+        // Fill main histograms
         FillMainHists(iCut, EvWeight);
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
         iCut++;
 
-        // 5. Cut
+        // 8. Cut
         ////////////////////////////
         if (Obj.nBJetGood < 1) continue;
+        // Fill main histograms
         FillMainHists(iCut, EvWeight);
-        //cout<<Obj.MTbMet<<endl;
-
         CFCounter[iCut]+= EvWeight;
         iCFCounter[iCut]++;
         iCut++;
@@ -304,6 +336,7 @@ int main (int argc, char* argv[]){
 	CFCounter[iCut]+= EvWeight;
 	iCFCounter[iCut]++;
 
+        // Fill main histograms
 	FillMainHists(iCut, EvWeight);
 
 
@@ -354,10 +387,10 @@ int main (int argc, char* argv[]){
 
 	// JETS
         if(hnJet[cj]->GetEntries() > 0) hnJet[cj]->Write();
-        if(h0JetpT[cj]->GetEntries() > 0) h0JetpT[cj]->Write();
         if(h1JetpT[cj]->GetEntries() > 0) h1JetpT[cj]->Write();
         if(h2JetpT[cj]->GetEntries() > 0) h2JetpT[cj]->Write();
         if(h3JetpT[cj]->GetEntries() > 0) h3JetpT[cj]->Write();
+        if(h4JetpT[cj]->GetEntries() > 0) h4JetpT[cj]->Write();
 
         if(hnBJet[cj]->GetEntries() > 0) hnBJet[cj]->Write();
         if(h0BJetpT[cj]->GetEntries() > 0) h0BJetpT[cj]->Write();
@@ -372,7 +405,7 @@ int main (int argc, char* argv[]){
         if(hnOver[cj]->GetEntries() > 0) hnOver[cj]->Write();
 
 /*
-        h0JetpT[cj]->Write();
+        h1JetpT[cj]->Write();
         hnJet[cj]->Write();
         hnOver[cj]->Write();
         hnBJet[cj]->Write();
