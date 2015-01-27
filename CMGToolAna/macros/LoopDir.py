@@ -26,7 +26,7 @@ def checkType(fname):
     fname = trimName(fname)
 
     # exclude sample pattern from plotting
-    if 'Lep' in fname:     return 'nan'
+    if 'X' in fname:     return 'nan'
     elif "T1" in fname:  return 'sig'
     elif "" in fname:    return 'bkg'
 
@@ -42,8 +42,11 @@ def doLegend(nameDict = {}, sigList = [], bkgList = []):
     leg.SetFillColor(0)
     leg.SetFillStyle(1001)
 
-    for hist in sigList+bkgList:
-        leg.AddEntry(hist,nameDict[hist],'lf')
+    for hist in reversed(bkgList):
+        leg.AddEntry(hist,nameDict[hist],'f')
+
+    for hist in sigList:
+        leg.AddEntry(hist,nameDict[hist],'l')
 
     return leg
 
@@ -67,6 +70,42 @@ def paintHist(hist, lineCol,lineWid, lineSty, fillCol ):
     hist.SetLineStyle(lineSty)
     hist.SetFillColor(fillCol)
 
+def lookUpVar(var):
+    # replace histogram names with human readable variable names
+
+    if 'MET' in var: var = 'ME_{T}'
+    if 'HT' in var: var = 'H_{T}'
+    if 'ST' in var: var = 'S_{T}'
+
+    if 'nJet' in var: var = 'N_{jets}'
+    if 'nBJet' in var: var = 'N_{btag}'
+
+    if 'JetpT' in var:
+        num = var[:var.find('JetpT')]
+        var = 'p_{T} (%s jet)' %num
+
+    if 'nLep' in var: var = 'N_{lep}'
+    if 'nLeppT' in var: var = 'p_{T} (lep)'
+    if 'nLepEta' in var: var = '#eta (lep)'
+
+    if 'dPhiWLep' in var: var = '#Delta#phi(W,lep)'
+    if 'dPhiMetLep' in var: var = '#Delta#phi(Met,lep)'
+
+    return var
+
+def getVar(hname):
+
+    # expect hname like Var_X, where X is the cut number
+
+    if '_' in hname:
+        cutnumb = int(hname[hname.find('_')+1:])
+        var = hname[:hname.find('_')]
+        var = lookUpVar(var)
+
+        return var
+    else:
+        return hname
+
 def custHists(histDict):
 
     for name, hist in histDict.items():
@@ -81,7 +120,7 @@ def custHists(histDict):
         # hack related to our naming convention as HName_X, where X - cut number
         if nbins > 50 and '_' in hname:
             cutnumb = int(hname[hname.find('_')+1:])
-            if cutnumb > 2:
+            if cutnumb > 5:
                 hist.Rebin(4)
 
         name = trimName(name)
@@ -91,30 +130,29 @@ def custHists(histDict):
         elif "WJets" in name: paintHist(hist, 1,1,1, kViolet+5)
         elif "QCD"  in name:   paintHist(hist, 1,1,1, kCyan-6)
         elif "DY"  in name:   paintHist(hist, 1,1,1, kYellow)
-        elif "1200" in name:  paintHist(hist, kBlack, 2,1,0)
-        elif "1500" in name:  paintHist(hist, kMagenta, 2,1,0)
         elif "800" in name:   paintHist(hist, 2,2,1,0)
+        elif "1200" in name:  paintHist(hist, kBlack, 2,1,0)
         elif "1300" in name:  paintHist(hist, 4,2,1,0)
+        elif "1500" in name:  paintHist(hist, kMagenta, 2,1,0)
         else:  paintHist(hist, 1,2,1,0)
 
-        if checkType(name) == 'sig':
-            hist.Scale(10)
+        # workaround for Electron/Muon separation
+        if "El" in name:
+            col = hist.GetFillColor()
+            hist.SetFillColor(0)
+            hist.SetLineWidth(3)
+            hist.SetLineColor(col+1)
+
+        if "Mu" in name:
+            col = hist.GetFillColor()
+            hist.SetFillColor(0)
+            hist.SetLineWidth(3)
+            hist.SetLineColor(col-1)
+
+#        if checkType(name) == 'sig':
+#            hist.Scale(10)
 
     return histDict
-
-def doStack(histList):
-
-    for i, hist in enumerate(histList):
-        # Init stack
-        if i == 0:
-            hs = THStack(hist.GetName(),hist.GetTitle())
-        hs.Add(hist)
-
-    if 'hs' in locals():
-        return hs
-    else:
-        print 'Error in doStack, dict empty. No BKG given?'
-        return 0
 
 def custCanv(canv):
 
@@ -132,6 +170,8 @@ def custCanv(canv):
 
     # work with first drawn histogram
     hist = histList[0]
+
+    # axis title
     xunit = hist.GetName()
 
     # filter out TH1s
@@ -140,12 +180,12 @@ def custCanv(canv):
     # find last x bin above 0
     xmaxi = max([x.FindLastBinAbove(0) for x in histList])
 
-    ymin = min([x.GetMinimum(0) for x in histList])
+    ymin = 0.8*min([x.GetMinimum(0) for x in histList])
 
 #    print xunit, xmaxi, ymin, ymax
 
     hist.GetXaxis().SetRange(1,xmaxi)
-    hist.GetXaxis().SetTitle(xunit)
+    hist.GetXaxis().SetTitle(getVar(xunit))
     hist.GetYaxis().SetRangeUser(ymin,ymax)
     hist.GetXaxis().SetTitleSize(0.06)
     hist.GetYaxis().SetTitleSize(0.06)
@@ -153,6 +193,21 @@ def custCanv(canv):
     hist.GetYaxis().SetLabelSize(0.05)
     hist.GetXaxis().SetTitleOffset(0.95)
     #hist.GetYaxis().SetTitleOffset(0.85)
+
+def doStack(histList):
+
+    for i, hist in enumerate(histList):
+        # Init stack
+        if i == 0:
+            hs = THStack(hist.GetName(),hist.GetTitle())
+        hs.Add(hist)
+
+    if 'hs' in locals():
+        return hs
+    else:
+        if firstPlot:
+            print 'Error in doStack, dict empty. No BKG given?'
+        return 0
 
 def doPlot(histDict):
 
@@ -220,7 +275,7 @@ def doPlot(histDict):
     leg.Draw()
 
     # Lumi, etc.
-    lumi = doLumi(1.0)
+    lumi = doLumi(4.0)
     SetOwnership( lumi, 0 )
     lumi.Draw()
 
