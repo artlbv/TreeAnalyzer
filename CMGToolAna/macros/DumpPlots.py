@@ -71,9 +71,12 @@ if __name__ == "__main__":
 
     plotfile = TFile.Open(plotfilename)
 
-    walkDumpCanvs(plotfile,plotdir)
+    if plotfile:
+        walkDumpCanvs(plotfile,plotdir)
+        plotfile.Close()
 
-    plotfile.Close()
+        print 80*'#'
+        print 'Finished writing and closed files'
 
-    print 80*'#'
-    print 'Finished writing and closed files'
+    else:
+        print "Couldn't open file."
