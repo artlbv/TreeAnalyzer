@@ -18,10 +18,16 @@ Double_t softMuPt = 5.0;
 Double_t softLepPt = 5.0;
 Double_t softvetoLepPt = 5.0;
 
-Double_t goodEl_relIso03 = 0.14;
+Double_t goodEl_relIso03 = 0.1;
 Double_t goodMu_relIso03 = 0.12;
 Double_t goodLep_relIso03 = 0.15;
 Double_t softLep_relIso03 = 0.4;
+
+// ID
+Int_t goodEl_tightId = 1;
+Int_t goodEl_lostHits = 0;
+Double_t goodEl_sip3d = 4;
+Double_t goodMu_sip3d = 4;
 
 // mva
 Double_t goodEl_mvaSusy = 0.53;
@@ -68,8 +74,12 @@ Double_t LepGood_mass[arrayN];
 Double_t LepGood_relIso03[arrayN];
 Int_t   LepGood_pdgId[arrayN];
 Int_t  LepGood_tightID[arrayN];
+Int_t LepGood_convVeto[arrayN];
+Int_t LepGood_lostHits[arrayN];
+Double_t LepGood_sip3d[arrayN];
 Double_t  LepGood_mvaID[arrayN];
 Double_t  LepGood_mvaSusy[arrayN];
+
 
 // Gen particles
 Double_t genLep_pt[2]; //[ngenLep]
@@ -130,6 +140,10 @@ void GetObjects::GetLeptons(EasyChain * tree){
     nSoftMuVeto = 0;
     // filling objects from tree
     int nLep = tree->Get(nLep,"nLepGood");
+
+    // dont spend time on reading if no leptons
+    if(nLep < 1) return;
+
     tree->Get(LepGood_pt[0],"LepGood_pt");
     tree->Get(LepGood_eta[0],"LepGood_eta");
     tree->Get(LepGood_phi[0],"LepGood_phi");
@@ -138,6 +152,9 @@ void GetObjects::GetLeptons(EasyChain * tree){
     tree->Get(LepGood_pdgId[0],"LepGood_pdgId");
     tree->Get(LepGood_tightID[0],"LepGood_tightId");
     tree->Get(LepGood_mvaSusy[0],"LepGood_mvaSusy");
+    tree->Get(LepGood_convVeto[0],"LepGood_convVeto");
+    tree->Get(LepGood_lostHits[0],"LepGood_lostHits");
+    tree->Get(LepGood_sip3d[0],"LepGood_sip3d");
 
     for(int ilep = 0; ilep < nLep; ilep++){
         Lepton dummyLep;
@@ -198,7 +215,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
             continue;
         // Muon cuts
         if(abs(LepGood_pdgId[ilep]) == 13){
-            if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] ==1 && LepGood_relIso03[ilep] < goodMu_relIso03){
+            if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] ==1 && LepGood_relIso03[ilep] < goodMu_relIso03 && LepGood_sip3d[ilep] < goodMu_sip3d ){
                 goodLep.push_back(dummyLep);
                 goodMu.push_back(dummyLep);
                 nMuGood++;
@@ -215,7 +232,14 @@ void GetObjects::GetLeptons(EasyChain * tree){
         // Electron cuts
         if(abs(LepGood_pdgId[ilep]) == 11){
 //            if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] > 2 && LepGood_relIso03[ilep] < goodEl_relIso03){
-            if( dummyLep.Pt() > goodElPt && LepGood_mvaSusy[ilep] > goodEl_mvaSusy  && LepGood_relIso03[ilep] < goodEl_relIso03){
+            if( dummyLep.Pt() > goodElPt &&
+		// a la POG Cuts_2012
+		LepGood_relIso03[ilep] < goodEl_relIso03 &&
+		LepGood_tightID[ilep] > goodEl_tightId &&
+		LepGood_lostHits[ilep] <= goodEl_lostHits &&
+		LepGood_sip3d[ilep] < goodEl_sip3d &&
+		LepGood_convVeto[ilep]
+		){
 //                    isGoodEl = true;
                 goodLep.push_back(dummyLep);
                 goodEl.push_back(dummyLep);
