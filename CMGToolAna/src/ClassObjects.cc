@@ -23,6 +23,9 @@ Double_t goodMu_relIso03 = 0.12;
 Double_t goodLep_relIso03 = 0.15;
 Double_t softLep_relIso03 = 0.4;
 
+// mva
+Double_t goodEl_mvaSusy = 0.53;
+
 //jets
 Double_t goodJetPt = 30.0;
 //btagging medium working points
@@ -65,6 +68,8 @@ Double_t LepGood_mass[arrayN];
 Double_t LepGood_relIso03[arrayN];
 Int_t   LepGood_pdgId[arrayN];
 Int_t  LepGood_tightID[arrayN];
+Double_t  LepGood_mvaID[arrayN];
+Double_t  LepGood_mvaSusy[arrayN];
 
 // Gen particles
 Double_t genLep_pt[2]; //[ngenLep]
@@ -132,103 +137,105 @@ void GetObjects::GetLeptons(EasyChain * tree){
     tree->Get(LepGood_relIso03[0],"LepGood_relIso03");
     tree->Get(LepGood_pdgId[0],"LepGood_pdgId");
     tree->Get(LepGood_tightID[0],"LepGood_tightId");
-//    cout<<"nlep "<< nLep<<endl;
+    tree->Get(LepGood_mvaSusy[0],"LepGood_mvaSusy");
 
     for(int ilep = 0; ilep < nLep; ilep++){
-	Lepton dummyLep;
-	dummyLep.SetPtEtaPhiM(LepGood_pt[ilep],LepGood_eta[ilep],LepGood_phi[ilep],LepGood_mass[ilep]);
-	dummyLep.pdgID = LepGood_pdgId[ilep];
-	dummyLep.tightID = LepGood_tightID[ilep];
-	dummyLep.relIso03 = LepGood_relIso03[ilep];
-	bool isVetoMu = false;
-	bool isVetoEl = false;
-	bool isSoftVetoMu = false;
-	bool isSoftVetoEl = false;
+        Lepton dummyLep;
+        dummyLep.SetPtEtaPhiM(LepGood_pt[ilep],LepGood_eta[ilep],LepGood_phi[ilep],LepGood_mass[ilep]);
+        dummyLep.pdgID = LepGood_pdgId[ilep];
+        dummyLep.tightID = LepGood_tightID[ilep];
+        dummyLep.mvaSusy = LepGood_mvaSusy[ilep];
+        dummyLep.relIso03 = LepGood_relIso03[ilep];
+        bool isVetoMu = false;
+        bool isVetoEl = false;
+        bool isSoftVetoMu = false;
+        bool isSoftVetoEl = false;
 
-       //common cuts for all soft leptons (good and veto leps pass)
+        //common cuts for all soft leptons (good and veto leps pass)
 
-	if(dummyLep.Pt() <= softvetoLepPt || fabs(dummyLep.Eta()) > goodEta)
-	    continue;
-	// Muon cuts
-	if(abs(LepGood_pdgId[ilep]) == 13){
-	    if( dummyLep.Pt() > softMuPt &&  dummyLep.Pt() < softLepPtUp && LepGood_tightID[ilep]==1 && LepGood_relIso03[ilep] < softLep_relIso03){
-		softLep.push_back(dummyLep);
-		softMu.push_back(dummyLep);
-		nSoftMuGood++;
-		nSoftLepGood++;
+        if(dummyLep.Pt() <= softvetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+            continue;
+        // Muon cuts
+        if(abs(LepGood_pdgId[ilep]) == 13){
+            if( dummyLep.Pt() > softMuPt &&  dummyLep.Pt() < softLepPtUp && LepGood_tightID[ilep]==1 && LepGood_relIso03[ilep] < softLep_relIso03){
+                softLep.push_back(dummyLep);
+                softMu.push_back(dummyLep);
+                nSoftMuGood++;
+                nSoftLepGood++;
 
-		//continue;
-	    }
-	    else{
-		isSoftVetoMu = true;
-		nSoftMuVeto++;
-	    }
-	}
+                //continue;
+            }
+            else{
+                isSoftVetoMu = true;
+                nSoftMuVeto++;
+            }
+        }
 
-	// Electron cuts
-	if(abs(LepGood_pdgId[ilep]) == 11){
-	    if( dummyLep.Pt() > softElPt && dummyLep.Pt() < softLepPtUp && LepGood_tightID[ilep] > 2 && LepGood_relIso03[ilep] < softLep_relIso03){
+        // Electron cuts
+        if(abs(LepGood_pdgId[ilep]) == 11){
+            if( dummyLep.Pt() > softElPt && dummyLep.Pt() < softLepPtUp && LepGood_tightID[ilep] > 2 && LepGood_relIso03[ilep] < softLep_relIso03){
 //                    isGoodEl = true;
-		softLep.push_back(dummyLep);
-		softEl.push_back(dummyLep);
-		nSoftElGood++;
-		nSoftLepGood++;
+                softLep.push_back(dummyLep);
+                softEl.push_back(dummyLep);
+                nSoftElGood++;
+                nSoftLepGood++;
 
-		// continue;
-	    }
-	    else{
-		nSoftElVeto++;
-		isSoftVetoEl = true;
-	    }
+                // continue;
+            }
+            else{
+                nSoftElVeto++;
+                isSoftVetoEl = true;
+            }
 
         }
-	// Only non-good El or Mu will pass => veto leptons
-	if(isSoftVetoEl || isSoftVetoMu){
-	    SoftvetoLep.push_back(dummyLep);
-	    nSoftLepVeto++;
-         }
-	// common cuts for all hard leptons (good and veto leps pass)
-	if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
-	    continue;
-	// Muon cuts
-	if(abs(LepGood_pdgId[ilep]) == 13){
-	    if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] ==1 && LepGood_relIso03[ilep] < goodMu_relIso03){
-		goodLep.push_back(dummyLep);
-		goodMu.push_back(dummyLep);
-		nMuGood++;
-		nLepGood++;
+        // Only non-good El or Mu will pass => veto leptons
+        if(isSoftVetoEl || isSoftVetoMu){
+            SoftvetoLep.push_back(dummyLep);
+            nSoftLepVeto++;
+        }
+        // common cuts for all hard leptons (good and veto leps pass)
+        if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+            continue;
+        // Muon cuts
+        if(abs(LepGood_pdgId[ilep]) == 13){
+            if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] ==1 && LepGood_relIso03[ilep] < goodMu_relIso03){
+                goodLep.push_back(dummyLep);
+                goodMu.push_back(dummyLep);
+                nMuGood++;
+                nLepGood++;
 
-		//continue;
-	    }
-	    else{
-		isVetoMu = true;
-		nMuVeto++;
-	    }
-	}
+                //continue;
+            }
+            else{
+                isVetoMu = true;
+                nMuVeto++;
+            }
+        }
 
-	// Electron cuts
-	if(abs(LepGood_pdgId[ilep]) == 11){
-	    if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] > 2 && LepGood_relIso03[ilep] < goodEl_relIso03){
+        // Electron cuts
+        if(abs(LepGood_pdgId[ilep]) == 11){
+//            if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] > 2 && LepGood_relIso03[ilep] < goodEl_relIso03){
+            if( dummyLep.Pt() > goodElPt && LepGood_mvaSusy[ilep] > goodEl_mvaSusy  && LepGood_relIso03[ilep] < goodEl_relIso03){
 //                    isGoodEl = true;
-		goodLep.push_back(dummyLep);
-		goodEl.push_back(dummyLep);
-		nElGood++;
-		nLepGood++;
+                goodLep.push_back(dummyLep);
+                goodEl.push_back(dummyLep);
+                nElGood++;
+                nLepGood++;
 
-		// continue;
-	    }
-	    else{
-		isVetoEl = true;
-		nElVeto++;
-	    }
+                // continue;
+            }
+            else{
+                isVetoEl = true;
+                nElVeto++;
+            }
 
-	}
+        }
 
-	// Only non-good El or Mu will pass => veto leptons
-	if(isVetoEl || isVetoMu){
-	    vetoLep.push_back(dummyLep);
-	    nLepVeto++;
-	}
+        // Only non-good El or Mu will pass => veto leptons
+        if(isVetoEl || isVetoMu){
+            vetoLep.push_back(dummyLep);
+            nLepVeto++;
+        }
     }
     /*
       cout << "Get leptons summary: total number of Leptons = \t" << nLep << endl;
@@ -236,7 +243,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
       cout << "Number of good Electrons = \t" << nElGood  << " and veto El = \t" << nElVeto << endl;
       cout << "Number of veto leptons = \t" << nLepVeto << endl;
     */
-     
+
     if(goodLep.size()==1) SelectedLep=goodLep;
     else if(softLep.size()==1) SelectedLep=softLep;
 }
@@ -262,29 +269,29 @@ tree->Get(genLep_charge[0],"genLep_charge");
 
     for(int ilep = 0; ilep < nGenLep; ilep++){
 
-	GenLepton dummyLep;
-	dummyLep.SetPtEtaPhiM(genLep_pt[ilep],genLep_eta[ilep],genLep_phi[ilep],genLep_mass[ilep]);
+        GenLepton dummyLep;
+        dummyLep.SetPtEtaPhiM(genLep_pt[ilep],genLep_eta[ilep],genLep_phi[ilep],genLep_mass[ilep]);
 
-	genLep.push_back(dummyLep);
+        genLep.push_back(dummyLep);
 //      nGenLep++;
 
-	// Muon cuts
-	if(abs(genLep_pdgId[ilep]) == 13){
+        // Muon cuts
+        if(abs(genLep_pdgId[ilep]) == 13){
 
-	    genMu.push_back(dummyLep);
+            genMu.push_back(dummyLep);
 //            nGenMu++;
 
-	    continue;
-	}
+            continue;
+        }
 
-	// Electron cuts
-	if(abs(genLep_pdgId[ilep]) == 11){
+        // Electron cuts
+        if(abs(genLep_pdgId[ilep]) == 11){
 
-	    genEl.push_back(dummyLep);
+            genEl.push_back(dummyLep);
 //            nGenEl++;
 
-	    continue;
-	}
+            continue;
+        }
     }
 }
 
@@ -309,25 +316,25 @@ void GetObjects::GetGenLeptonsFromTau(EasyChain * tree){
 
     for(int ilep = 0; ilep < nGenLepFromTau; ilep++){
 
-	GenLepton dummyLep;
-	dummyLep.SetPtEtaPhiM(genLep_pt[ilep],genLep_eta[ilep],genLep_phi[ilep],genLep_mass[ilep]);
+        GenLepton dummyLep;
+        dummyLep.SetPtEtaPhiM(genLep_pt[ilep],genLep_eta[ilep],genLep_phi[ilep],genLep_mass[ilep]);
 
-	genLepFromTau.push_back(dummyLep);
+        genLepFromTau.push_back(dummyLep);
 //      nGenLepFromTau++;
 
 // TO BE enhanced
 
-	if(abs(genLep_pdgId[ilep]) == 13){
-	    genMuFromTau.push_back(dummyLep);
+        if(abs(genLep_pdgId[ilep]) == 13){
+            genMuFromTau.push_back(dummyLep);
 //            nGenMu++;
-	    continue;
-	}
+            continue;
+        }
 
-	if(abs(genLep_pdgId[ilep]) == 11){
-	    genElFromTau.push_back(dummyLep);
+        if(abs(genLep_pdgId[ilep]) == 11){
+            genElFromTau.push_back(dummyLep);
 //            nGenEl++;
-	    continue;
-	}
+            continue;
+        }
     }
 }
 
@@ -347,13 +354,13 @@ void GetObjects::GetGenTaus(EasyChain * tree){
 
     for(int ilep = 0; ilep < nGenTau; ilep++){
 
-	GenLepton dummyLep;
-	dummyLep.SetPtEtaPhiM(genLep_pt[ilep],genLep_eta[ilep],genLep_phi[ilep],genLep_mass[ilep]);
+        GenLepton dummyLep;
+        dummyLep.SetPtEtaPhiM(genLep_pt[ilep],genLep_eta[ilep],genLep_phi[ilep],genLep_mass[ilep]);
 
-	if(abs(genLep_pdgId[ilep]) == 15){
-	    genTau.push_back(dummyLep);
+        if(abs(genLep_pdgId[ilep]) == 15){
+            genTau.push_back(dummyLep);
 //            nGenTau++;
-	}
+        }
     }
 }
 void GetObjects::GetGenParticles(EasyChain * tree){
@@ -371,13 +378,13 @@ void GetObjects::GetGenParticles(EasyChain * tree){
 
     for(int ipart = 0; ipart < nGenPart; ipart++){
 
-	GenParticle dummyPart;
-	dummyPart.SetPtEtaPhiM(genPart_pt[ipart], genPart_eta[ipart], genPart_phi[ipart], genPart_mass[ipart]);
-	dummyPart.pdgid = genPart_pdgId[ipart];
-	dummyPart.motherid = genPart_motherId[ipart];
-	dummyPart.grandmaid = genPart_grandmaId[ipart];
+        GenParticle dummyPart;
+        dummyPart.SetPtEtaPhiM(genPart_pt[ipart], genPart_eta[ipart], genPart_phi[ipart], genPart_mass[ipart]);
+        dummyPart.pdgid = genPart_pdgId[ipart];
+        dummyPart.motherid = genPart_motherId[ipart];
+        dummyPart.grandmaid = genPart_grandmaId[ipart];
 
-	genPart.push_back(dummyPart);
+        genPart.push_back(dummyPart);
 
     }
 }
@@ -401,21 +408,21 @@ void GetObjects::GetJets(EasyChain * tree){
 
     for(int ijet = 0; ijet < nJet; ijet++)
     {
-	Jet dummyJet;
-	dummyJet.SetPtEtaPhiM(Jet_pt[ijet],Jet_eta[ijet],Jet_phi[ijet],Jet_mass[ijet]);
-	//put pt, eta, cuts and other stuff
-	//jet are already cleaned from all loose leptons that are in LepGood
-	if(dummyJet.Pt() > goodJetPt && fabs(dummyJet.Eta()) < goodEta){
-	    goodJet.push_back(dummyJet);
-	    nJetGood++;
+        Jet dummyJet;
+        dummyJet.SetPtEtaPhiM(Jet_pt[ijet],Jet_eta[ijet],Jet_phi[ijet],Jet_mass[ijet]);
+        //put pt, eta, cuts and other stuff
+        //jet are already cleaned from all loose leptons that are in LepGood
+        if(dummyJet.Pt() > goodJetPt && fabs(dummyJet.Eta()) < goodEta){
+            goodJet.push_back(dummyJet);
+            nJetGood++;
 
-	    // filling B jets
-	    //if(Jet_btagCSV[ijet] > goodJetBtagCSV){
-	    if(Jet_btagCMVA[ijet] > goodJetBtagCMVA){
-		goodBJet.push_back(dummyJet);
-		nBJetGood++;
-	    }
-	}
+            // filling B jets
+            //if(Jet_btagCSV[ijet] > goodJetBtagCSV){
+            if(Jet_btagCMVA[ijet] > goodJetBtagCMVA){
+                goodBJet.push_back(dummyJet);
+                nBJetGood++;
+            }
+        }
     }
 
 /*
@@ -453,37 +460,37 @@ void GetObjects::GetFatJets(EasyChain * tree){
 
     for(int ijet = 0; ijet < nFatJet; ijet++)
     {
-	FatJet dummyJet;
-	dummyJet.SetPtEtaPhiM(FatJet_pt[ijet],FatJet_eta[ijet],FatJet_phi[ijet],FatJet_mass[ijet]);
-	dummyJet.prunedMass = FatJet_prunedMass[ijet];
-	dummyJet.trimmedMass = FatJet_trimmedMass[ijet];
-	dummyJet.filteredMass = FatJet_filteredMass[ijet];
-	dummyJet.tau1 = FatJet_tau1[ijet];
-	dummyJet.tau2 = FatJet_tau2[ijet];
-	dummyJet.tau3 = FatJet_tau3[ijet];
-	dummyJet.topMass = FatJet_topMass[ijet];
-	dummyJet.minMass = FatJet_minMass[ijet];
-	dummyJet.nSubJets = FatJet_nSubJets[ijet];
+        FatJet dummyJet;
+        dummyJet.SetPtEtaPhiM(FatJet_pt[ijet],FatJet_eta[ijet],FatJet_phi[ijet],FatJet_mass[ijet]);
+        dummyJet.prunedMass = FatJet_prunedMass[ijet];
+        dummyJet.trimmedMass = FatJet_trimmedMass[ijet];
+        dummyJet.filteredMass = FatJet_filteredMass[ijet];
+        dummyJet.tau1 = FatJet_tau1[ijet];
+        dummyJet.tau2 = FatJet_tau2[ijet];
+        dummyJet.tau3 = FatJet_tau3[ijet];
+        dummyJet.topMass = FatJet_topMass[ijet];
+        dummyJet.minMass = FatJet_minMass[ijet];
+        dummyJet.nSubJets = FatJet_nSubJets[ijet];
 
-	
-	if(dummyJet.Pt() > goodFatJetPt && fabs(dummyJet.Eta()) < goodEta){
-	  if ( ((dummyJet.tau2)/(dummyJet.tau1)) < 0.6 && dummyJet.prunedMass > 70.0 &&  dummyJet.prunedMass < 100.0 ){ //&& dummyJet.prunedMass < 100.0 ){
-	    nWmassTagJetGood++;
-	    goodWmassTagJet.push_back(dummyJet);	    
-	  }
-	  if (((dummyJet.tau2)/(dummyJet.tau1)) < 0.6 && dummyJet.prunedMass > 50.0 ){ //&& dummyJet.prunedMass < 100.0 ){
-	    nWTagJetGood++;
-	    goodWTagJet.push_back(dummyJet);	    
-	  }
-	  if ( dummyJet.nSubJets > 2 && dummyJet.minMass > 50.0 && dummyJet.topMass > 150.0 ){
-	    dummyJet.topTagged = true;
-	    nTopTagJetGood++;
-	    goodTopTagJet.push_back(dummyJet);	    
-	  }
-	  else dummyJet.topTagged = false;  
-	  goodFatJet.push_back(dummyJet);
-	  nFatJetGood++;
-	}
+
+        if(dummyJet.Pt() > goodFatJetPt && fabs(dummyJet.Eta()) < goodEta){
+            if ( ((dummyJet.tau2)/(dummyJet.tau1)) < 0.6 && dummyJet.prunedMass > 70.0 &&  dummyJet.prunedMass < 100.0 ){ //&& dummyJet.prunedMass < 100.0 ){
+                nWmassTagJetGood++;
+                goodWmassTagJet.push_back(dummyJet);
+            }
+            if (((dummyJet.tau2)/(dummyJet.tau1)) < 0.6 && dummyJet.prunedMass > 50.0 ){ //&& dummyJet.prunedMass < 100.0 ){
+                nWTagJetGood++;
+                goodWTagJet.push_back(dummyJet);
+            }
+            if ( dummyJet.nSubJets > 2 && dummyJet.minMass > 50.0 && dummyJet.topMass > 150.0 ){
+                dummyJet.topTagged = true;
+                nTopTagJetGood++;
+                goodTopTagJet.push_back(dummyJet);
+            }
+            else dummyJet.topTagged = false;
+            goodFatJet.push_back(dummyJet);
+            nFatJetGood++;
+        }
     }
 }
 
@@ -528,18 +535,18 @@ void GetObjects::GetMETnoPU(EasyChain * tree){
 //void GetObjects::GetKinVariables(std::vector<Lepton> SelectedLep, std::vector<Jet> goodJet, TLorentzVector MET){
 void GetObjects::GetKinVariables(){
 
-  //use leading LEPTON for everything, need to define cuts to make sure that 
-  //there is only one lepton
+    //use leading LEPTON for everything, need to define cuts to make sure that
+    //there is only one lepton
     HT40 = 0;
     ST   = 0;
-    DelPhiWLep   = -99999.9;  
-    DelPhiMetLep = -99999.9;  
-    minDelPhibMet   =  99999.9;  //  we want to minimize this variable  
-    minDelPhiJMet   =  99999.9;  //  we want to minimize this variable 
-    minDelPhibW     =  99999.9;  //  we want to minimize this variable 
-    minDelPhibLep   =  99999.9;  //  we want to minimize this variable 
-    minDelRJLep     =  99999.9;  //  we want to minimize this variable 
-    minDelRbL       =  99999.9;  //  we want to minimize this variable 
+    DelPhiWLep   = -99999.9;
+    DelPhiMetLep = -99999.9;
+    minDelPhibMet   =  99999.9;  //  we want to minimize this variable
+    minDelPhiJMet   =  99999.9;  //  we want to minimize this variable
+    minDelPhibW     =  99999.9;  //  we want to minimize this variable
+    minDelPhibLep   =  99999.9;  //  we want to minimize this variable
+    minDelRJLep     =  99999.9;  //  we want to minimize this variable
+    minDelRbL       =  99999.9;  //  we want to minimize this variable
     MTMetLep     = -99999.9;
     MTbMet       = -99999.9;
     MTbW         = -99999.9;
@@ -547,72 +554,72 @@ void GetObjects::GetKinVariables(){
 
 
     if(SelectedLep.size() > 0)
-	ST = SelectedLep[0].Pt() + MET.Pt();
+        ST = SelectedLep[0].Pt() + MET.Pt();
 
     for(int ijet = 0; ijet < goodJet.size(); ijet++){
-	HT40 = HT40 + goodJet[ijet].Pt();
+        HT40 = HT40 + goodJet[ijet].Pt();
     }
     if(SelectedLep.size() > 0){
         TLorentzVector WBos = MET + SelectedLep[0];
 
-	//Delta phi between W and Lep
-	//standard root defintion (+ fabs)takes care of getting values between 0 and pi
-	 DelPhiWLep = fabs(WBos.DeltaPhi(SelectedLep[0]));
-	//alternative definiton with the same result, if you want to cross check
-	Double_t DelPhiWLepAlt = (WBos.Phi() - SelectedLep[0].Phi());
-	if (DelPhiWLepAlt > TMath::Pi()) DelPhiWLepAlt -= 2*TMath::Pi();
-	if (DelPhiWLepAlt <= -TMath::Pi()) DelPhiWLepAlt += 2*TMath::Pi();
-	DelPhiWLepAlt = fabs(DelPhiWLepAlt);
-	
-	// minDelta phi between b and Lep,MET and Lep
-	DelPhiMetLep =  fabs(MET.DeltaPhi(SelectedLep[0]));
-            int bC =-1;
-            int bCW =-1;
-          for(int ib =0; ib < goodBJet.size(); ib++){
-              Double_t   DelPhibiMet = fabs(MET.DeltaPhi(goodBJet[ib]));
-              Double_t   DelPhibiW = fabs(WBos.DeltaPhi(goodBJet[ib]));
-              Double_t   DelPhibiLep = fabs(SelectedLep[0].DeltaPhi(goodBJet[ib]));
-              Double_t  MTbMETMin =sqrt(pow((goodBJet[ib].Et()+MET.Et()),2)-pow((goodBJet[ib].Px()+MET.Px()),2)-pow((goodBJet[ib].Py()+MET.Py()),2));
-                if ( DelPhibiLep < minDelPhibLep ) minDelPhibLep = DelPhibiLep;
-                if ( DelPhibiMet < minDelPhibMet ) {minDelPhibMet = DelPhibiMet;
-                         bC = ib;
-                   }
-                if ( DelPhibiW < minDelPhibW ) {minDelPhibW = DelPhibiW;
-                         bCW = ib;
-                  }
-               }
+        //Delta phi between W and Lep
+        //standard root defintion (+ fabs)takes care of getting values between 0 and pi
+        DelPhiWLep = fabs(WBos.DeltaPhi(SelectedLep[0]));
+        //alternative definiton with the same result, if you want to cross check
+        Double_t DelPhiWLepAlt = (WBos.Phi() - SelectedLep[0].Phi());
+        if (DelPhiWLepAlt > TMath::Pi()) DelPhiWLepAlt -= 2*TMath::Pi();
+        if (DelPhiWLepAlt <= -TMath::Pi()) DelPhiWLepAlt += 2*TMath::Pi();
+        DelPhiWLepAlt = fabs(DelPhiWLepAlt);
 
-	// minDelta R between b and Lep
-            int bCl =-1;
-          for(int ib =0; ib < goodBJet.size(); ib++){
-              Double_t   DelRbiL = (SelectedLep[0].DeltaR(goodBJet[ib]));
-                if ( DelRbiL< minDelRbL ) {minDelRbL = DelRbiL;
-                         bCl = ib;
-                   }
-                  }
-	
-	//Transverse mass of Lep, MET
-	   MTMetLep = sqrt(pow((SelectedLep[0].Et()+MET.Et()),2)-pow((SelectedLep[0].Px()+MET.Px()),2)-pow((SelectedLep[0].Py()+MET.Py()),2));
-	//Transverse mass of closest b to MET (Delta phi), MET, Lep, W
-           if(goodBJet.size() >0) {
-                    MTbMet =sqrt(pow((goodBJet[bC].Et()+MET.Et()),2)-pow((goodBJet[bC].Px()+MET.Px()),2)-pow((goodBJet[bC].Py()+MET.Py()),2));
-                    MTbW =sqrt(pow((goodBJet[bC].Et()+WBos.Et()),2)-pow((goodBJet[bC].Px()+WBos.Px()),2)-pow((goodBJet[bC].Py()+WBos.Py()),2));
-                    MTbLep =sqrt(pow((goodBJet[bC].Et()+SelectedLep[0].Et()),2)-pow((goodBJet[bC].Px()+SelectedLep[0].Px()),2)-pow((goodBJet[bC].Py()+SelectedLep[0].Py()),2));
-                               }
+        // minDelta phi between b and Lep,MET and Lep
+        DelPhiMetLep =  fabs(MET.DeltaPhi(SelectedLep[0]));
+        int bC =-1;
+        int bCW =-1;
+        for(int ib =0; ib < goodBJet.size(); ib++){
+            Double_t   DelPhibiMet = fabs(MET.DeltaPhi(goodBJet[ib]));
+            Double_t   DelPhibiW = fabs(WBos.DeltaPhi(goodBJet[ib]));
+            Double_t   DelPhibiLep = fabs(SelectedLep[0].DeltaPhi(goodBJet[ib]));
+            Double_t  MTbMETMin =sqrt(pow((goodBJet[ib].Et()+MET.Et()),2)-pow((goodBJet[ib].Px()+MET.Px()),2)-pow((goodBJet[ib].Py()+MET.Py()),2));
+            if ( DelPhibiLep < minDelPhibLep ) minDelPhibLep = DelPhibiLep;
+            if ( DelPhibiMet < minDelPhibMet ) {minDelPhibMet = DelPhibiMet;
+                bC = ib;
+            }
+            if ( DelPhibiW < minDelPhibW ) {minDelPhibW = DelPhibiW;
+                bCW = ib;
+            }
+        }
 
-	//Min Delta Phi (J,MET) and Delta R(Jet,Lep) among three leading Jets
-                   int JC =-1;
-      for( int ij =0; ij < nJetGood; ij++){
-              Double_t   DelPhijiMet = fabs(MET.DeltaPhi(goodJet[ij]));
-              Double_t   DelRjiLep = fabs(SelectedLep[0].DeltaR(goodJet[ij]));
-              if(ij >2) continue;
-              if ( DelPhijiMet < minDelPhiJMet ) {minDelPhiJMet = DelPhijiMet;
-              JC = ij;
-              }
-            
-              if ( DelRjiLep < minDelRJLep ) {minDelRJLep = DelRjiLep;
-             }
-          }
+        // minDelta R between b and Lep
+        int bCl =-1;
+        for(int ib =0; ib < goodBJet.size(); ib++){
+            Double_t   DelRbiL = (SelectedLep[0].DeltaR(goodBJet[ib]));
+            if ( DelRbiL< minDelRbL ) {minDelRbL = DelRbiL;
+                bCl = ib;
+            }
+        }
+
+        //Transverse mass of Lep, MET
+        MTMetLep = sqrt(pow((SelectedLep[0].Et()+MET.Et()),2)-pow((SelectedLep[0].Px()+MET.Px()),2)-pow((SelectedLep[0].Py()+MET.Py()),2));
+        //Transverse mass of closest b to MET (Delta phi), MET, Lep, W
+        if(goodBJet.size() >0) {
+            MTbMet =sqrt(pow((goodBJet[bC].Et()+MET.Et()),2)-pow((goodBJet[bC].Px()+MET.Px()),2)-pow((goodBJet[bC].Py()+MET.Py()),2));
+            MTbW =sqrt(pow((goodBJet[bC].Et()+WBos.Et()),2)-pow((goodBJet[bC].Px()+WBos.Px()),2)-pow((goodBJet[bC].Py()+WBos.Py()),2));
+            MTbLep =sqrt(pow((goodBJet[bC].Et()+SelectedLep[0].Et()),2)-pow((goodBJet[bC].Px()+SelectedLep[0].Px()),2)-pow((goodBJet[bC].Py()+SelectedLep[0].Py()),2));
+        }
+
+        //Min Delta Phi (J,MET) and Delta R(Jet,Lep) among three leading Jets
+        int JC =-1;
+        for( int ij =0; ij < nJetGood; ij++){
+            Double_t   DelPhijiMet = fabs(MET.DeltaPhi(goodJet[ij]));
+            Double_t   DelRjiLep = fabs(SelectedLep[0].DeltaR(goodJet[ij]));
+            if(ij >2) continue;
+            if ( DelPhijiMet < minDelPhiJMet ) {minDelPhiJMet = DelPhijiMet;
+                JC = ij;
+            }
+
+            if ( DelRjiLep < minDelRJLep ) {minDelRJLep = DelRjiLep;
+            }
+        }
 
 
     }

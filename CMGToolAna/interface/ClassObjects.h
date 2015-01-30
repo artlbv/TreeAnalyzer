@@ -34,38 +34,10 @@ public:
     ParticleObject() {}
 // conflict with default constructor?
     ParticleObject(Double_t pt, Double_t eta, Double_t phi, Double_t mass){
-	SetPtEtaPhiM(pt,eta,phi,mass);
+        SetPtEtaPhiM(pt,eta,phi,mass);
     }
 
 };
-
-/*
-class ParticleObject{
-
-private:
-// constructor
-    ParticleObject() {}
-
-public:
-    TLorentzVector vect;
-
-    void SetVect(Double_t pt, Double_t eta, Double_t phi, Double_t mass){
-	vect.SetPtEtaPhiM(pt,eta,phi,mass);
-    }
-
-// for fast access to kinematic variables
-    Double_t Pt(){ return vect.Pt() }
-    Double_t Eta(){ return vect.Eta() }
-    Double_t Phi(){ return vect.Phi() }
-
-};
-
-// constuctor as TLV SetPtEtaPhiM
-ParticleObject::ParticleObject(Double_t pt, Double_t eta, Double_t phi, Double_t mass){
-    SetVect(pt,eta,phi,mass);
-}
-
-*/
 
 // Lepton
 class Lepton: public ParticleObject{
@@ -75,6 +47,7 @@ public:
     Int_t pdgID;
     Double_t relIso03;
     Int_t tightID;
+    Double_t mvaSusy;
     Int_t charge;
 };
 
@@ -104,17 +77,17 @@ private:
 //    Jet() { if(btagCSV > 0.676) btag = true; }
 
 public:
-  Double_t prunedMass;
-  Double_t trimmedMass;
-  Double_t filteredMass;
-  Double_t  tau1;
-  Double_t tau2;
-  Double_t tau3;
-  Double_t topMass;
-  Double_t minMass; 
-  Double_t nSubJets;
+    Double_t prunedMass;
+    Double_t trimmedMass;
+    Double_t filteredMass;
+    Double_t  tau1;
+    Double_t tau2;
+    Double_t tau3;
+    Double_t topMass;
+    Double_t minMass;
+    Double_t nSubJets;
 
-  bool topTagged;
+    bool topTagged;
 
 
 };
@@ -136,111 +109,111 @@ public:
     Double_t met(){ return Pt(); }
 };
 
-class GetObjects{                                                                                              
- public:                                                                       
-  void GetJets(EasyChain * tree);
-  void GetFatJets(EasyChain * tree);
-  void GetMET(EasyChain * tree);
-  void GetGenMET(EasyChain * tree);
+class GetObjects{
+public:
+    void GetJets(EasyChain * tree);
+    void GetFatJets(EasyChain * tree);
+    void GetMET(EasyChain * tree);
+    void GetGenMET(EasyChain * tree);
 
-  void GetMETnoPU(EasyChain * tree);
-  void GetLeptons(EasyChain * tree);
-  void GetGenLeptons(EasyChain * tree);
-  void GetGenParticles(EasyChain * tree);
-  void GetGenLeptonsFromTau(EasyChain * tree);
-  void GetGenTaus(EasyChain * tree);
-  void GetKinVariables();
-  //void GetKinVariables(std::vector<Lepton> SelectedLep, std::vector<Jet> goodJet, TLorentzVector MET);
+    void GetMETnoPU(EasyChain * tree);
+    void GetLeptons(EasyChain * tree);
+    void GetGenLeptons(EasyChain * tree);
+    void GetGenParticles(EasyChain * tree);
+    void GetGenLeptonsFromTau(EasyChain * tree);
+    void GetGenTaus(EasyChain * tree);
+    void GetKinVariables();
+    //void GetKinVariables(std::vector<Lepton> SelectedLep, std::vector<Jet> goodJet, TLorentzVector MET);
 
-   std::vector<Jet> goodJet;
-   std::vector<Jet> goodBJet;
-   std::vector<FatJet> goodFatJet;
-   std::vector<FatJet> goodTopTagJet;
-   std::vector<FatJet> goodWTagJet;
-   std::vector<FatJet> goodWmassTagJet;
-  
-   TLorentzVector MET;
-   TLorentzVector genMET;
-   TLorentzVector METnoPU;
-  
-   std::vector<Lepton> goodLep;
-   std::vector<Lepton> goodEl;
-   std::vector<Lepton> goodMu;
-  
-   std::vector<Lepton> SelectedLep;
+    std::vector<Jet> goodJet;
+    std::vector<Jet> goodBJet;
+    std::vector<FatJet> goodFatJet;
+    std::vector<FatJet> goodTopTagJet;
+    std::vector<FatJet> goodWTagJet;
+    std::vector<FatJet> goodWmassTagJet;
 
-   std::vector<Lepton> softLep;
-   std::vector<Lepton> softEl;
-   std::vector<Lepton> softMu;
+    TLorentzVector MET;
+    TLorentzVector genMET;
+    TLorentzVector METnoPU;
 
-   std::vector<Lepton> vetoLep;
-   std::vector<Lepton> vetoEl;
-   std::vector<Lepton> vetoMu;
-  
-   std::vector<Lepton> SoftvetoLep;
-   std::vector<Lepton> SoftvetoEl;
-   std::vector<Lepton> SoftvetoMu;
+    std::vector<Lepton> goodLep;
+    std::vector<Lepton> goodEl;
+    std::vector<Lepton> goodMu;
 
-   std::vector<GenLepton> genLep;
-   std::vector<GenLepton> genEl;
-   std::vector<GenLepton> genMu;
-   std::vector<GenLepton> genTau;
+    std::vector<Lepton> SelectedLep;
 
-   std::vector<GenLepton> genLepFromTau;
-   std::vector<GenLepton> genElFromTau;
-   std::vector<GenLepton> genMuFromTau;
+    std::vector<Lepton> softLep;
+    std::vector<Lepton> softEl;
+    std::vector<Lepton> softMu;
 
-   std::vector<GenParticle> genPart;    
-  // objects number can be aslo detemined as object.size()
-  
-   Int_t nLepGood;
-   Int_t nMuGood;
-   Int_t nElGood;
-  
-   Int_t nSoftLepGood;
-   Int_t nSoftMuGood;
-   Int_t nSoftElGood;
+    std::vector<Lepton> vetoLep;
+    std::vector<Lepton> vetoEl;
+    std::vector<Lepton> vetoMu;
 
-   Int_t nLepVeto;
-   Int_t nElVeto;
-   Int_t nMuVeto;
-  
-   Int_t nSoftLepVeto;
-   Int_t nSoftElVeto;
-   Int_t nSoftMuVeto;
+    std::vector<Lepton> SoftvetoLep;
+    std::vector<Lepton> SoftvetoEl;
+    std::vector<Lepton> SoftvetoMu;
+
+    std::vector<GenLepton> genLep;
+    std::vector<GenLepton> genEl;
+    std::vector<GenLepton> genMu;
+    std::vector<GenLepton> genTau;
+
+    std::vector<GenLepton> genLepFromTau;
+    std::vector<GenLepton> genElFromTau;
+    std::vector<GenLepton> genMuFromTau;
+
+    std::vector<GenParticle> genPart;
+    // objects number can be aslo detemined as object.size()
+
+    Int_t nLepGood;
+    Int_t nMuGood;
+    Int_t nElGood;
+
+    Int_t nSoftLepGood;
+    Int_t nSoftMuGood;
+    Int_t nSoftElGood;
+
+    Int_t nLepVeto;
+    Int_t nElVeto;
+    Int_t nMuVeto;
+
+    Int_t nSoftLepVeto;
+    Int_t nSoftElVeto;
+    Int_t nSoftMuVeto;
 
 
-   Int_t nJetGood;
-   Int_t nFatJetGood;
-   Int_t nTopTagJetGood;
-   Int_t nWmassTagJetGood;
-   Int_t nWTagJetGood;
-   Int_t nBJetGood;
-  
-   Int_t nGenTau;
-   Int_t nGenLep;
-   Int_t nGenPart;
-   Int_t nGenLepFromTau;
-   
-   Double_t HT40;
-   Double_t ST;  
-   Double_t DelPhiWLep;  
-   Double_t DelPhiMetLep;  
-   Double_t minDelPhibMet;  
-   Double_t minDelPhiJMet;  
-   Double_t minDelPhibW;  
-   Double_t minDelPhibLep;  
-   
-   Double_t MTMetLep;
-   Double_t MTbMet;
-   Double_t MTbLep;
-   Double_t MTbW;
-   Double_t  DelRJMet0;
-   Double_t  DelRJMet1;
-   Double_t  DelRJMet2;
-   Double_t  DelRJMet01;
-   Double_t  minDelRJLep;
-   Double_t  minDelRbL ;
+    Int_t nJetGood;
+    Int_t nFatJetGood;
+    Int_t nTopTagJetGood;
+    Int_t nWmassTagJetGood;
+    Int_t nWTagJetGood;
+    Int_t nBJetGood;
+
+    Int_t nGenTau;
+    Int_t nGenLep;
+    Int_t nGenPart;
+    Int_t nGenLepFromTau;
+
+    Double_t HT40;
+    Double_t ST;
+    Double_t DelPhiWLep;
+    Double_t DelPhiMetLep;
+    Double_t minDelPhibMet;
+    Double_t minDelPhiJMet;
+    Double_t minDelPhibW;
+    Double_t minDelPhibLep;
+
+    Double_t MTMetLep;
+    Double_t MTbMet;
+    Double_t MTbLep;
+    Double_t MTbW;
+    Double_t  DelRJMet0;
+    Double_t  DelRJMet1;
+    Double_t  DelRJMet2;
+    Double_t  DelRJMet01;
+    Double_t  minDelRJLep;
+    Double_t  minDelRbL ;
 
 
 };
