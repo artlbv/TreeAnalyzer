@@ -25,8 +25,8 @@ const int CutNumb = 11; // number of Cuts
 const char * CutList[CutNumb] = {"noCut",
                                  "1 lep",
 				 "veto l",
-				 "Nj > 2",
-				 "Nj > 6",
+				 "Nj>2",
+				 "Nj>6",
 				 "JpT>80",
                                  "HT>500",
                                  "ST>200",
@@ -175,12 +175,12 @@ int main (int argc, char* argv[]){
     SetupHists(CutNumb);
 
     // Each cut name is mapped to its id (simple enumarate)
+    cout << "Mapping cuts" << endl;
+
     for(int icut = 0; icut < CutNumb; icut++){
         string cutname = CutList[icut];
 
         CutMap[cutname] = icut;
-
-        cout << "Mapping cuts" << endl;
         cout << "Cut name\t" << cutname << "\tcut number\t" << icut << endl;
     }
 
