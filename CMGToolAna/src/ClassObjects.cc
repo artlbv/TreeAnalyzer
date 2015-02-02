@@ -239,15 +239,16 @@ void GetObjects::GetLeptons(EasyChain * tree){
         if(abs(LepGood_pdgId[ilep]) == 11){
 //            if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] > 2 && LepGood_relIso03[ilep] < goodEl_relIso03){
 
+	    /*
 	    // MVAsusy ID
             if( dummyLep.Pt() > goodElPt &&
-		LepGood_relIso03[ilep] < goodEl_relIso03 &&
+		LepGood_relIso03[ilep] < 0.15 &&
 		LepGood_mvaSusy[ilep] > goodEl_mvaSusy &&
-		LepGood_lostHits[ilep] <= goodEl_lostHits &&
+		//LepGood_lostHits[ilep] <= goodEl_lostHits &&
 		LepGood_convVeto[ilep]
 		){
+	    */
 
-	    /*
 	    // a la POG Cuts_2012 ID
             if( dummyLep.Pt() > goodElPt &&
 		LepGood_relIso03[ilep] < goodEl_relIso03 &&
@@ -256,7 +257,6 @@ void GetObjects::GetLeptons(EasyChain * tree){
 		LepGood_sip3d[ilep] < goodEl_sip3d &&
 		LepGood_convVeto[ilep]
 		){
-	    */
 
                 goodLep.push_back(dummyLep);
                 goodEl.push_back(dummyLep);
@@ -296,6 +296,10 @@ void GetObjects::GetGenLeptons(EasyChain * tree){
 
     // filling objects from tree
     tree->Get(nGenLep,"ngenLep"); //n prompt Lep
+
+    // dont spend time on reading if no leptons
+    if(nGenLep < 1) return;
+
     tree->Get(genLep_pt[0],"genLep_pt");
     tree->Get(genLep_mass[0],"genLep_mass");
     tree->Get(genLep_eta[0],"genLep_eta");
@@ -439,6 +443,10 @@ void GetObjects::GetJets(EasyChain * tree){
     nBJetGood = 0;
 
     int nJet = tree->Get(nJet,"nJet");
+
+    // dont spend time on reading if no jets
+    if(nJet < 1) return;
+
     tree->Get(Jet_pt[0],"Jet_pt");
     tree->Get(Jet_eta[0],"Jet_eta");
     tree->Get(Jet_phi[0],"Jet_phi");
