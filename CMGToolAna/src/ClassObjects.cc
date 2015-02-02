@@ -210,11 +210,17 @@ void GetObjects::GetLeptons(EasyChain * tree){
             SoftvetoLep.push_back(dummyLep);
             nSoftLepVeto++;
         }
+
+	/////////
         // common cuts for all hard leptons (good and veto leps pass)
+	/////////
+
         if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
             continue;
+
         // Muon cuts
         if(abs(LepGood_pdgId[ilep]) == 13){
+//            if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] ==1 && LepGood_relIso03[ilep] < goodMu_relIso03){
             if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] ==1 && LepGood_relIso03[ilep] < goodMu_relIso03 && LepGood_sip3d[ilep] < goodMu_sip3d ){
                 goodLep.push_back(dummyLep);
                 goodMu.push_back(dummyLep);
@@ -232,15 +238,26 @@ void GetObjects::GetLeptons(EasyChain * tree){
         // Electron cuts
         if(abs(LepGood_pdgId[ilep]) == 11){
 //            if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] > 2 && LepGood_relIso03[ilep] < goodEl_relIso03){
+
+	    // MVAsusy ID
             if( dummyLep.Pt() > goodElPt &&
-		// a la POG Cuts_2012
+		LepGood_relIso03[ilep] < goodEl_relIso03 &&
+		LepGood_mvaSusy[ilep] > goodEl_mvaSusy &&
+		LepGood_lostHits[ilep] <= goodEl_lostHits &&
+		LepGood_convVeto[ilep]
+		){
+
+	    /*
+	    // a la POG Cuts_2012 ID
+            if( dummyLep.Pt() > goodElPt &&
 		LepGood_relIso03[ilep] < goodEl_relIso03 &&
 		LepGood_tightID[ilep] > goodEl_tightId &&
 		LepGood_lostHits[ilep] <= goodEl_lostHits &&
 		LepGood_sip3d[ilep] < goodEl_sip3d &&
 		LepGood_convVeto[ilep]
 		){
-//                    isGoodEl = true;
+	    */
+
                 goodLep.push_back(dummyLep);
                 goodEl.push_back(dummyLep);
                 nElGood++;
@@ -252,7 +269,6 @@ void GetObjects::GetLeptons(EasyChain * tree){
                 isVetoEl = true;
                 nElVeto++;
             }
-
         }
 
         // Only non-good El or Mu will pass => veto leptons
