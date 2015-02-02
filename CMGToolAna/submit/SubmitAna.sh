@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # SAMPLES TO RUN ON
-samples="MC_DYJets MC_QCD MC_WJets MC_TTbar "
+#samples="MC_DYJets MC_QCD MC_WJets MC_TTbar "
+samples="MC_QCD MC_WJets MC_TTbar "
 #samples+="MC_SingleTop MC_TTH MC_TTW MC_TTZ "
 #samples+="MC_T1tttt_1500_100 MC_T1tttt_1200_800"
 #samples+="MC_T5tttt_1000_280 MC_T5tttt_1300_280 MC_T5tttt_1000_285 MC_T5tttt_1300_285 MC_T1ttbbWW_1300_290 MC_T1ttbbWW_1300_295 MC_T1ttbbWW_1000_715 MC_T1ttbbWW_1000_720 "
@@ -26,7 +27,7 @@ else
 fi
 
 if [ ! -d $OutDir ]; then
-    mkdir $OutDir
+    mkdir -p $OutDir
 fi
 
 
@@ -40,7 +41,7 @@ for samp in $samples; do
     JobDir=$PWD/../.$samp$Pref
 
     if [ ! -d $JobDir ]; then
-	mkdir $JobDir
+	mkdir -p $JobDir
     fi
 
     cd $JobDir
