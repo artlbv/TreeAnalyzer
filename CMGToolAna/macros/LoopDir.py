@@ -256,11 +256,19 @@ def doPlot(histDict):
         print 80*'_'
         print 'Signal samples:'
         for hist in sigList:
-            print nameDict[hist], '\t', hist.Integral(), 'events'
+            if "CutFlow" in hist.GetName():
+                print nameDict[hist], '\t', hist.GetMaximum(), 'events'
+            else:
+                print nameDict[hist], '\t', hist.Integral(), 'events'
         print '---'
         print 'Background samples:'
         for hist in bkgList:
-            print nameDict[hist], '\t', hist.Integral(), 'events'
+#            print nameDict[hist], '\t', hist.Integral(), 'events'
+            if "CutFlow" in hist.GetName():
+                print nameDict[hist], '\t', hist.GetMaximum(), 'events'
+            else:
+                print nameDict[hist], '\t', hist.Integral(), 'events'
+
         print 80*'_'
 
     # prepare BKG stack
@@ -382,7 +390,7 @@ def walkCopyHists(fileList,outfile):
     refdirlist = reffile.GetListOfKeys()
 
     # set to 0 for normal, 1 for test
-    switch = 1
+    switch = 0
 
     for refKey in refdirlist:
         #if a folder
