@@ -1,8 +1,8 @@
 #include "../interface/ClassObjects.h"
 
 using namespace std;
-// global object variables
 
+// \\\\\\OBJECT CUTS
 
 Float_t goodEta = 2.4;
 
@@ -40,6 +40,8 @@ Float_t goodJetBtagCMVA = 0.732;
 
 //fatjet
 Float_t goodFatJetPt = 100.0;
+
+// \\\\\\CUTS FINISHED
 
 void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, string muID/* = "POG2012"*/ ){
 
@@ -434,20 +436,27 @@ void GetObjects::GetGenLeptonsFromTau(EasyChain * tree){
     Float_t genLep_eta[arrayN]; //[ngenLep]
     Float_t genLep_phi[arrayN]; //[ngenLep]
     Int_t genLep_pdgId[arrayN]; //[ngenLep]
+    Int_t genLep_motherId[arrayN]; //[ngenLep]
+    Int_t genLep_charge[arrayN]; //[ngenLep]
 
     tree->Get(genLep_pt[0],"genLepFromTau_pt");
     tree->Get(genLep_mass[0],"genLepFromTau_mass");
     tree->Get(genLep_eta[0],"genLepFromTau_eta");
     tree->Get(genLep_phi[0],"genLepFromTau_phi");
     tree->Get(genLep_pdgId[0],"genLepFromTau_pdgId");
+    tree->Get(genLep_motherId[0],"genLep_motherId");
+    tree->Get(genLep_charge[0],"genLep_charge");
+
 
     for(int ilep = 0; ilep < nGenLepFromTau; ilep++){
 
         GenLepton dummyLep;
         dummyLep.SetPtEtaPhiM(genLep_pt[ilep],genLep_eta[ilep],genLep_phi[ilep],genLep_mass[ilep]);
+        dummyLep.pdgId = genLep_pdgId[ilep];
+        dummyLep.motherId = genLep_motherId[ilep];
+        dummyLep.charge = genLep_charge[ilep];
 
         genLepFromTau.push_back(dummyLep);
-//      nGenLepFromTau++;
 
 // TO BE enhanced
 
@@ -477,11 +486,11 @@ void GetObjects::GetGenTaus(EasyChain * tree){
     if(nGenTau < 1) return;
 
     const int arrayN = nGenTau;
-    Float_t genLep_pt[arrayN]; //[ngenLep]
-    Float_t genLep_mass[arrayN]; //[ngenLep]
-    Float_t genLep_eta[arrayN]; //[ngenLep]
-    Float_t genLep_phi[arrayN]; //[ngenLep]
-    Int_t genLep_pdgId[arrayN]; //[ngenLep]
+    Float_t genLep_pt[arrayN];
+    Float_t genLep_mass[arrayN];
+    Float_t genLep_eta[arrayN];
+    Float_t genLep_phi[arrayN];
+    Int_t genLep_pdgId[arrayN];
 
     tree->Get(genLep_pt[0],"genTau_pt");
     tree->Get(genLep_eta[0],"genTau_eta");
