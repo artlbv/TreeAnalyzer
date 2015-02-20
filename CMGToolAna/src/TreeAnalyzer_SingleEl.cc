@@ -346,7 +346,7 @@ int main (int argc, char* argv[]){
 
     //write out cutflow
     ofstream tfile;
-    TString textfilename = "CMG_cutflow_"+outname+".txt";
+    TString textfilename = "CMG_cutflow_"+outname+"_El.txt";
     tfile.open(textfilename);
     tfile << "########################################" << endl;
     tfile << "Cut efficiency numbers:" << endl;
@@ -356,12 +356,18 @@ int main (int argc, char* argv[]){
         tfile << "After cut\t"
               << CutList[ci] << "\t\t"
               << CFCounter[ci] << "\tevents left\t"<< iCFCounter[ci] <<"\tcnt"<< endl;
+
+        cout << "After cut\t"
+	     << CutList[ci] << "\t\t"
+	     << CFCounter[ci] << "\tevents left\t"<< iCFCounter[ci] <<"\tcnt"<< endl;
+
+
         CutFlow->SetBinContent(1+ci,CFCounter[ci]);
     }
 
     //write out histograms
     TFile * outf;
-    TString rootfilename = "CMG_"+outname+"_his.root";
+    TString rootfilename = "CMG_"+outname+"_El_his.root";
     outf = new TFile(rootfilename,"RECREATE");
 
     //first the main histograms
