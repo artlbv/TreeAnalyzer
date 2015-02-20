@@ -21,7 +21,7 @@ bool debug = false;
 //TH1F* hElIso = new TH1F ("ElIso","Electron isolation",100,0.0,10.0);
 TH1F* hElDrGen = new TH1F ("ElDr","Electron dR to gen particles",100,0.0,10.0);
 TH1F* hElMinDrGen = new TH1F ("ElMinDr","Minumum Electron dR to gen particles",100,0.0,1.0);
-TH1F* hElGenMatchPdgID = new TH1F ("ElGenMatch","PdgID of matched gen particle",50,-24.5,24.5);
+TH1F* hElGenMatchPdgID = new TH1F ("ElGenMatchId","PdgID of matched gen particle",50,-24.5,24.5);
 
 TH1F* hElPtMatch = new TH1F ("hElPtMatch","Pt of matched El",100,0,500);
 TH1F* hElPtNonMatch = new TH1F ("hElPtNonMatch","Pt of non matched El",100,0,500);
@@ -29,26 +29,26 @@ TH1F* hElPtNonMatch = new TH1F ("hElPtNonMatch","Pt of non matched El",100,0,500
 TH1F* hPhoPt = new TH1F ("hPhoPt","Pt of photon",100,0,500);
 
 // miniIso
-TH1F* hElMiniIsoMatch = new TH1F ("ElminiIsoMatch","Matched Electron miniIso",100,0.0,0.5);
-TH1F* hElMiniIsoNonMatch = new TH1F ("ElminiIsoNonMatch","Non-Matched Electron miniIso",100,0.0,0.5);
+TH1F* hElMiniIsoMatch = new TH1F ("ElminiIsoMatch","Matched Electron miniIso",100,0.0,2.0);
+TH1F* hElMiniIsoNonMatch = new TH1F ("ElminiIsoNonMatch","Non-Matched Electron miniIso",100,0.0,2.0);
 
 // relIso
-TH1F* hElRelIsoMatch = new TH1F ("ElrelisoMatch","Matched Electron relIso",100,0.0,0.5);
-TH1F* hElRelIsoNonMatch = new TH1F ("ElrelisoNonMatch","Non-Matched Electron relIso",100,0.0,0.5);
+TH1F* hElRelIsoMatch = new TH1F ("ElrelisoMatch","Matched Electron relIso",100,0.0,2.0);
+TH1F* hElRelIsoNonMatch = new TH1F ("ElrelisoNonMatch","Non-Matched Electron relIso",100,0.0,2.0);
 
 // Muons
 //TH1F* hMuIso = new TH1F ("MuIso","Muon isolation",100,0.0,10.0);
 TH1F* hMuDrGen = new TH1F ("MuDr","Muon dR to gen particles",100,0.0,10.0);
 TH1F* hMuMinDrGen = new TH1F ("MuMinDr","Minumum Muon dR to gen particles",100,0.0,1.0);
-TH1F* hMuGenMatchPdgID = new TH1F ("MuGenMatch","PdgID of matched gen particle",50,-24.5,24.5);
+TH1F* hMuGenMatchPdgID = new TH1F ("MuGenMatchId","PdgID of matched gen particle",50,-24.5,24.5);
 
 // miniIso
-TH1F* hMuMiniIsoMatch = new TH1F ("MuminiIsoMatch","Matched Muon miniIso",100,0.0,0.5);
-TH1F* hMuMiniIsoNonMatch = new TH1F ("MuminiIsoNonMatch","Non-Matched Muon miniIso",100,0.0,0.5);
+TH1F* hMuMiniIsoMatch = new TH1F ("MuminiIsoMatch","Matched Muon miniIso",100,0.0,2.0);
+TH1F* hMuMiniIsoNonMatch = new TH1F ("MuminiIsoNonMatch","Non-Matched Muon miniIso",100,0.0,2.0);
 
 // relIso
-TH1F* hMuRelIsoMatch = new TH1F ("MurelisoMatch","Matched Muon relIso",100,0.0,0.5);
-TH1F* hMuRelIsoNonMatch = new TH1F ("MurelisoNonMatch","Non-Matched Muon relIso",100,0.0,0.5);
+TH1F* hMuRelIsoMatch = new TH1F ("MurelisoMatch","Matched Muon relIso",100,0.0,2.0);
+TH1F* hMuRelIsoNonMatch = new TH1F ("MurelisoNonMatch","Non-Matched Muon relIso",100,0.0,2.0);
 
 
 int main (int argc, char* argv[]){
@@ -89,21 +89,31 @@ int main (int argc, char* argv[]){
 
     cout << "Starting event loop" << endl;
 
-    for(int entry=0; entry < min(100000,Nevents); entry+=1){
-//    for(int entry=0; entry < Nevents; entry+=1){
+    int maxEvents = min(4000000,Nevents);
+//    int maxEvents = Nevents;
 
-        if (entry % 1000 == 0)
-            cout << "================= Processing entry: " << entry << '\r' << flush;
+    for(int entry=0; entry < maxEvents; entry+=1){
+
+        if (entry % 10000 == 0)
+            cout << "================= Processing entry: " << entry << "\t(" << 100*entry/maxEvents <<  "% done)" << '\r' << flush;
 
         //lumi calcualtion done in runAnalyzer.py (fb and pb)
         Float_t fw = tree->GetEntryW(entry);
         Float_t EvWeight = 1.0;
         EvWeight *= fw ;
 
+	// selection
+	Obj.GetJets(tree);
+	Obj.GetKinVariables();
+
+	if ( Obj.HT40 < 750) continue;
+
         //get all objects
-        Obj.GetLeptons(tree);
-        Obj.GetGenParticles(tree);
-//        Obj.GetGenLeptons(tree);
+        Obj.GetLeptons(tree,"genID","genID");
+//        Obj.GetGenParticles(tree);
+        Obj.GetGenLeptonsFromTau(tree);
+        Obj.GetGenLeptons(tree);
+
 
 /*
   if(Obj.nMuGood || Obj.nGenPart){
@@ -117,45 +127,55 @@ int main (int argc, char* argv[]){
 
             int lepId = abs(Obj.goodLep[ilep].pdgId);
 
-            float maxDr = 0.3;
+            float maxDr = 0.1;
             float minDr = 9999.;
-            float minIndx = -1;
+            float matchIndx = -1;
 
-//	    cout << Obj.nGenPart << endl;
-//	    continue;
+	    bool matched = false;
+
+	    // define reference objects: genPart, genLep or genLepFromTau
+	    //vector<GenParticle> refGen = Obj.genPart;
+	    vector<GenLepton> refGen = Obj.genLep;
+	    //vector<GenLepton> refGen = Obj.genLepFromTau;
+	    // adding more collections (like genLepFromTau)
+	    refGen.insert(refGen.end(), Obj.genLepFromTau.begin(), Obj.genLepFromTau.end());
+
+//	    cout << "Number of reference objects: " << refGen.size() << endl;
 
             // 1. loop through gen particles
-            for (int igen = 0; igen < Obj.nGenPart; igen++){
+            for (int iref = 0; iref < refGen.size(); iref++){
 
-                int genId = abs(Obj.genPart[igen].pdgId);
-//		if (genId > 25) continue;
+                int genId = abs(refGen[iref].pdgId);
 
+		// check same ID
                 if (lepId != genId) continue;
-                if (abs(Obj.genPart[igen].motherId) != 24) continue;
+
+		// check W or tau mother
+                if (!(abs(refGen[iref].motherId) != 24 || abs(refGen[iref].motherId) != 15)) continue;
 
                 // relDeltaPt < 0.3
-                if (abs(1 - Obj.goodLep[ilep].Pt()/Obj.genPart[igen].Pt()) > 0.3)
-                    continue;
+                if (abs(1 - Obj.goodLep[ilep].Pt()/refGen[iref].Pt()) > 0.3) continue;
 
                 // 2. calc dR
-                float tmpDr = Obj.goodLep[ilep].DeltaR((TLorentzVector) Obj.genPart[igen]);
+                float tmpDr = Obj.goodLep[ilep].DeltaR((TLorentzVector) refGen[iref]);
 
                 if (lepId == 11) hElDrGen ->Fill(tmpDr, EvWeight);
                 if (lepId == 13) hMuDrGen ->Fill(tmpDr, EvWeight);
 
-                // 3. find min(dR)
-                if (tmpDr < minDr){
+                // 3. check maxDr
+                if (tmpDr < maxDr){
 
-                    minDr = tmpDr;
-                    minIndx = igen;
-                }
+		    if (matched)
+			cout << "Double Matched in " << entry << " to indx " << matchIndx << " and " << iref << endl;
+
+		    matched = true;
+                    matchIndx = iref;
+		    minDr = tmpDr;
+		}
             }
 
-            // fill if dR less than cut
-//	    cout << minDr << endl;
-
-            if( minDr < maxDr ){
-                int pdg = Obj.genPart[minIndx].pdgId;
+            if( matched ){
+                int pdg = refGen[matchIndx].pdgId;
 
                 if (lepId == 11){
 //                    cout << "Found El match in event " << entry << " with dR\t" << minDr <<  " and pdgID\t" << pdg << endl;
@@ -163,7 +183,7 @@ int main (int argc, char* argv[]){
                     hElGenMatchPdgID ->Fill(pdg, EvWeight);
 
 		    hElPtMatch->Fill(Obj.goodLep[ilep].Pt());
-		    if (pdg == 22) hPhoPt->Fill(Obj.genPart[minIndx].Pt());
+		    if (pdg == 22) hPhoPt->Fill(refGen[matchIndx].Pt());
 
 		    hElMiniIsoMatch->Fill(Obj.goodLep[ilep].miniRelIso,EvWeight);
 		    hElRelIsoMatch->Fill(Obj.goodLep[ilep].relIso03,EvWeight);
@@ -196,6 +216,8 @@ int main (int argc, char* argv[]){
     }
 
     cout << endl << "Finished event loop" << endl;
+
+    cout << "Found " << hElGenMatchPdgID->GetEntries() << "\t matched ele" << endl;
 
     //write out histograms
     TFile * outf;
