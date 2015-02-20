@@ -106,25 +106,16 @@ Float_t met_phi;
 Float_t met_pt;
 Float_t met_mass;
 
-void GetObjects::GetLeptons(EasyChain * tree){
+void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, string muID/* = "POG2012"*/ ){
 
     // clearing objects
     goodLep.clear();
     goodEl.clear();
     goodMu.clear();
 
-    SelectedLep.clear();
-    softLep.clear();
-    softEl.clear();
-    softMu.clear();
-
     vetoLep.clear();
     vetoEl.clear();
     vetoMu.clear();
-
-    SoftvetoLep.clear();
-    SoftvetoEl.clear();
-    SoftvetoMu.clear();
 
     nLepGood = 0;
     nMuGood = 0;
@@ -133,6 +124,174 @@ void GetObjects::GetLeptons(EasyChain * tree){
     nLepVeto = 0;
     nElVeto = 0;
     nMuVeto = 0;
+
+    // filling objects from tree
+    int nLep = tree->Get(nLep,"nLepGood");
+
+    // dont spend time on reading if no leptons
+    if(nLep < 1) return;
+
+    tree->Get(LepGood_pt[0],"LepGood_pt");
+    tree->Get(LepGood_eta[0],"LepGood_eta");
+    tree->Get(LepGood_phi[0],"LepGood_phi");
+    tree->Get(LepGood_mass[0],"LepGood_mass");
+    tree->Get(LepGood_relIso03[0],"LepGood_relIso03");
+    tree->Get(LepGood_miniRelIso[0],"LepGood_miniRelIso");
+    tree->Get(LepGood_pdgId[0],"LepGood_pdgId");
+    tree->Get(LepGood_tightID[0],"LepGood_tightId");
+    tree->Get(LepGood_mvaSusy[0],"LepGood_mvaSusy");
+    tree->Get(LepGood_convVeto[0],"LepGood_convVeto");
+    tree->Get(LepGood_lostHits[0],"LepGood_lostHits");
+    tree->Get(LepGood_sip3d[0],"LepGood_sip3d");
+
+    for(int ilep = 0; ilep < nLep; ilep++){
+        Lepton dummyLep;
+        dummyLep.SetPtEtaPhiM(LepGood_pt[ilep],LepGood_eta[ilep],LepGood_phi[ilep],LepGood_mass[ilep]);
+        dummyLep.pdgId = LepGood_pdgId[ilep];
+        dummyLep.tightID = LepGood_tightID[ilep];
+        dummyLep.mvaSusy = LepGood_mvaSusy[ilep];
+        dummyLep.relIso03 = LepGood_relIso03[ilep];
+        dummyLep.miniRelIso = LepGood_miniRelIso[ilep];
+        bool isVetoMu = false;
+        bool isVetoEl = false;
+
+	/////////
+        // common cuts for all hard leptons (good and veto leps pass)
+	/////////
+
+        if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+            continue;
+
+        // Muon cuts
+        if(abs(LepGood_pdgId[ilep]) == 13){
+
+	    bool passID = false;
+
+	    // Default POG ID
+            if( muID == "POG2012" &&
+		dummyLep.Pt() > goodMuPt &&
+		LepGood_tightID[ilep] ==1 &&
+		LepGood_relIso03[ilep] < goodMu_relIso03
+		)
+		passID = true;
+
+	    // ID for gen study: w/o Iso
+            if( muID == "genID" &&
+		dummyLep.Pt() > goodMuPt &&
+		LepGood_tightID[ilep] ==1
+		)
+		passID = true;
+
+	    //ID from Cristina
+            if( muID == "CristinaID" &&
+		dummyLep.Pt() > goodMuPt &&
+		LepGood_tightID[ilep] ==1 &&
+		LepGood_relIso03[ilep] < goodMu_relIso03 &&
+		LepGood_sip3d[ilep] < goodMu_sip3d
+		)
+		passID = true;
+
+	    if (passID){
+
+                goodLep.push_back(dummyLep);
+                goodMu.push_back(dummyLep);
+                nMuGood++;
+                nLepGood++;
+
+                //continue;
+            }
+            else{
+                isVetoMu = true;
+                nMuVeto++;
+            }
+        }
+
+        // Electron cuts
+        if(abs(LepGood_pdgId[ilep]) == 11){
+
+	    bool passID = false;
+
+	    // a la POG Cuts_2012 ID
+            if( elID == "POG2012" &&
+		dummyLep.Pt() > goodElPt &&
+		LepGood_tightID[ilep] > 2 &&
+		LepGood_relIso03[ilep] < goodEl_relIso03
+		)
+		passID = true;
+
+	    // ID for gen study: w/o Iso
+            if( elID == "genID" &&
+		dummyLep.Pt() > goodElPt &&
+		LepGood_tightID[ilep] > 1
+		)
+		passID = true;
+
+	    // MVAsusy ID
+            if( elID == "MVASusy" &&
+		dummyLep.Pt() > goodElPt &&
+		LepGood_relIso03[ilep] < 0.15 &&
+		LepGood_mvaSusy[ilep] > goodEl_mvaSusy &&
+		LepGood_lostHits[ilep] <= goodEl_lostHits &&
+		LepGood_convVeto[ilep]
+		)
+		passID = true;
+
+	    // a la POG Cuts_2012 ID + recommendations from Cristina
+            if( elID == "CristinaID" &&
+		dummyLep.Pt() > goodElPt &&
+		LepGood_relIso03[ilep] < goodEl_relIso03 &&
+		LepGood_tightID[ilep] > goodEl_tightId &&
+		LepGood_lostHits[ilep] <= goodEl_lostHits &&
+		LepGood_sip3d[ilep] < goodEl_sip3d &&
+		LepGood_convVeto[ilep]
+		)
+		passID = true;
+
+	    if (passID){
+
+                goodLep.push_back(dummyLep);
+                goodEl.push_back(dummyLep);
+                nElGood++;
+                nLepGood++;
+
+                // continue;
+            }
+            else{
+                isVetoEl = true;
+                nElVeto++;
+            }
+        }
+
+        // Only non-good El or Mu will pass => veto leptons
+        if(isVetoEl || isVetoMu){
+            vetoLep.push_back(dummyLep);
+            nLepVeto++;
+        }
+    }
+    /*
+      cout << "Get leptons summary: total number of Leptons = \t" << nLep << endl;
+      cout << "Number of good Muons = \t" << nMuGood << " and veto Mu = \t" << nMuVeto << endl;
+      cout << "Number of good Electrons = \t" << nElGood  << " and veto El = \t" << nElVeto << endl;
+      cout << "Number of veto leptons = \t" << nLepVeto << endl;
+    */
+
+    if(goodLep.size()==1) SelectedLep=goodLep;
+    else if(softLep.size()==1) SelectedLep=softLep;
+}
+
+void GetObjects::GetSoftLeptons(EasyChain * tree){
+    // fill softLeptons
+
+    // clearing objects
+    SelectedLep.clear();
+
+    softLep.clear();
+    softEl.clear();
+    softMu.clear();
+
+    SoftvetoLep.clear();
+    SoftvetoEl.clear();
+    SoftvetoMu.clear();
 
     nSoftLepGood = 0;
     nSoftMuGood = 0;
@@ -168,8 +327,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
         dummyLep.mvaSusy = LepGood_mvaSusy[ilep];
         dummyLep.relIso03 = LepGood_relIso03[ilep];
         dummyLep.miniRelIso = LepGood_miniRelIso[ilep];
-        bool isVetoMu = false;
-        bool isVetoEl = false;
+
         bool isSoftVetoMu = false;
         bool isSoftVetoEl = false;
 
@@ -215,74 +373,8 @@ void GetObjects::GetLeptons(EasyChain * tree){
             SoftvetoLep.push_back(dummyLep);
             nSoftLepVeto++;
         }
-
-	/////////
-        // common cuts for all hard leptons (good and veto leps pass)
-	/////////
-
-        if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
-            continue;
-
-        // Muon cuts
-        if(abs(LepGood_pdgId[ilep]) == 13){
-//            if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] ==1 && LepGood_relIso03[ilep] < goodMu_relIso03){
-            if( dummyLep.Pt() > goodMuPt && LepGood_tightID[ilep] ==1 && LepGood_relIso03[ilep] < goodMu_relIso03 && LepGood_sip3d[ilep] < goodMu_sip3d ){
-                goodLep.push_back(dummyLep);
-                goodMu.push_back(dummyLep);
-                nMuGood++;
-                nLepGood++;
-
-                //continue;
-            }
-            else{
-                isVetoMu = true;
-                nMuVeto++;
-            }
-        }
-
-        // Electron cuts
-        if(abs(LepGood_pdgId[ilep]) == 11){
-            if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] > 2 && LepGood_relIso03[ilep] < goodEl_relIso03){
-
-	    /*
-	    // MVAsusy ID
-            if( dummyLep.Pt() > goodElPt &&
-		LepGood_relIso03[ilep] < 0.15 &&
-		LepGood_mvaSusy[ilep] > goodEl_mvaSusy &&
-		//LepGood_lostHits[ilep] <= goodEl_lostHits &&
-		LepGood_convVeto[ilep]
-		){
-	    */
-
-            /*
-	    // a la POG Cuts_2012 ID
-            if( dummyLep.Pt() > goodElPt &&
-		LepGood_relIso03[ilep] < goodEl_relIso03 &&
-		LepGood_tightID[ilep] > goodEl_tightId &&
-		LepGood_lostHits[ilep] <= goodEl_lostHits &&
-		LepGood_sip3d[ilep] < goodEl_sip3d &&
-		LepGood_convVeto[ilep]
-		){
-	    */
-                goodLep.push_back(dummyLep);
-                goodEl.push_back(dummyLep);
-                nElGood++;
-                nLepGood++;
-
-                // continue;
-            }
-            else{
-                isVetoEl = true;
-                nElVeto++;
-            }
-        }
-
-        // Only non-good El or Mu will pass => veto leptons
-        if(isVetoEl || isVetoMu){
-            vetoLep.push_back(dummyLep);
-            nLepVeto++;
-        }
     }
+
     /*
       cout << "Get leptons summary: total number of Leptons = \t" << nLep << endl;
       cout << "Number of good Muons = \t" << nMuGood << " and veto Mu = \t" << nMuVeto << endl;

@@ -119,7 +119,9 @@ public:
     void GetGenMET(EasyChain * tree);
 
     void GetMETnoPU(EasyChain * tree);
-    void GetLeptons(EasyChain * tree);
+    void GetLeptons(EasyChain * tree, string elID = "POG2012", string muID = "POG2012");
+    void GetSoftLeptons(EasyChain * tree);
+
     void GetGenLeptons(EasyChain * tree);
     void GetGenParticles(EasyChain * tree);
     void GetGenLeptonsFromTau(EasyChain * tree);
