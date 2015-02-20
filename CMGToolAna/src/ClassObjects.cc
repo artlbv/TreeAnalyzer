@@ -42,7 +42,7 @@ Double_t goodJetBtagCMVA = 0.732;
 Double_t goodFatJetPt = 100.0;
 
 // variables for tree
-const int arrayN = 50;
+const int arrayN = 200;
 Double_t Jet_pt[arrayN];
 Double_t Jet_eta[arrayN];
 Double_t Jet_phi[arrayN];
@@ -72,6 +72,7 @@ Double_t LepGood_eta[arrayN];
 Double_t LepGood_phi[arrayN];
 Double_t LepGood_mass[arrayN];
 Double_t LepGood_relIso03[arrayN];
+Double_t LepGood_miniRelIso[arrayN];
 Int_t   LepGood_pdgId[arrayN];
 Int_t  LepGood_tightID[arrayN];
 Int_t LepGood_convVeto[arrayN];
@@ -87,6 +88,7 @@ Double_t genLep_mass[2]; //[ngenLep]
 Double_t genLep_eta[2]; //[ngenLep]
 Double_t genLep_phi[2]; //[ngenLep]
 Int_t genLep_pdgId[2]; //[ngenLep]
+Int_t genLep_motherId[2]; //[ngenLep]
 
 Double_t genPart_pt[arrayN];
 Double_t genPart_mass[arrayN];
@@ -149,6 +151,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
     tree->Get(LepGood_phi[0],"LepGood_phi");
     tree->Get(LepGood_mass[0],"LepGood_mass");
     tree->Get(LepGood_relIso03[0],"LepGood_relIso03");
+    tree->Get(LepGood_miniRelIso[0],"LepGood_miniRelIso");
     tree->Get(LepGood_pdgId[0],"LepGood_pdgId");
     tree->Get(LepGood_tightID[0],"LepGood_tightId");
     tree->Get(LepGood_mvaSusy[0],"LepGood_mvaSusy");
@@ -159,10 +162,11 @@ void GetObjects::GetLeptons(EasyChain * tree){
     for(int ilep = 0; ilep < nLep; ilep++){
         Lepton dummyLep;
         dummyLep.SetPtEtaPhiM(LepGood_pt[ilep],LepGood_eta[ilep],LepGood_phi[ilep],LepGood_mass[ilep]);
-        dummyLep.pdgID = LepGood_pdgId[ilep];
+        dummyLep.pdgId = LepGood_pdgId[ilep];
         dummyLep.tightID = LepGood_tightID[ilep];
         dummyLep.mvaSusy = LepGood_mvaSusy[ilep];
         dummyLep.relIso03 = LepGood_relIso03[ilep];
+        dummyLep.miniRelIso = LepGood_miniRelIso[ilep];
         bool isVetoMu = false;
         bool isVetoEl = false;
         bool isSoftVetoMu = false;
@@ -237,7 +241,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
 
         // Electron cuts
         if(abs(LepGood_pdgId[ilep]) == 11){
-//            if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] > 2 && LepGood_relIso03[ilep] < goodEl_relIso03){
+            if( dummyLep.Pt() > goodElPt && LepGood_tightID[ilep] > 2 && LepGood_relIso03[ilep] < goodEl_relIso03){
 
 	    /*
 	    // MVAsusy ID
@@ -249,6 +253,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
 		){
 	    */
 
+            /*
 	    // a la POG Cuts_2012 ID
             if( dummyLep.Pt() > goodElPt &&
 		LepGood_relIso03[ilep] < goodEl_relIso03 &&
@@ -257,7 +262,7 @@ void GetObjects::GetLeptons(EasyChain * tree){
 		LepGood_sip3d[ilep] < goodEl_sip3d &&
 		LepGood_convVeto[ilep]
 		){
-
+	    */
                 goodLep.push_back(dummyLep);
                 goodEl.push_back(dummyLep);
                 nElGood++;
@@ -305,6 +310,7 @@ void GetObjects::GetGenLeptons(EasyChain * tree){
     tree->Get(genLep_eta[0],"genLep_eta");
     tree->Get(genLep_phi[0],"genLep_phi");
     tree->Get(genLep_pdgId[0],"genLep_pdgId");
+    tree->Get(genLep_motherId[0],"genLep_motherId");
 
 /*
 // why?
@@ -315,6 +321,8 @@ tree->Get(genLep_charge[0],"genLep_charge");
 
         GenLepton dummyLep;
         dummyLep.SetPtEtaPhiM(genLep_pt[ilep],genLep_eta[ilep],genLep_phi[ilep],genLep_mass[ilep]);
+	dummyLep.pdgId = genLep_pdgId[ilep];
+	dummyLep.motherID = genLep_motherId[ilep];
 
         genLep.push_back(dummyLep);
 //      nGenLep++;
@@ -411,20 +419,23 @@ void GetObjects::GetGenParticles(EasyChain * tree){
     genPart.clear();
     nGenPart = 0;
     // filling objects from tree
-    tree->Get(nGenPart,"nGenPart"); //n prompt Lep
-    tree->Get(genPart_pt[0],"GenPart_pt");
-    tree->Get(genPart_mass[0],"GenPart_mass");
-    tree->Get(genPart_eta[0],"GenPart_eta");
-    tree->Get(genPart_phi[0],"GenPart_phi");
-    tree->Get(genPart_pdgId[0],"GenPart_pdgId");
-    tree->Get(genPart_motherId[0],"GenPart_motherId");
-    tree->Get(genPart_grandmaId[0],"GenPart_grandmotherId");
+    tree->Get(nGenPart,"ngenPart");
+
+    if (nGenPart < 1) return;
+
+    tree->Get(genPart_pt[0],"genPart_pt");
+    tree->Get(genPart_mass[0],"genPart_mass");
+    tree->Get(genPart_eta[0],"genPart_eta");
+    tree->Get(genPart_phi[0],"genPart_phi");
+    tree->Get(genPart_pdgId[0],"genPart_pdgId");
+    tree->Get(genPart_motherId[0],"genPart_motherId");
+    tree->Get(genPart_grandmaId[0],"genPart_grandmotherId");
 
     for(int ipart = 0; ipart < nGenPart; ipart++){
 
         GenParticle dummyPart;
         dummyPart.SetPtEtaPhiM(genPart_pt[ipart], genPart_eta[ipart], genPart_phi[ipart], genPart_mass[ipart]);
-        dummyPart.pdgid = genPart_pdgId[ipart];
+        dummyPart.pdgId = genPart_pdgId[ipart];
         dummyPart.motherid = genPart_motherId[ipart];
         dummyPart.grandmaid = genPart_grandmaId[ipart];
 

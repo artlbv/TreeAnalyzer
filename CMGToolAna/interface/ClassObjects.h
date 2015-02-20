@@ -44,8 +44,9 @@ class Lepton: public ParticleObject{
 public:
     using ParticleObject::ParticleObject;
 
-    Int_t pdgID;
+    Int_t pdgId;
     Double_t relIso03;
+    Double_t miniRelIso;
     Int_t tightID;
     Double_t mvaSusy;
     Int_t charge;
@@ -57,7 +58,11 @@ class GenLepton: public ParticleObject{
 public:
     using ParticleObject::ParticleObject;
 
-    int status;
+    Int_t status;
+    Int_t charge;
+    Int_t pdgId;
+    Int_t motherID;
+
 };
 
 // a bit more generic, generator partices
@@ -65,7 +70,7 @@ class GenParticle: public ParticleObject{
 public:
     using ParticleObject::ParticleObject;
 
-    int pdgid;
+    int pdgId;
     int motherid;
     int grandmaid;
 };
