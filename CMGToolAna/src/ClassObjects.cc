@@ -83,12 +83,13 @@ Float_t  LepGood_mvaSusy[arrayN];
 
 
 // Gen particles
-Float_t genLep_pt[2]; //[ngenLep]
-Float_t genLep_mass[2]; //[ngenLep]
-Float_t genLep_eta[2]; //[ngenLep]
-Float_t genLep_phi[2]; //[ngenLep]
-Int_t genLep_pdgId[2]; //[ngenLep]
-Int_t genLep_motherId[2]; //[ngenLep]
+Float_t genLep_pt[5]; //[ngenLep]
+Float_t genLep_mass[5]; //[ngenLep]
+Float_t genLep_eta[5]; //[ngenLep]
+Float_t genLep_phi[5]; //[ngenLep]
+Int_t genLep_pdgId[5]; //[ngenLep]
+Int_t genLep_motherId[5]; //[ngenLep]
+Int_t genLep_charge[5]; //[ngenLep]
 
 Float_t genPart_pt[arrayN];
 Float_t genPart_mass[arrayN];
@@ -311,18 +312,15 @@ void GetObjects::GetGenLeptons(EasyChain * tree){
     tree->Get(genLep_phi[0],"genLep_phi");
     tree->Get(genLep_pdgId[0],"genLep_pdgId");
     tree->Get(genLep_motherId[0],"genLep_motherId");
-
-/*
-// why?
-tree->Get(genLep_charge[0],"genLep_charge");
-*/
+    tree->Get(genLep_charge[0],"genLep_charge");
 
     for(int ilep = 0; ilep < nGenLep; ilep++){
 
         GenLepton dummyLep;
         dummyLep.SetPtEtaPhiM(genLep_pt[ilep],genLep_eta[ilep],genLep_phi[ilep],genLep_mass[ilep]);
 	dummyLep.pdgId = genLep_pdgId[ilep];
-	dummyLep.motherID = genLep_motherId[ilep];
+	dummyLep.motherId = genLep_motherId[ilep];
+	dummyLep.charge = genLep_charge[ilep];
 
         genLep.push_back(dummyLep);
 //      nGenLep++;
@@ -436,8 +434,8 @@ void GetObjects::GetGenParticles(EasyChain * tree){
         GenParticle dummyPart;
         dummyPart.SetPtEtaPhiM(genPart_pt[ipart], genPart_eta[ipart], genPart_phi[ipart], genPart_mass[ipart]);
         dummyPart.pdgId = genPart_pdgId[ipart];
-        dummyPart.motherid = genPart_motherId[ipart];
-        dummyPart.grandmaid = genPart_grandmaId[ipart];
+        dummyPart.motherId = genPart_motherId[ipart];
+        dummyPart.grandmaId = genPart_grandmaId[ipart];
 
         genPart.push_back(dummyPart);
 
