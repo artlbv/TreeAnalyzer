@@ -41,71 +41,6 @@ Float_t goodJetBtagCMVA = 0.732;
 //fatjet
 Float_t goodFatJetPt = 100.0;
 
-// variables for tree
-const int arrayN = 200;
-Float_t Jet_pt[arrayN];
-Float_t Jet_eta[arrayN];
-Float_t Jet_phi[arrayN];
-Float_t Jet_mass[arrayN];
-Float_t Jet_btagCSV[arrayN];
-Float_t Jet_btagCMVA[arrayN];
-
-Float_t FatJet_pt[arrayN];
-Float_t FatJet_eta[arrayN];
-Float_t FatJet_phi[arrayN];
-Float_t FatJet_mass[arrayN];
-Float_t FatJet_prunedMass[arrayN];
-Float_t FatJet_trimmedMass[arrayN];
-Float_t FatJet_filteredMass[arrayN];
-
-Float_t FatJet_tau1[arrayN];
-Float_t FatJet_tau2[arrayN];
-Float_t FatJet_tau3[arrayN];
-Float_t FatJet_topMass[arrayN];
-Float_t FatJet_minMass[arrayN];
-Float_t FatJet_nSubJets[arrayN];
-
-
-
-Float_t LepGood_pt[arrayN];
-Float_t LepGood_eta[arrayN];
-Float_t LepGood_phi[arrayN];
-Float_t LepGood_mass[arrayN];
-Float_t LepGood_relIso03[arrayN];
-Float_t LepGood_miniRelIso[arrayN];
-Int_t   LepGood_pdgId[arrayN];
-Int_t  LepGood_tightID[arrayN];
-Int_t LepGood_convVeto[arrayN];
-Int_t LepGood_lostHits[arrayN];
-Float_t LepGood_sip3d[arrayN];
-Float_t  LepGood_mvaID[arrayN];
-Float_t  LepGood_mvaSusy[arrayN];
-
-
-// Gen particles
-Float_t genLep_pt[5]; //[ngenLep]
-Float_t genLep_mass[5]; //[ngenLep]
-Float_t genLep_eta[5]; //[ngenLep]
-Float_t genLep_phi[5]; //[ngenLep]
-Int_t genLep_pdgId[5]; //[ngenLep]
-Int_t genLep_motherId[5]; //[ngenLep]
-Int_t genLep_charge[5]; //[ngenLep]
-
-Float_t genPart_pt[arrayN];
-Float_t genPart_mass[arrayN];
-Float_t genPart_eta[arrayN];
-Float_t genPart_phi[arrayN];
-Int_t genPart_pdgId[arrayN];
-Int_t genPart_motherId[arrayN];
-Int_t genPart_grandmaId[arrayN];
-
-
-// MET
-Float_t met_eta;
-Float_t met_phi;
-Float_t met_pt;
-Float_t met_mass;
-
 void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, string muID/* = "POG2012"*/ ){
 
     // clearing objects
@@ -131,6 +66,22 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
     // dont spend time on reading if no leptons
     if(nLep < 1) return;
 
+    const int arrayN = nLep;
+
+    Float_t LepGood_pt[arrayN];
+    Float_t LepGood_eta[arrayN];
+    Float_t LepGood_phi[arrayN];
+    Float_t LepGood_mass[arrayN];
+    Float_t LepGood_relIso03[arrayN];
+    Float_t LepGood_miniRelIso[arrayN];
+    Int_t   LepGood_pdgId[arrayN];
+    Int_t  LepGood_tightID[arrayN];
+    Int_t LepGood_convVeto[arrayN];
+    Int_t LepGood_lostHits[arrayN];
+    Float_t LepGood_sip3d[arrayN];
+    Float_t  LepGood_mvaID[arrayN];
+    Float_t  LepGood_mvaSusy[arrayN];
+
     tree->Get(LepGood_pt[0],"LepGood_pt");
     tree->Get(LepGood_eta[0],"LepGood_eta");
     tree->Get(LepGood_phi[0],"LepGood_phi");
@@ -155,9 +106,9 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
         bool isVetoMu = false;
         bool isVetoEl = false;
 
-	/////////
+        /////////
         // common cuts for all hard leptons (good and veto leps pass)
-	/////////
+        /////////
 
         if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
             continue;
@@ -165,33 +116,33 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
         // Muon cuts
         if(abs(LepGood_pdgId[ilep]) == 13){
 
-	    bool passID = false;
+            bool passID = false;
 
-	    // Default POG ID
+            // Default POG ID
             if( muID == "POG2012" &&
-		dummyLep.Pt() > goodMuPt &&
-		LepGood_tightID[ilep] ==1 &&
-		LepGood_relIso03[ilep] < goodMu_relIso03
-		)
-		passID = true;
+                dummyLep.Pt() > goodMuPt &&
+                LepGood_tightID[ilep] ==1 &&
+                LepGood_relIso03[ilep] < goodMu_relIso03
+                )
+                passID = true;
 
-	    // ID for gen study: w/o Iso
+            // ID for gen study: w/o Iso
             if( muID == "genID" &&
-		dummyLep.Pt() > goodMuPt &&
-		LepGood_tightID[ilep] ==1
-		)
-		passID = true;
+                dummyLep.Pt() > goodMuPt &&
+                LepGood_tightID[ilep] ==1
+                )
+                passID = true;
 
-	    //ID from Cristina
+            //ID from Cristina
             if( muID == "CristinaID" &&
-		dummyLep.Pt() > goodMuPt &&
-		LepGood_tightID[ilep] ==1 &&
-		LepGood_relIso03[ilep] < goodMu_relIso03 &&
-		LepGood_sip3d[ilep] < goodMu_sip3d
-		)
-		passID = true;
+                dummyLep.Pt() > goodMuPt &&
+                LepGood_tightID[ilep] ==1 &&
+                LepGood_relIso03[ilep] < goodMu_relIso03 &&
+                LepGood_sip3d[ilep] < goodMu_sip3d
+                )
+                passID = true;
 
-	    if (passID){
+            if (passID){
 
                 goodLep.push_back(dummyLep);
                 goodMu.push_back(dummyLep);
@@ -209,45 +160,45 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
         // Electron cuts
         if(abs(LepGood_pdgId[ilep]) == 11){
 
-	    bool passID = false;
+            bool passID = false;
 
-	    // a la POG Cuts_2012 ID
+            // a la POG Cuts_2012 ID
             if( elID == "POG2012" &&
-		dummyLep.Pt() > goodElPt &&
-		LepGood_tightID[ilep] > 2 &&
-		LepGood_relIso03[ilep] < goodEl_relIso03
-		)
-		passID = true;
+                dummyLep.Pt() > goodElPt &&
+                LepGood_tightID[ilep] > 2 &&
+                LepGood_relIso03[ilep] < goodEl_relIso03
+                )
+                passID = true;
 
-	    // ID for gen study: w/o Iso
+            // ID for gen study: w/o Iso
             if( elID == "genID" &&
-		dummyLep.Pt() > goodElPt &&
-		LepGood_tightID[ilep] > 1
-		)
-		passID = true;
+                dummyLep.Pt() > goodElPt &&
+                LepGood_tightID[ilep] > 1
+                )
+                passID = true;
 
-	    // MVAsusy ID
+            // MVAsusy ID
             if( elID == "MVASusy" &&
-		dummyLep.Pt() > goodElPt &&
-		LepGood_relIso03[ilep] < 0.15 &&
-		LepGood_mvaSusy[ilep] > goodEl_mvaSusy &&
-		LepGood_lostHits[ilep] <= goodEl_lostHits &&
-		LepGood_convVeto[ilep]
-		)
-		passID = true;
+                dummyLep.Pt() > goodElPt &&
+                LepGood_relIso03[ilep] < 0.15 &&
+                LepGood_mvaSusy[ilep] > goodEl_mvaSusy &&
+                LepGood_lostHits[ilep] <= goodEl_lostHits &&
+                LepGood_convVeto[ilep]
+                )
+                passID = true;
 
-	    // a la POG Cuts_2012 ID + recommendations from Cristina
+            // a la POG Cuts_2012 ID + recommendations from Cristina
             if( elID == "CristinaID" &&
-		dummyLep.Pt() > goodElPt &&
-		LepGood_relIso03[ilep] < goodEl_relIso03 &&
-		LepGood_tightID[ilep] > goodEl_tightId &&
-		LepGood_lostHits[ilep] <= goodEl_lostHits &&
-		LepGood_sip3d[ilep] < goodEl_sip3d &&
-		LepGood_convVeto[ilep]
-		)
-		passID = true;
+                dummyLep.Pt() > goodElPt &&
+                LepGood_relIso03[ilep] < goodEl_relIso03 &&
+                LepGood_tightID[ilep] > goodEl_tightId &&
+                LepGood_lostHits[ilep] <= goodEl_lostHits &&
+                LepGood_sip3d[ilep] < goodEl_sip3d &&
+                LepGood_convVeto[ilep]
+                )
+                passID = true;
 
-	    if (passID){
+            if (passID){
 
                 goodLep.push_back(dummyLep);
                 goodEl.push_back(dummyLep);
@@ -305,6 +256,22 @@ void GetObjects::GetSoftLeptons(EasyChain * tree){
 
     // dont spend time on reading if no leptons
     if(nLep < 1) return;
+
+    const int arrayN = nLep;
+
+    Float_t LepGood_pt[arrayN];
+    Float_t LepGood_eta[arrayN];
+    Float_t LepGood_phi[arrayN];
+    Float_t LepGood_mass[arrayN];
+    Float_t LepGood_relIso03[arrayN];
+    Float_t LepGood_miniRelIso[arrayN];
+    Int_t   LepGood_pdgId[arrayN];
+    Int_t  LepGood_tightID[arrayN];
+    Int_t LepGood_convVeto[arrayN];
+    Int_t LepGood_lostHits[arrayN];
+    Float_t LepGood_sip3d[arrayN];
+    Float_t  LepGood_mvaID[arrayN];
+    Float_t  LepGood_mvaSusy[arrayN];
 
     tree->Get(LepGood_pt[0],"LepGood_pt");
     tree->Get(LepGood_eta[0],"LepGood_eta");
@@ -395,6 +362,15 @@ void GetObjects::GetGenLeptons(EasyChain * tree){
     // filling objects from tree
     tree->Get(nGenLep,"ngenLep"); //n prompt Lep
 
+    const int arrayN = nGenLep;
+    Float_t genLep_pt[arrayN]; //[ngenLep]
+    Float_t genLep_mass[arrayN]; //[ngenLep]
+    Float_t genLep_eta[arrayN]; //[ngenLep]
+    Float_t genLep_phi[arrayN]; //[ngenLep]
+    Int_t genLep_pdgId[arrayN]; //[ngenLep]
+    Int_t genLep_motherId[arrayN]; //[ngenLep]
+    Int_t genLep_charge[arrayN]; //[ngenLep]
+
     // dont spend time on reading if no leptons
     if(nGenLep < 1) return;
 
@@ -410,9 +386,9 @@ void GetObjects::GetGenLeptons(EasyChain * tree){
 
         GenLepton dummyLep;
         dummyLep.SetPtEtaPhiM(genLep_pt[ilep],genLep_eta[ilep],genLep_phi[ilep],genLep_mass[ilep]);
-	dummyLep.pdgId = genLep_pdgId[ilep];
-	dummyLep.motherId = genLep_motherId[ilep];
-	dummyLep.charge = genLep_charge[ilep];
+        dummyLep.pdgId = genLep_pdgId[ilep];
+        dummyLep.motherId = genLep_motherId[ilep];
+        dummyLep.charge = genLep_charge[ilep];
 
         genLep.push_back(dummyLep);
 //      nGenLep++;
@@ -449,6 +425,15 @@ void GetObjects::GetGenLeptonsFromTau(EasyChain * tree){
 
     // filling objects from tree
     tree->Get(nGenLepFromTau,"ngenLepFromTau");// Lep from Tau decay
+
+    if(nGenLepFromTau < 1) return;
+
+    const int arrayN = nGenLepFromTau;
+    Float_t genLep_pt[arrayN]; //[ngenLep]
+    Float_t genLep_mass[arrayN]; //[ngenLep]
+    Float_t genLep_eta[arrayN]; //[ngenLep]
+    Float_t genLep_phi[arrayN]; //[ngenLep]
+    Int_t genLep_pdgId[arrayN]; //[ngenLep]
 
     tree->Get(genLep_pt[0],"genLepFromTau_pt");
     tree->Get(genLep_mass[0],"genLepFromTau_mass");
@@ -488,6 +473,16 @@ void GetObjects::GetGenTaus(EasyChain * tree){
 
     // filling objects from tree
     tree->Get(nGenTau,"ngenTau");// gen Tau
+
+    if(nGenTau < 1) return;
+
+    const int arrayN = nGenTau;
+    Float_t genLep_pt[arrayN]; //[ngenLep]
+    Float_t genLep_mass[arrayN]; //[ngenLep]
+    Float_t genLep_eta[arrayN]; //[ngenLep]
+    Float_t genLep_phi[arrayN]; //[ngenLep]
+    Int_t genLep_pdgId[arrayN]; //[ngenLep]
+
     tree->Get(genLep_pt[0],"genTau_pt");
     tree->Get(genLep_eta[0],"genTau_eta");
     tree->Get(genLep_phi[0],"genTau_phi");
@@ -512,6 +507,16 @@ void GetObjects::GetGenParticles(EasyChain * tree){
     tree->Get(nGenPart,"ngenPart");
 
     if (nGenPart < 1) return;
+
+    const int arrayN = nGenPart;
+
+    Float_t genPart_pt[arrayN];
+    Float_t genPart_mass[arrayN];
+    Float_t genPart_eta[arrayN];
+    Float_t genPart_phi[arrayN];
+    Int_t genPart_pdgId[arrayN];
+    Int_t genPart_motherId[arrayN];
+    Int_t genPart_grandmaId[arrayN];
 
     tree->Get(genPart_pt[0],"genPart_pt");
     tree->Get(genPart_mass[0],"genPart_mass");
@@ -547,6 +552,15 @@ void GetObjects::GetJets(EasyChain * tree){
 
     // dont spend time on reading if no jets
     if(nJet < 1) return;
+
+    const int arrayN = nJet;
+
+    Float_t Jet_pt[arrayN];
+    Float_t Jet_eta[arrayN];
+    Float_t Jet_phi[arrayN];
+    Float_t Jet_mass[arrayN];
+    Float_t Jet_btagCSV[arrayN];
+    Float_t Jet_btagCMVA[arrayN];
 
     tree->Get(Jet_pt[0],"Jet_pt");
     tree->Get(Jet_eta[0],"Jet_eta");
@@ -591,6 +605,27 @@ void GetObjects::GetFatJets(EasyChain * tree){
     nWTagJetGood = 0;
     nWmassTagJetGood = 0;
     int nFatJet = tree->Get(nFatJet,"nFatJet");
+
+    if (nFatJet < 1) return;
+
+    const int arrayN = nFatJet;
+
+    Float_t FatJet_pt[arrayN];
+    Float_t FatJet_eta[arrayN];
+    Float_t FatJet_phi[arrayN];
+    Float_t FatJet_mass[arrayN];
+    Float_t FatJet_prunedMass[arrayN];
+    Float_t FatJet_trimmedMass[arrayN];
+    Float_t FatJet_filteredMass[arrayN];
+
+    Float_t FatJet_tau1[arrayN];
+    Float_t FatJet_tau2[arrayN];
+    Float_t FatJet_tau3[arrayN];
+    Float_t FatJet_topMass[arrayN];
+    Float_t FatJet_minMass[arrayN];
+    Float_t FatJet_nSubJets[arrayN];
+
+
     tree->Get(FatJet_pt[0],"FatJet_pt");
     tree->Get(FatJet_eta[0],"FatJet_eta");
     tree->Get(FatJet_phi[0],"FatJet_phi");
@@ -644,8 +679,13 @@ void GetObjects::GetFatJets(EasyChain * tree){
 }
 
 
-
 void GetObjects::GetMET(EasyChain * tree){
+
+    Float_t met_eta;
+    Float_t met_phi;
+    Float_t met_pt;
+    Float_t met_mass;
+
     MET.SetPtEtaPhiM(0,0,0,0);
 
     tree->Get(met_pt,"met_pt");
@@ -657,6 +697,12 @@ void GetObjects::GetMET(EasyChain * tree){
 }
 
 void GetObjects::GetGenMET(EasyChain * tree){
+
+    Float_t met_eta;
+    Float_t met_phi;
+    Float_t met_pt;
+    Float_t met_mass;
+
     genMET.SetPtEtaPhiM(0,0,0,0);
 
     tree->Get(met_pt,"met_genPt");
@@ -668,6 +714,12 @@ void GetObjects::GetGenMET(EasyChain * tree){
 }
 
 void GetObjects::GetMETnoPU(EasyChain * tree){
+
+    Float_t met_eta;
+    Float_t met_phi;
+    Float_t met_pt;
+    Float_t met_mass;
+
     METnoPU.SetPtEtaPhiM(0,0,0,0);
 
     tree->Get(met_pt,"metNoPU_pt");
