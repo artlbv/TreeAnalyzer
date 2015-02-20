@@ -23,6 +23,11 @@ TH1F* hElDrGen = new TH1F ("ElDr","Electron dR to gen particles",100,0.0,10.0);
 TH1F* hElMinDrGen = new TH1F ("ElMinDr","Minumum Electron dR to gen particles",100,0.0,1.0);
 TH1F* hElGenMatchPdgID = new TH1F ("ElGenMatch","PdgID of matched gen particle",50,-24.5,24.5);
 
+TH1F* hElPtMatch = new TH1F ("hElPtMatch","Pt of matched El",100,0,500);
+TH1F* hElPtNonMatch = new TH1F ("hElPtNonMatch","Pt of non matched El",100,0,500);
+
+TH1F* hPhoPt = new TH1F ("hPhoPt","Pt of photon",100,0,500);
+
 // miniIso
 TH1F* hElMiniIsoMatch = new TH1F ("ElminiIsoMatch","Matched Electron miniIso",100,0.0,0.5);
 TH1F* hElMiniIsoNonMatch = new TH1F ("ElminiIsoNonMatch","Non-Matched Electron miniIso",100,0.0,0.5);
@@ -66,7 +71,7 @@ int main (int argc, char* argv[]){
         exit(0);
     }
     vector<TString> files;
-    vector<double> weights;
+    vector<float> weights;
     for(int i=0;i<size;i+=2){
         files.push_back( arr->At(i)->GetName() );
         weights.push_back( atof( arr->At(i+1)->GetName() ) );
@@ -91,14 +96,14 @@ int main (int argc, char* argv[]){
             cout << "================= Processing entry: " << entry << '\r' << flush;
 
         //lumi calcualtion done in runAnalyzer.py (fb and pb)
-        Double_t fw = tree->GetEntryW(entry);
-        Double_t EvWeight = 1.0;
+        Float_t fw = tree->GetEntryW(entry);
+        Float_t EvWeight = 1.0;
         EvWeight *= fw ;
 
         //get all objects
         Obj.GetLeptons(tree);
-//        Obj.GetGenParticles(tree);
-        Obj.GetGenLeptons(tree);
+        Obj.GetGenParticles(tree);
+//        Obj.GetGenLeptons(tree);
 
 /*
   if(Obj.nMuGood || Obj.nGenPart){
@@ -108,28 +113,32 @@ int main (int argc, char* argv[]){
 */
         // Leptons
         for(int ilep = 0; ilep < Obj.nLepGood; ilep++){
-
             // lepton is Obj.goodLep
 
-            int lepId = abs(Obj.goodLep[ilep].pdgID);
+            int lepId = abs(Obj.goodLep[ilep].pdgId);
 
-            double maxDr = 0.1;
-            double minDr = 9999.;
-            double minIndx = -1;
+            float maxDr = 0.3;
+            float minDr = 9999.;
+            float minIndx = -1;
+
+//	    cout << Obj.nGenPart << endl;
+//	    continue;
 
             // 1. loop through gen particles
-            for (int igen = 0; igen < Obj.nGenLep; igen++){
+            for (int igen = 0; igen < Obj.nGenPart; igen++){
 
-                int genId = abs(Obj.genLep[igen].pdgID);
+                int genId = abs(Obj.genPart[igen].pdgId);
+//		if (genId > 25) continue;
+
                 if (lepId != genId) continue;
-                if (Obj.genLep[ilep].motherID != 24) continue;
+                if (abs(Obj.genPart[igen].motherId) != 24) continue;
 
                 // relDeltaPt < 0.3
-                if (abs(1 - Obj.goodLep[ilep].Pt()/Obj.genLep[igen].Pt()) > 0.3)
+                if (abs(1 - Obj.goodLep[ilep].Pt()/Obj.genPart[igen].Pt()) > 0.3)
                     continue;
 
                 // 2. calc dR
-                double tmpDr = Obj.goodLep[ilep].DeltaR((TLorentzVector) Obj.genLep[igen]);
+                float tmpDr = Obj.goodLep[ilep].DeltaR((TLorentzVector) Obj.genPart[igen]);
 
                 if (lepId == 11) hElDrGen ->Fill(tmpDr, EvWeight);
                 if (lepId == 13) hMuDrGen ->Fill(tmpDr, EvWeight);
@@ -143,156 +152,47 @@ int main (int argc, char* argv[]){
             }
 
             // fill if dR less than cut
+//	    cout << minDr << endl;
+
             if( minDr < maxDr ){
-                int pdg = Obj.genLep[minIndx].pdgID;
+                int pdg = Obj.genPart[minIndx].pdgId;
 
                 if (lepId == 11){
-                    cout << "Found El match in event " << entry << " with dR\t" << minDr <<  " and pdgID\t" << pdg << endl;
+//                    cout << "Found El match in event " << entry << " with dR\t" << minDr <<  " and pdgID\t" << pdg << endl;
                     hElMinDrGen ->Fill(minDr, EvWeight);
                     hElGenMatchPdgID ->Fill(pdg, EvWeight);
 
-		    hElMiniIsoMatch->Fill(Obj.goodEl[ilep].miniRelIso,EvWeight);
-		    hElRelIsoMatch->Fill(Obj.goodEl[ilep].relIso03,EvWeight);
+		    hElPtMatch->Fill(Obj.goodLep[ilep].Pt());
+		    if (pdg == 22) hPhoPt->Fill(Obj.genPart[minIndx].Pt());
 
-		    hElMiniIsoNonMatch->Fill(Obj.goodEl[ilep].miniRelIso,EvWeight);
-		    hElRelIsoNonMatch->Fill(Obj.goodEl[ilep].relIso03,EvWeight);
+		    hElMiniIsoMatch->Fill(Obj.goodLep[ilep].miniRelIso,EvWeight);
+		    hElRelIsoMatch->Fill(Obj.goodLep[ilep].relIso03,EvWeight);
                 }
 
 
                 if (lepId == 13){
-                    cout << "Found Mu match in event " << entry << " with dR\t" << minDr <<  " and pdgID\t" << pdg << endl;
+//                    cout << "Found Mu match in event " << entry << " with dR\t" << minDr <<  " and pdgID\t" << pdg << endl;
                     hMuMinDrGen ->Fill(minDr, EvWeight);
                     hMuGenMatchPdgID ->Fill(pdg, EvWeight);
 
-		    hMuMiniIsoMatch->Fill(Obj.goodMu[ilep].miniRelIso,EvWeight);
-		    hMuRelIsoMatch->Fill(Obj.goodMu[ilep].relIso03,EvWeight);
+		    hMuMiniIsoMatch->Fill(Obj.goodLep[ilep].miniRelIso,EvWeight);
+		    hMuRelIsoMatch->Fill(Obj.goodLep[ilep].relIso03,EvWeight);
 
                 }
             }
 	    else{
                 if (lepId == 11){
-		    hElMiniIsoNonMatch->Fill(Obj.goodEl[ilep].miniRelIso,EvWeight);
-		    hElRelIsoNonMatch->Fill(Obj.goodEl[ilep].relIso03,EvWeight);
+		    hElMiniIsoNonMatch->Fill(Obj.goodLep[ilep].miniRelIso,EvWeight);
+		    hElRelIsoNonMatch->Fill(Obj.goodLep[ilep].relIso03,EvWeight);
+
+		    hElPtNonMatch->Fill(Obj.goodLep[ilep].Pt());
                 }
 		if (lepId == 13){
-		    hMuMiniIsoNonMatch->Fill(Obj.goodMu[ilep].miniRelIso,EvWeight);
-		    hMuRelIsoNonMatch->Fill(Obj.goodMu[ilep].relIso03,EvWeight);
+		    hMuMiniIsoNonMatch->Fill(Obj.goodLep[ilep].miniRelIso,EvWeight);
+		    hMuRelIsoNonMatch->Fill(Obj.goodLep[ilep].relIso03,EvWeight);
 		}
 	    }
         }
-
-/*
-// MUONS
-for(int ilep = 0; ilep < Obj.nMuGood; ilep++){
-
-// lepton is Obj.goodMu
-
-double maxDr = 0.1;
-double minDr = 9999.;
-double minIndx = -1;
-
-// 1. loop through gen particles
-for (int igen = 0; igen < Obj.nGenLep; igen++){
-
-// 2. calc dR
-double tmpDr = Obj.goodMu[ilep].DeltaR((TLorentzVector) Obj.genLep[igen]);
-hMuDrGen ->Fill(tmpDr, EvWeight);
-
-int pdg = abs(Obj.genLep[igen].pdgid);
-
-if (abs(1 - Obj.goodMu[ilep].Pt()/Obj.genLep[igen].Pt()) > 0.3)
-continue;
-
-// 3. find min(dR)
-if ((tmpDr < minDr) && (abs(pdg) == 13) && abs(genLep_motherId) == 24){
-
-minDr = tmpDr;
-minIndx = igen;
-}
-}
-
-// fill if dR less than cut
-if( minDr < maxDr ){
-int pdg = Obj.genLep[minIndx].pdgid;
-//              if(pdg > 100)
-cout << "Found Mu match in event " << entry << " with dR\t" << minDr <<  " and pdgID\t" << pdg << endl;
-hMuMinDrGen ->Fill(minDr, EvWeight);
-hMuGenMatchPdgID ->Fill(pdg, EvWeight);
-
-if (abs(pdg) == 13){
-hMuMiniIsoMatch->Fill(Obj.goodMu[ilep].miniRelIso,EvWeight);
-hMuRelIsoMatch->Fill(Obj.goodMu[ilep].relIso03,EvWeight);
-}
-else{
-hMuMiniIsoNonMatch->Fill(Obj.goodMu[ilep].miniRelIso,EvWeight);
-hMuRelIsoNonMatch->Fill(Obj.goodMu[ilep].relIso03,EvWeight);
-}
-}
-}
-
-// ELECTRONS
-for(int ilep = 0; ilep < Obj.nElGood; ilep++){
-
-// lepton is Obj.goodEl
-
-double maxDr = 0.1;
-double minDr = 9999.;
-double minIndx = -1;
-
-// 1. loop through gen particles
-for (int igen = 0; igen < Obj.nGenLep; igen++){
-
-// 2. calc dR
-double tmpDr = Obj.goodEl[ilep].DeltaR((TLorentzVector) Obj.genLep[igen]);
-hElDrGen ->Fill(tmpDr, EvWeight);
-
-int pdg = abs(Obj.genLep[igen].pdgid);
-
-// 3. find min(dR)
-if ((tmpDr < minDr) && abs(pdg) == 11 && abs(genLep_motherId) == 24){
-
-minDr = tmpDr;
-minIndx = igen;
-}
-}
-
-// fill if dR less than cut
-if( minDr < maxDr ){
-int pdg = Obj.genLep[minIndx].pdgid;
-
-cout << "Found El match in event " << entry << " with dR\t" << minDr <<  " and pdgID\t" << pdg << endl;
-hElMinDrGen ->Fill(minDr, EvWeight);
-hElGenMatchPdgID ->Fill(pdg, EvWeight);
-
-
-if (abs(pdg) == 11){
-hElMiniIsoMatch->Fill(Obj.goodEl[ilep].miniRelIso,EvWeight);
-hElRelIsoMatch->Fill(Obj.goodEl[ilep].relIso03,EvWeight);
-}
-else{
-hElMiniIsoNonMatch->Fill(Obj.goodEl[ilep].miniRelIso,EvWeight);
-hElRelIsoNonMatch->Fill(Obj.goodEl[ilep].relIso03,EvWeight);
-}
-
-
-}
-}
-*/
-
-/*
-  if(debug) cout<<" GetGenLeptons"<<endl;
-  if(debug) cout<<" GetJets"<<endl;
-  Obj.GetJets(tree);
-  if(debug) cout<<" GetFatJets"<<endl;
-//        Obj.GetFatJets(tree);
-if(debug) cout<<" GetMET"<<endl;
-Obj.GetMET(tree);
-if(debug) cout<<" GetGenMET"<<endl;
-//        Obj.GetGenMET(tree);
-//check src/ClassObjects.C for what is available and implement new variables in there
-if(debug) cout<<" GetKinVariables"<<endl;
-Obj.GetKinVariables();
-*/
     }
 
     cout << endl << "Finished event loop" << endl;
@@ -309,6 +209,10 @@ Obj.GetKinVariables();
     hElDrGen->Write();
     hElMinDrGen->Write();
     hElGenMatchPdgID->Write();
+
+    hElPtMatch->Write();
+    hElPtNonMatch->Write();
+    hPhoPt->Write();
 
     hElMiniIsoMatch->Write();
     hElMiniIsoNonMatch->Write();
