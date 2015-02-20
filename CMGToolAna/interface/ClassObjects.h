@@ -52,27 +52,24 @@ public:
     Int_t charge;
 };
 
-
-// Generator Lepton
-class GenLepton: public ParticleObject{
-public:
-    using ParticleObject::ParticleObject;
-
-    Int_t status;
-    Int_t charge;
-    Int_t pdgId;
-    Int_t motherID;
-
-};
-
 // a bit more generic, generator partices
 class GenParticle: public ParticleObject{
 public:
     using ParticleObject::ParticleObject;
 
-    int pdgId;
-    int motherid;
-    int grandmaid;
+    Int_t status;
+    Int_t pdgId;
+    Int_t motherId;
+    Int_t grandmaId;
+};
+
+
+// Generator Lepton
+class GenLepton: public GenParticle{
+public:
+
+    Int_t charge;
+
 };
 
 // Jet
