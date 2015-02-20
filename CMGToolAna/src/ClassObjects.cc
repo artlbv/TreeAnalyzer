@@ -4,106 +4,106 @@ using namespace std;
 // global object variables
 
 
-Double_t goodEta = 2.4;
+Float_t goodEta = 2.4;
 
 //leptons
-Double_t goodElPt = 25.0;
-Double_t goodMuPt = 25.0;
-Double_t goodLepPt = 25.0;
-Double_t vetoLepPt = 10.0;
+Float_t goodElPt = 25.0;
+Float_t goodMuPt = 25.0;
+Float_t goodLepPt = 25.0;
+Float_t vetoLepPt = 10.0;
 // SoftLeptons
-Double_t softElPt = 7.0;
-Double_t softLepPtUp =25.0;
-Double_t softMuPt = 5.0;
-Double_t softLepPt = 5.0;
-Double_t softvetoLepPt = 5.0;
+Float_t softElPt = 7.0;
+Float_t softLepPtUp =25.0;
+Float_t softMuPt = 5.0;
+Float_t softLepPt = 5.0;
+Float_t softvetoLepPt = 5.0;
 
-Double_t goodEl_relIso03 = 0.1;
-Double_t goodMu_relIso03 = 0.12;
-Double_t goodLep_relIso03 = 0.15;
-Double_t softLep_relIso03 = 0.4;
+Float_t goodEl_relIso03 = 0.1;
+Float_t goodMu_relIso03 = 0.12;
+Float_t goodLep_relIso03 = 0.15;
+Float_t softLep_relIso03 = 0.4;
 
 // ID
 Int_t goodEl_tightId = 1;
 Int_t goodEl_lostHits = 0;
-Double_t goodEl_sip3d = 4;
-Double_t goodMu_sip3d = 4;
+Float_t goodEl_sip3d = 4;
+Float_t goodMu_sip3d = 4;
 
 // mva
-Double_t goodEl_mvaSusy = 0.53;
+Float_t goodEl_mvaSusy = 0.53;
 
 //jets
-Double_t goodJetPt = 30.0;
+Float_t goodJetPt = 30.0;
 //btagging medium working points
-Double_t goodJetBtagCSV = 0.679;
-Double_t goodJetBtagCMVA = 0.732;
+Float_t goodJetBtagCSV = 0.679;
+Float_t goodJetBtagCMVA = 0.732;
 
 //fatjet
-Double_t goodFatJetPt = 100.0;
+Float_t goodFatJetPt = 100.0;
 
 // variables for tree
 const int arrayN = 200;
-Double_t Jet_pt[arrayN];
-Double_t Jet_eta[arrayN];
-Double_t Jet_phi[arrayN];
-Double_t Jet_mass[arrayN];
-Double_t Jet_btagCSV[arrayN];
-Double_t Jet_btagCMVA[arrayN];
+Float_t Jet_pt[arrayN];
+Float_t Jet_eta[arrayN];
+Float_t Jet_phi[arrayN];
+Float_t Jet_mass[arrayN];
+Float_t Jet_btagCSV[arrayN];
+Float_t Jet_btagCMVA[arrayN];
 
-Double_t FatJet_pt[arrayN];
-Double_t FatJet_eta[arrayN];
-Double_t FatJet_phi[arrayN];
-Double_t FatJet_mass[arrayN];
-Double_t FatJet_prunedMass[arrayN];
-Double_t FatJet_trimmedMass[arrayN];
-Double_t FatJet_filteredMass[arrayN];
+Float_t FatJet_pt[arrayN];
+Float_t FatJet_eta[arrayN];
+Float_t FatJet_phi[arrayN];
+Float_t FatJet_mass[arrayN];
+Float_t FatJet_prunedMass[arrayN];
+Float_t FatJet_trimmedMass[arrayN];
+Float_t FatJet_filteredMass[arrayN];
 
-Double_t FatJet_tau1[arrayN];
-Double_t FatJet_tau2[arrayN];
-Double_t FatJet_tau3[arrayN];
-Double_t FatJet_topMass[arrayN];
-Double_t FatJet_minMass[arrayN];
-Double_t FatJet_nSubJets[arrayN];
+Float_t FatJet_tau1[arrayN];
+Float_t FatJet_tau2[arrayN];
+Float_t FatJet_tau3[arrayN];
+Float_t FatJet_topMass[arrayN];
+Float_t FatJet_minMass[arrayN];
+Float_t FatJet_nSubJets[arrayN];
 
 
 
-Double_t LepGood_pt[arrayN];
-Double_t LepGood_eta[arrayN];
-Double_t LepGood_phi[arrayN];
-Double_t LepGood_mass[arrayN];
-Double_t LepGood_relIso03[arrayN];
-Double_t LepGood_miniRelIso[arrayN];
+Float_t LepGood_pt[arrayN];
+Float_t LepGood_eta[arrayN];
+Float_t LepGood_phi[arrayN];
+Float_t LepGood_mass[arrayN];
+Float_t LepGood_relIso03[arrayN];
+Float_t LepGood_miniRelIso[arrayN];
 Int_t   LepGood_pdgId[arrayN];
 Int_t  LepGood_tightID[arrayN];
 Int_t LepGood_convVeto[arrayN];
 Int_t LepGood_lostHits[arrayN];
-Double_t LepGood_sip3d[arrayN];
-Double_t  LepGood_mvaID[arrayN];
-Double_t  LepGood_mvaSusy[arrayN];
+Float_t LepGood_sip3d[arrayN];
+Float_t  LepGood_mvaID[arrayN];
+Float_t  LepGood_mvaSusy[arrayN];
 
 
 // Gen particles
-Double_t genLep_pt[2]; //[ngenLep]
-Double_t genLep_mass[2]; //[ngenLep]
-Double_t genLep_eta[2]; //[ngenLep]
-Double_t genLep_phi[2]; //[ngenLep]
+Float_t genLep_pt[2]; //[ngenLep]
+Float_t genLep_mass[2]; //[ngenLep]
+Float_t genLep_eta[2]; //[ngenLep]
+Float_t genLep_phi[2]; //[ngenLep]
 Int_t genLep_pdgId[2]; //[ngenLep]
 Int_t genLep_motherId[2]; //[ngenLep]
 
-Double_t genPart_pt[arrayN];
-Double_t genPart_mass[arrayN];
-Double_t genPart_eta[arrayN];
-Double_t genPart_phi[arrayN];
+Float_t genPart_pt[arrayN];
+Float_t genPart_mass[arrayN];
+Float_t genPart_eta[arrayN];
+Float_t genPart_phi[arrayN];
 Int_t genPart_pdgId[arrayN];
 Int_t genPart_motherId[arrayN];
 Int_t genPart_grandmaId[arrayN];
 
 
 // MET
-Double_t met_eta;
-Double_t met_phi;
-Double_t met_pt;
-Double_t met_mass;
+Float_t met_eta;
+Float_t met_phi;
+Float_t met_pt;
+Float_t met_mass;
 
 void GetObjects::GetLeptons(EasyChain * tree){
 
@@ -625,7 +625,7 @@ void GetObjects::GetKinVariables(){
         //standard root defintion (+ fabs)takes care of getting values between 0 and pi
         DelPhiWLep = fabs(WBos.DeltaPhi(SelectedLep[0]));
         //alternative definiton with the same result, if you want to cross check
-        Double_t DelPhiWLepAlt = (WBos.Phi() - SelectedLep[0].Phi());
+        Float_t DelPhiWLepAlt = (WBos.Phi() - SelectedLep[0].Phi());
         if (DelPhiWLepAlt > TMath::Pi()) DelPhiWLepAlt -= 2*TMath::Pi();
         if (DelPhiWLepAlt <= -TMath::Pi()) DelPhiWLepAlt += 2*TMath::Pi();
         DelPhiWLepAlt = fabs(DelPhiWLepAlt);
@@ -635,10 +635,10 @@ void GetObjects::GetKinVariables(){
         int bC =-1;
         int bCW =-1;
         for(int ib =0; ib < goodBJet.size(); ib++){
-            Double_t   DelPhibiMet = fabs(MET.DeltaPhi(goodBJet[ib]));
-            Double_t   DelPhibiW = fabs(WBos.DeltaPhi(goodBJet[ib]));
-            Double_t   DelPhibiLep = fabs(SelectedLep[0].DeltaPhi(goodBJet[ib]));
-            Double_t  MTbMETMin =sqrt(pow((goodBJet[ib].Et()+MET.Et()),2)-pow((goodBJet[ib].Px()+MET.Px()),2)-pow((goodBJet[ib].Py()+MET.Py()),2));
+            Float_t   DelPhibiMet = fabs(MET.DeltaPhi(goodBJet[ib]));
+            Float_t   DelPhibiW = fabs(WBos.DeltaPhi(goodBJet[ib]));
+            Float_t   DelPhibiLep = fabs(SelectedLep[0].DeltaPhi(goodBJet[ib]));
+            Float_t  MTbMETMin =sqrt(pow((goodBJet[ib].Et()+MET.Et()),2)-pow((goodBJet[ib].Px()+MET.Px()),2)-pow((goodBJet[ib].Py()+MET.Py()),2));
             if ( DelPhibiLep < minDelPhibLep ) minDelPhibLep = DelPhibiLep;
             if ( DelPhibiMet < minDelPhibMet ) {minDelPhibMet = DelPhibiMet;
                 bC = ib;
@@ -651,7 +651,7 @@ void GetObjects::GetKinVariables(){
         // minDelta R between b and Lep
         int bCl =-1;
         for(int ib =0; ib < goodBJet.size(); ib++){
-            Double_t   DelRbiL = (SelectedLep[0].DeltaR(goodBJet[ib]));
+            Float_t   DelRbiL = (SelectedLep[0].DeltaR(goodBJet[ib]));
             if ( DelRbiL< minDelRbL ) {minDelRbL = DelRbiL;
                 bCl = ib;
             }
@@ -669,8 +669,8 @@ void GetObjects::GetKinVariables(){
         //Min Delta Phi (J,MET) and Delta R(Jet,Lep) among three leading Jets
         int JC =-1;
         for( int ij =0; ij < nJetGood; ij++){
-            Double_t   DelPhijiMet = fabs(MET.DeltaPhi(goodJet[ij]));
-            Double_t   DelRjiLep = fabs(SelectedLep[0].DeltaR(goodJet[ij]));
+            Float_t   DelPhijiMet = fabs(MET.DeltaPhi(goodJet[ij]));
+            Float_t   DelRjiLep = fabs(SelectedLep[0].DeltaR(goodJet[ij]));
             if(ij >2) continue;
             if ( DelPhijiMet < minDelPhiJMet ) {minDelPhiJMet = DelPhijiMet;
                 JC = ij;
