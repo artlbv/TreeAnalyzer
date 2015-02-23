@@ -27,6 +27,7 @@ TH1F* hElPtMatch = new TH1F ("hElPtMatch","Pt of matched El",100,0,500);
 TH1F* hElPtNonMatch = new TH1F ("hElPtNonMatch","Pt of non matched El",100,0,500);
 
 TH1F* hGenElPtMatch = new TH1F ("hGenElPtMatch","Pt of matched gen El",100,0,500);
+TH1F* hGenElPtNonMatch = new TH1F ("hGenElPtNonMatch","Pt of non matched gen El",100,0,500);
 TH1F* hGenElPt = new TH1F ("hGenElPt","Pt of all gen El",100,0,500);
 
 TH1F* hElPtMatchEff = new TH1F ("hGenElPtMatchEff","Efficiency of matched El",100,0,500);
@@ -53,6 +54,7 @@ TH1F* hMuPtMatch = new TH1F ("hMuPtMatch","Pt of matched Mu",100,0,500);
 TH1F* hMuPtNonMatch = new TH1F ("hMuPtNonMatch","Pt of non matched Mu",100,0,500);
 
 TH1F* hGenMuPtMatch = new TH1F ("hGenMuPtMatch","Pt of matched gen Mu",100,0,500);
+TH1F* hGenMuPtNonMatch = new TH1F ("hGenMuPtNonMatch","Pt of non matched gen Mu",100,0,500);
 TH1F* hGenMuPt = new TH1F ("hGenMuPt","Pt of all Mu",100,0,500);
 
 TH1F* hMuPtMatchEff = new TH1F ("hGenMuPtMatchEff","Efficiency of matched Mu",100,0,500);
@@ -105,8 +107,8 @@ int main (int argc, char* argv[]){
 
     cout << "Starting event loop" << endl;
 
-    int maxEvents = min(1000000,Nevents);
-//    int maxEvents = Nevents;
+//    int maxEvents = min(1000000,Nevents);
+    int maxEvents = Nevents;
 
     for(int entry=0; entry < maxEvents; entry+=1){
 
@@ -119,40 +121,48 @@ int main (int argc, char* argv[]){
         EvWeight *= fw ;
 
         // selection
-        Obj.GetJets(tree);
-        Obj.GetKinVariables();
-
-        if ( Obj.HT40 < 750) continue;
+//        Obj.GetJets(tree);
+//        Obj.GetKinVariables();
+//        if ( Obj.HT40 < 750) continue;
 
         //get all objects
-        Obj.GetLeptons(tree,"genID","genID");
 //        Obj.GetGenParticles(tree);
         Obj.GetGenLeptonsFromTau(tree);
         Obj.GetGenLeptons(tree);
 
         // select only with 1 lepton
-	if (Obj.nGenLep + Obj.nGenLepFromTau != 1) continue;
+	if (Obj.nGenLep + Obj.nGenLepFromTau == 0) continue;
 //        if (Obj.nLepGood == 0 ) continue;
 
-	// Define 'tag'(reference) and 'probe' collections
+        Obj.GetLeptons(tree,"NewID","CristinaID");
 
+	// Define 'tag'(reference) and 'probe' collections
         // define reference objects: genPart, genLep or genLepFromTau
         //vector<GenParticle> refGen = Obj.genPart;
         vector<GenLepton> refGen = Obj.genLep;
-        //vector<GenLepton> refGen = Obj.genLepFromTau;
         // adding more collections (like genLepFromTau)
         refGen.insert(refGen.end(), Obj.genLepFromTau.begin(), Obj.genLepFromTau.end());
 
 	// define probe collection
-        vector<Lepton> probeLep = Obj.goodLep;
+        vector<Lepton> probe = Obj.goodLep;
 
 //        cout << "Number of reference objects: " << refGen.size() << endl;
+//        cout << "Number of probe objects: " << probe.size() << endl;
 
-        // Leptons
-        for(int ilep = 0; ilep < Obj.nLepGood; ilep++){
-            // lepton is Obj.goodLep
+	// Loop through Tag/reference objects (gen particles)
+        for(int iref = 0; iref < refGen.size(); iref++){
 
-            int lepId = abs(Obj.goodLep[ilep].pdgId);
+            int tagId = abs(refGen[iref].pdgId);
+
+	    // kinematic selection
+	    if (abs(refGen[iref].Eta()) > 2.4) continue;
+	    if (abs(refGen[iref].Pt()) < 25) continue;
+
+            // fill reference gen lepton Pt
+	    if (tagId == 11)
+		hGenElPt->Fill(refGen[iref].Pt());
+	    if (tagId == 13)
+		hGenMuPt->Fill(refGen[iref].Pt());
 
             float maxDr = 0.1;
             float minDr = 9999.;
@@ -160,90 +170,91 @@ int main (int argc, char* argv[]){
 
             bool matched = false;
 
-            // fill reference gen lepton Pt
-            if (refGen.size() > 0){
-                if (lepId == 11)
-                    hGenElPt->Fill(refGen[0].Pt());
-                if (lepId == 13)
-                    hGenMuPt->Fill(refGen[0].Pt());
-            }
+            // Loop through gen particles
+            for (int iprobe = 0; iprobe < probe.size(); iprobe++){
 
-            // 1. loop through gen particles
-            for (int iref = 0; iref < refGen.size(); iref++){
-
-                int genId = abs(refGen[iref].pdgId);
+                int probeId = abs(probe[iprobe].pdgId);
 
                 // check same ID
-                if (lepId != genId) continue;
+                if (tagId != probeId) continue;
 
                 // check W or tau mother
                 if (!(abs(refGen[iref].motherId) != 24 || abs(refGen[iref].motherId) != 15)) continue;
 
                 // relDeltaPt < 0.3
-                if (abs(1 - Obj.goodLep[ilep].Pt()/refGen[iref].Pt()) > 0.3) continue;
+                if (abs(1 - probe[iprobe].Pt()/refGen[iref].Pt()) > 0.3) continue;
 
-                // 2. calc dR
-                float tmpDr = Obj.goodLep[ilep].DeltaR((TLorentzVector) refGen[iref]);
+                // calc dR
+                float tmpDr = probe[iprobe].DeltaR((TLorentzVector) refGen[iref]);
 
-                if (lepId == 11) hElDrGen ->Fill(tmpDr, EvWeight);
-                if (lepId == 13) hMuDrGen ->Fill(tmpDr, EvWeight);
+                if (tagId == 11) hElDrGen ->Fill(tmpDr, EvWeight);
+                if (tagId == 13) hMuDrGen ->Fill(tmpDr, EvWeight);
 
-                // 3. check maxDr
+                // check maxDr
                 if (tmpDr < maxDr){
 
                     if (matched)
-                        cout << "Double Matched in " << entry << " to indx " << matchIndx << " and " << iref << endl;
+                        cout << "Double Matched in " << entry << " to indx " << matchIndx << " and " << iprobe << endl;
 
                     matched = true;
-                    matchIndx = iref;
+                    matchIndx = iprobe;
                     minDr = tmpDr;
                 }
             }
 
+	    // Fill plots if matched reference to probe
             if( matched ){
-                int pdg = refGen[matchIndx].pdgId;
+//                int pdg = refGen[matchIndx].pdgId;
+                int pdg = probe[matchIndx].pdgId;
 
-                if (lepId == 11){
+                if (tagId == 11){
 //                    cout << "Found El match in event " << entry << " with dR\t" << minDr <<  " and pdgID\t" << pdg << endl;
                     hElMinDrGen ->Fill(minDr, EvWeight);
                     hElGenMatchPdgID ->Fill(pdg, EvWeight);
 
-                    hElPtMatch->Fill(Obj.goodLep[ilep].Pt());
-                    hGenElPtMatch->Fill(refGen[matchIndx].Pt());
+                    hElPtMatch->Fill(probe[matchIndx].Pt());
+                    hGenElPtMatch->Fill(refGen[iref].Pt());
 
 //                  if (pdg == 22) hPhoPt->Fill(refGen[matchIndx].Pt());
 
-                    hElMiniIsoMatch->Fill(Obj.goodLep[ilep].miniRelIso,EvWeight);
-                    hElRelIsoMatch->Fill(Obj.goodLep[ilep].relIso03,EvWeight);
+                    hElMiniIsoMatch->Fill(probe[matchIndx].miniRelIso,EvWeight);
+                    hElRelIsoMatch->Fill(probe[matchIndx].relIso03,EvWeight);
                 }
 
 
-                if (lepId == 13){
+                if (tagId == 13){
 //                    cout << "Found Mu match in event " << entry << " with dR\t" << minDr <<  " and pdgID\t" << pdg << endl;
                     hMuMinDrGen ->Fill(minDr, EvWeight);
                     hMuGenMatchPdgID ->Fill(pdg, EvWeight);
 
-                    hMuPtMatch->Fill(Obj.goodLep[ilep].Pt());
-                    hGenMuPtMatch->Fill(refGen[matchIndx].Pt());
+                    hMuPtMatch->Fill(probe[matchIndx].Pt());
+                    hGenMuPtMatch->Fill(refGen[iref].Pt());
 
-                    hMuMiniIsoMatch->Fill(Obj.goodLep[ilep].miniRelIso,EvWeight);
-                    hMuRelIsoMatch->Fill(Obj.goodLep[ilep].relIso03,EvWeight);
+                    hMuMiniIsoMatch->Fill(probe[matchIndx].miniRelIso,EvWeight);
+                    hMuRelIsoMatch->Fill(probe[matchIndx].relIso03,EvWeight);
 
                 }
             }
+	    // non matched object
             else{
-                if (lepId == 11){
-                    hElMiniIsoNonMatch->Fill(Obj.goodLep[ilep].miniRelIso,EvWeight);
-                    hElRelIsoNonMatch->Fill(Obj.goodLep[ilep].relIso03,EvWeight);
+                if (tagId == 11){
 
-                    hElPtNonMatch->Fill(Obj.goodLep[ilep].Pt());
+                    hGenElPtNonMatch->Fill(refGen[iref].Pt());
+		    /*
+                    hElMiniIsoNonMatch->Fill(probe[matchIndx].miniRelIso,EvWeight);
+                    hElRelIsoNonMatch->Fill(probe[matchIndx].relIso03,EvWeight);
 
+                    hElPtNonMatch->Fill(probe[matchIndx].Pt());
+		    */
                 }
-                if (lepId == 13){
-                    hMuMiniIsoNonMatch->Fill(Obj.goodLep[ilep].miniRelIso,EvWeight);
-                    hMuRelIsoNonMatch->Fill(Obj.goodLep[ilep].relIso03,EvWeight);
+                if (tagId == 13){
+                    hGenMuPtNonMatch->Fill(refGen[iref].Pt());
+		    /*
+                    hMuMiniIsoNonMatch->Fill(probe[matchIndx].miniRelIso,EvWeight);
+                    hMuRelIsoNonMatch->Fill(probe[matchIndx].relIso03,EvWeight);
 
-                    hMuPtNonMatch->Fill(Obj.goodLep[ilep].Pt());
+                    hMuPtNonMatch->Fill(probe[matchIndx].Pt());
+		    */
                 }
             }
         }
@@ -256,20 +267,20 @@ int main (int argc, char* argv[]){
 
     //write out histograms
     TFile * outf;
-    TString rootfilename = "gen_CMG_"+outname+"_his.root";
+    TString rootfilename = "eff_CMG_"+outname+"_his.root";
     outf = new TFile(rootfilename,"RECREATE");
 
     // calc efficiencies
-    hElPtMatchEff->Add(hElPtMatch);
+    hElPtMatchEff->Add(hGenElPtMatch);
     hElPtMatchEff->Divide(hGenElPt);
 
-    hElPtNonMatchEff->Add(hElPtNonMatch);
+    hElPtNonMatchEff->Add(hGenElPtNonMatch);
     hElPtNonMatchEff->Divide(hGenElPt);
 
-    hMuPtMatchEff->Add(hMuPtMatch);
+    hMuPtMatchEff->Add(hGenMuPtMatch);
     hMuPtMatchEff->Divide(hGenMuPt);
 
-    hMuPtNonMatchEff->Add(hMuPtNonMatch);
+    hMuPtNonMatchEff->Add(hGenMuPtNonMatch);
     hMuPtNonMatchEff->Divide(hGenMuPt);
 
     // Write Hists out
@@ -282,6 +293,9 @@ int main (int argc, char* argv[]){
 
     hElPtMatch->Write();
     hElPtNonMatch->Write();
+
+    hGenElPtMatch->Write();
+    hGenElPtNonMatch->Write();
     hGenElPt->Write();
 
     hElPtMatchEff->Write();
@@ -297,6 +311,9 @@ int main (int argc, char* argv[]){
 
     hMuPtMatch->Write();
     hMuPtNonMatch->Write();
+
+    hGenMuPtMatch->Write();
+    hGenMuPtNonMatch->Write();
     hGenMuPt->Write();
 
     hMuPtMatchEff->Write();
