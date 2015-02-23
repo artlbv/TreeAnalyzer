@@ -27,10 +27,10 @@ dirsHT[sample]  = ['/']
 xsec_lumi[sample] = [809.1*Lumi] #cross section in pb
 inDir['MC'][sample] = base+'TTJets'
 
-sample = 'TTbar_noSkim'
+sample = 'TTbar_Iso'
 dirsHT[sample]  = ['/']
 xsec_lumi[sample] = [809.1*Lumi] #cross section in pb
-inDir['MC'][sample] = base+'TTJets_noRelIso_noSkim'
+inDir['MC'][sample] = base.replace('Phys14_v3','Phys14_Iso')+'TTJets'
 
 ##################################
 sample = 'TTbar_SinLep'
