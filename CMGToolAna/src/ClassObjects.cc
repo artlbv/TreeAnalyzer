@@ -23,6 +23,13 @@ Float_t goodMu_relIso03 = 0.12;
 Float_t goodLep_relIso03 = 0.15;
 Float_t softLep_relIso03 = 0.4;
 
+// eta-dependent relIso cuts
+Float_t etaEB = 1.44;
+Float_t etaEE = 1.49;
+
+Float_t goodEl_relIso03_etaEE = 0.07;
+Float_t goodEl_relIso03_etaEB = 0.09;
+
 // ID
 Int_t goodEl_tightId = 1;
 Int_t goodEl_lostHits = 0;
@@ -131,7 +138,8 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
             // ID for gen study: w/o Iso
             if( muID == "genID" &&
                 dummyLep.Pt() > goodMuPt &&
-                LepGood_tightID[ilep] ==1
+                LepGood_tightID[ilep] ==1 &&
+                LepGood_sip3d[ilep] < goodMu_sip3d
                 )
                 passID = true;
 
@@ -175,6 +183,8 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
             // ID for gen study: w/o Iso
             if( elID == "genID" &&
                 dummyLep.Pt() > goodElPt &&
+                LepGood_lostHits[ilep] <= goodEl_lostHits &&
+                LepGood_convVeto[ilep] &&
                 LepGood_tightID[ilep] > 1
                 )
                 passID = true;
@@ -200,6 +210,22 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
                 )
                 passID = true;
 
+
+            // a la POG Cuts_2012 ID + recommendations from Cristina
+            if( elID == "NewID" &&
+                dummyLep.Pt() > goodElPt &&
+                LepGood_tightID[ilep] > goodEl_tightId &&
+                LepGood_lostHits[ilep] <= goodEl_lostHits &&
+                LepGood_sip3d[ilep] < goodEl_sip3d &&
+                LepGood_convVeto[ilep]
+                ){
+		if ( abs(dummyLep.Eta()) < etaEB && dummyLep.relIso03 < goodEl_relIso03_etaEE)
+		    passID = true;
+		else if ( abs(dummyLep.Eta()) > etaEE && dummyLep.relIso03 < goodEl_relIso03_etaEB)
+		    passID = true;
+	    }
+
+	    // proceed
             if (passID){
 
                 goodLep.push_back(dummyLep);
