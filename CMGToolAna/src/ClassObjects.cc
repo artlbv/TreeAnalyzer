@@ -25,7 +25,7 @@ Float_t softLep_relIso03 = 0.4;
 
 // eta-dependent relIso cuts
 Float_t etaEB = 1.44;
-Float_t etaEE = 1.49;
+Float_t etaEE = 1.57;
 
 Float_t goodEl_relIso03_etaEE = 0.07;
 Float_t goodEl_relIso03_etaEB = 0.09;
@@ -38,6 +38,9 @@ Float_t goodMu_sip3d = 4;
 
 // mva
 Float_t goodEl_mvaSusy = 0.53;
+Float_t goodEl_mvaPhys14_eta0p8_T = 0.73;
+Float_t goodEl_mvaPhys14_eta1p4_T = 0.57;
+Float_t goodEl_mvaPhys14_eta2p4_T = 0.05;
 
 //jets
 Float_t goodJetPt = 30.0;
@@ -88,8 +91,8 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
     Int_t LepGood_convVeto[arrayN];
     Int_t LepGood_lostHits[arrayN];
     Float_t LepGood_sip3d[arrayN];
-    Float_t  LepGood_mvaID[arrayN];
     Float_t  LepGood_mvaSusy[arrayN];
+    Float_t  LepGood_mvaPhys14[arrayN];
 
     tree->Get(LepGood_pt[0],"LepGood_pt");
     tree->Get(LepGood_eta[0],"LepGood_eta");
@@ -99,10 +102,12 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
     tree->Get(LepGood_miniRelIso[0],"LepGood_miniRelIso");
     tree->Get(LepGood_pdgId[0],"LepGood_pdgId");
     tree->Get(LepGood_tightID[0],"LepGood_tightId");
-    tree->Get(LepGood_mvaSusy[0],"LepGood_mvaSusy");
     tree->Get(LepGood_convVeto[0],"LepGood_convVeto");
     tree->Get(LepGood_lostHits[0],"LepGood_lostHits");
     tree->Get(LepGood_sip3d[0],"LepGood_sip3d");
+    // choose the MVA type!
+    tree->Get(LepGood_mvaPhys14[0],"LepGood_mvaIdPhys14");
+    tree->Get(LepGood_mvaSusy[0],"LepGood_mvaSusy");
 
     for(int ilep = 0; ilep < nLep; ilep++){
         Lepton dummyLep;
@@ -110,6 +115,7 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
         dummyLep.pdgId = LepGood_pdgId[ilep];
         dummyLep.tightID = LepGood_tightID[ilep];
         dummyLep.mvaSusy = LepGood_mvaSusy[ilep];
+        dummyLep.mvaPhys14 = LepGood_mvaPhys14[ilep];
         dummyLep.relIso03 = LepGood_relIso03[ilep];
         dummyLep.miniRelIso = LepGood_miniRelIso[ilep];
         bool isVetoMu = false;
@@ -210,8 +216,37 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
                 )
                 passID = true;
 
+            // for Efficiency studies (v1)
+            if( elID == "EffID" &&
+                dummyLep.Pt() > goodElPt &&
+                LepGood_lostHits[ilep] <= goodEl_lostHits &&
+                LepGood_convVeto[ilep]
+                ){
 
-            // a la POG Cuts_2012 ID + recommendations from Cristina
+		// check eta-dependent relIso ID
+		bool passIso = false;
+
+		if ( abs(dummyLep.Eta()) < etaEB && dummyLep.relIso03 < goodEl_relIso03_etaEE)
+		    passIso = true;
+		else if ( abs(dummyLep.Eta()) > etaEE && dummyLep.relIso03 < goodEl_relIso03_etaEB)
+		    passIso = true;
+
+		// check eta-dependent MVA ID
+		bool passMVA = false;
+
+		if(abs(dummyLep.Eta()) < 0.8 && LepGood_mvaPhys14[ilep] > goodEl_mvaPhys14_eta0p8_T )
+		    passMVA =true;
+		else if(abs(dummyLep.Eta()) > 0.8 && abs(dummyLep.Eta()) < 1.44 && LepGood_mvaPhys14[ilep] > goodEl_mvaPhys14_eta1p4_T)
+		    passMVA =true;
+		else if(abs(dummyLep.Eta()) > 1.57 && LepGood_mvaPhys14[ilep] > goodEl_mvaPhys14_eta2p4_T )
+		    passMVA = true;
+
+		// final check:
+		if (passMVA && passIso)
+		    passID = true;
+	    }
+
+            // for Efficiency studies (v0) a la POG Cuts_2012 ID + recommendations from Cristina
             if( elID == "NewID" &&
                 dummyLep.Pt() > goodElPt &&
                 LepGood_tightID[ilep] > goodEl_tightId &&

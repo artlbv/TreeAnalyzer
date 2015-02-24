@@ -49,6 +49,7 @@ public:
     Float_t miniRelIso;
     Int_t tightID;
     Float_t mvaSusy;
+    Float_t mvaPhys14;
     Int_t charge;
 };
 
