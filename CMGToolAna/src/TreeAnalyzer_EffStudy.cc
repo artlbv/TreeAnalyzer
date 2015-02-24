@@ -34,16 +34,19 @@ TH1F* hElGenMatchPdgID = new TH1F ("ElGenMatchId","PdgID of matched gen particle
 
 // reco electron
 TH1F* hElPtMatch = new TH1F ("ElPtMatch","Pt of matched El",100,0,500);
+TH1F* hElPtMatchNonPrompt = new TH1F ("ElPtMatchNonPrompt","Pt of non-prompt matched El",100,0,500);
 TH1F* hElPtNonMatch = new TH1F ("ElPtNonMatch","Pt of non matched El",100,0,500);
 TH1F* hElPt = new TH1F ("ElPt","Pt of all El",100,0,500);
 
 // gen electron
-TH1F* hGenElPtMatch = new TH1F ("GenElPtMatch","Pt of matched gen El",100,0,500);
+TH1F* hGenElPtMatch = new TH1F ("GenElPtMatch","Pt of matched prompt gen El",100,0,500);
+TH1F* hGenElPtMatchNonPrompt = new TH1F ("GenElPtMatchNonPrompt","Pt of matched with non-prompt gen El",100,0,500);
 TH1F* hGenElPtNonMatch = new TH1F ("GenElPtNonMatch","Pt of non matched gen El",100,0,500);
 TH1F* hGenElPt = new TH1F ("GenElPt","Pt of all gen El",100,0,500);
 
 // efficiency
 TH1F* hElPtMatchEff = new TH1F ("ElPtMatchEff","Efficiency of matched El",100,0,500);
+TH1F* hElPtMatchNonPromptEff = new TH1F ("ElPtMatchNonPromptEff","Efficiency of non prompt matched El",100,0,500);
 TH1F* hElPtNonMatchEff = new TH1F ("ElPtNonMatchEff","Efficiency of non matched El",100,0,500);
 
 // miniIso
@@ -60,10 +63,12 @@ TH1F* hElRelIsoNonMatch = new TH1F ("ElrelisoNonMatch","Non-Matched Electron rel
 */
 
 TH1F* xhElPtMatch = new TH1F ("xhElPtMatch","Pt of matched El",binnum,XbinsPt);
+TH1F* xhElPtMatchNonPrompt = new TH1F ("xhElPtMatchNonPrompt","Pt of matched to non-prompt El",binnum,XbinsPt);
 TH1F* xhElPtNonMatch = new TH1F ("xhElPtNonMatch","Pt of non matched El",binnum,XbinsPt);
 TH1F* xhElPt = new TH1F ("xhElPt","Pt of all El",binnum,XbinsPt);
 // efficiency
 TH1F* xhElPtMatchEff = new TH1F ("xhElPtMatchEff","Efficiency of matched El",binnum,XbinsPt);
+TH1F* xhElPtMatchNonPromptEff = new TH1F ("xhElPtMatchNonPromptEff","Efficiency of non prompt matched El",binnum,XbinsPt);
 TH1F* xhElPtNonMatchEff = new TH1F ("xhElPtNonMatchEff","Efficiency of non matched El",binnum,XbinsPt);
 
 /*
@@ -148,8 +153,8 @@ int main (int argc, char* argv[]){
 
     cout << "Starting event loop" << endl;
 
-//    int maxEvents = min(1000000,Nevents);
-    int maxEvents = Nevents;
+    int maxEvents = min(1000000,Nevents);
+//    int maxEvents = Nevents;
 
     for(int entry=0; entry < maxEvents; entry+=1){
 
@@ -162,17 +167,14 @@ int main (int argc, char* argv[]){
         EvWeight *= fw ;
 
         // Pre-selection
-
+	/*
         Obj.GetJets(tree);
         Obj.GetKinVariables();
         if ( Obj.HT40 < 1250) continue;
-
+	*/
 
         // Get all objects
-//        Obj.GetGenParticles(tree);
-        Obj.GetGenLeptonsFromTau(tree);
-        Obj.GetGenLeptons(tree);
-        Obj.GetLeptons(tree,"NewID","CristinaID");
+        Obj.GetLeptons(tree,"genID","genID");
 //        Obj.GetLeptons(tree);
 
         // select only with 1 lepton
@@ -189,8 +191,15 @@ int main (int argc, char* argv[]){
 
 	// define probe collection
 //        vector<Lepton> probe = Obj.goodLep;
-	vector<GenLepton> probe = Obj.genLep;
-        probe.insert(probe.end(), Obj.genLepFromTau.begin(), Obj.genLepFromTau.end());
+	// GenParticles as probe
+        Obj.GetGenParticles(tree);
+	vector<GenParticle> probe = Obj.genPart;
+
+	// GenLeptons as probe
+//        Obj.GetGenLeptonsFromTau(tree);
+//        Obj.GetGenLeptons(tree);
+//	vector<GenLepton> probe = Obj.genLep;
+//	probe.insert(probe.end(), Obj.genLepFromTau.begin(), Obj.genLepFromTau.end());
 //        vector<GenParticle> probe = Obj.genPart;
 
 //        cout << "Number of reference objects: " << refPart.size() << endl;
@@ -230,7 +239,7 @@ int main (int argc, char* argv[]){
 
                 // check W or tau mother
                 //if (!(abs(refPart[iref].motherId) != 24 || abs(refPart[iref].motherId) != 15)) continue;
-		if (!(abs(probe[iprobe].motherId) != 24 || abs(probe[iprobe].motherId) != 15)) continue;
+		//if (!(abs(probe[iprobe].motherId) != 24 || abs(probe[iprobe].motherId) != 15)) continue;
 
                 // relDeltaPt < 0.3
                 if (abs(1 - probe[iprobe].Pt()/refPart[iref].Pt()) > 0.3) continue;
@@ -244,7 +253,7 @@ int main (int argc, char* argv[]){
                 // check maxDr
                 if (tmpDr < maxDr && tmpDr < minDr){
 
-                    if (matched)
+                    if (matched && false)
                         cout << endl << "Double Matched in " << entry << " to indx " << matchIndx << " and " << iprobe << endl;
 
                     matched = true;
@@ -255,18 +264,27 @@ int main (int argc, char* argv[]){
 
 	    // Fill plots if matched reference to probe
             if( matched ){
-//                int pdg = refPart[matchIndx].pdgId;
+
+		// get probe infromation
                 int pdg = probe[matchIndx].pdgId;
+		bool prompt = false;
+		if (abs(probe[matchIndx].motherId) == 24 || abs(probe[matchIndx].motherId) == 15) prompt = true;
 
                 if (tagId == 11){
 //                    cout << "Found El match in event " << entry << " with dR\t" << minDr <<  " and pdgID\t" << pdg << endl;
                     hElMinDrGen ->Fill(minDr, EvWeight);
                     hElGenMatchPdgID ->Fill(pdg, EvWeight);
 
+		    if (prompt){
                     hElPtMatch->Fill(refPart[iref].Pt());
                     xhElPtMatch->Fill(refPart[iref].Pt());
                     hGenElPtMatch->Fill(probe[matchIndx].Pt());
-
+		    }
+		    else{
+			hElPtMatchNonPrompt->Fill(refPart[iref].Pt());
+			xhElPtMatchNonPrompt->Fill(refPart[iref].Pt());
+			hGenElPtMatchNonPrompt->Fill(refPart[iref].Pt());
+		    }
 //                  if (pdg == 22) hPhoPt->Fill(refPart[matchIndx].Pt());
 
                     hElMiniIsoMatch->Fill(refPart[iref].miniRelIso,EvWeight);
@@ -274,7 +292,7 @@ int main (int argc, char* argv[]){
                 }
 
 
-                if (tagId == 13){
+                if (tagId == 13 && prompt){
 //                    cout << "Found Mu match in event " << entry << " with dR\t" << minDr <<  " and pdgID\t" << pdg << endl;
                     hMuMinDrGen ->Fill(minDr, EvWeight);
                     hMuGenMatchPdgID ->Fill(pdg, EvWeight);
@@ -316,7 +334,8 @@ int main (int argc, char* argv[]){
 
     cout << endl << "Finished event loop" << endl;
 
-    cout << "Found " << hElPtMatch->GetEntries() << "\t matched electrons" << endl;
+    cout << "Found " << hElPtMatch->GetEntries() << "\t matched prompt electrons" << endl;
+    cout << "Found " << hElPtMatchNonPrompt->GetEntries() << "\t matched non prompt electrons" << endl;
     cout << "Found " << hElPtNonMatch->GetEntries() << "\t un-matched electrons" << endl;
     cout << "Found " << hMuPtMatch->GetEntries() << "\t matched muons" << endl;
     cout << "Found " << hMuPtNonMatch->GetEntries() << "\t un-matched muons" << endl;
@@ -330,6 +349,9 @@ int main (int argc, char* argv[]){
     hElPtMatchEff->Add(hElPtMatch);
     hElPtMatchEff->Divide(hElPt);
 
+    hElPtMatchNonPromptEff->Add(hElPtMatchNonPrompt);
+    hElPtMatchNonPromptEff->Divide(hElPt);
+
     hElPtNonMatchEff->Add(hElPtNonMatch);
     hElPtNonMatchEff->Divide(hElPt);
 
@@ -342,6 +364,9 @@ int main (int argc, char* argv[]){
     // calc efficiencies
     xhElPtMatchEff->Add(xhElPtMatch);
     xhElPtMatchEff->Divide(xhElPt);
+
+    xhElPtMatchNonPromptEff->Add(xhElPtMatchNonPrompt);
+    xhElPtMatchNonPromptEff->Divide(xhElPt);
 
     xhElPtNonMatchEff->Add(xhElPtNonMatch);
     xhElPtNonMatchEff->Divide(xhElPt);
@@ -363,10 +388,12 @@ int main (int argc, char* argv[]){
 
     hElPt->Write();
     hElPtMatch->Write();
+    hElPtMatchNonPrompt->Write();
     hElPtNonMatch->Write();
 
     xhElPt->Write();
     xhElPtMatch->Write();
+    xhElPtMatchNonPrompt->Write();
     xhElPtNonMatch->Write();
 
     hGenElPtMatch->Write();
@@ -374,9 +401,11 @@ int main (int argc, char* argv[]){
     hGenElPt->Write();
 
     hElPtMatchEff->Write();
+    hElPtMatchNonPromptEff->Write();
     hElPtNonMatchEff->Write();
 
     xhElPtMatchEff->Write();
+    xhElPtMatchNonPromptEff->Write();
     xhElPtNonMatchEff->Write();
 
 //    hPhoPt->Write();
