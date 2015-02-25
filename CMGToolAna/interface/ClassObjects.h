@@ -51,6 +51,9 @@ public:
     Float_t mvaSusy;
     Float_t mvaPhys14;
     Int_t charge;
+    Int_t passID;
+    Int_t passIso;
+    Int_t passMVA;
 };
 
 // a bit more generic, generator partices
