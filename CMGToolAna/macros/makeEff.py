@@ -4,9 +4,12 @@ import sys
 sys.argv.append( '-b' )
 
 from ROOT import *
+from array import array
 
 def getLegend():
-    leg = TLegend(0.63,0.525,0.87,0.875)
+#    leg = TLegend(0.63,0.525,0.87,0.875)
+#    leg = TLegend(0.1,0.7,0.48,0.9)
+    leg = TLegend(0.4,0.7,0.9,0.9)
     leg.SetBorderSize(1)
     leg.SetTextFont(62)
     leg.SetTextSize(0.03321678)
@@ -18,10 +21,10 @@ def getLegend():
 
     return leg
 
-def makeEffPlot(hBase, hSelect,title = 'Efficiency'):
+def makeEffPlot(hTotal, hPassed,title = 'Efficiency'):
 
-    hEff = hSelect.Clone()
-    hEff.Divide(hBase)
+    hEff = hPassed.Clone()
+    hEff.Divide(hTotal)
 
     canv = TCanvas(title,title,800,600)
 #    canv.SetLogy()
@@ -31,34 +34,80 @@ def makeEffPlot(hBase, hSelect,title = 'Efficiency'):
     SetOwnership( hEff, 0 )
     SetOwnership( canv, 0 )
 
-    print 'Efficiency', hEff.GetEntries()
+    print 'Efficiency', hEff.GetMaximum()
     return canv
 
+def getEffPlot(hTotal, hPassed,title = 'Efficiency'):
 
-def getSelection(tree,basecut,selcut,title = 'Efficiency'):
+    hEff = hPassed.Clone()
+    hEff.Divide(hTotal)
+#    hEff = TEfficiency(hPassed, hTotal)
 
-    hBase = TH1F (title+'_base',title+'_base',100,0,500);
-    hSelect = TH1F (title+'_sel',title+'_sel',100,0,500);
+    hEff.SetTitle(title);
+    hEff.SetName('Eff_'+hEff.GetName());
 
-    tree.Draw('lepPt >> '+hBase.GetName(),basecut)
-    tree.Draw('lepPt >> '+hSelect.GetName(),basecut+' && '+selcut)
+    print 'Efficiency', hEff.GetMaximum()
+    return hEff
 
-    hBase.SetStats(0)
-    hSelect.SetStats(0)
 
-    print hBase.GetEntries(), hSelect.GetEntries()
-    '''
-#    print hBase.GetName(), hSelect.GetName()
-#    print hBase.GetTitle(), hSelect.GetTitle()
-'''
+def getSelection(tree,totalcut,selcut,title = 'Efficiency',varbin = false, var = 'lepPt'):
 
-    return [hBase,hSelect]
+    print '#Selecting histos from', tree.GetName(), 'with base cut:', totalcut
+    print '#Pass with:', selcut
 
-def plotHists(histList):
+#    title = var + '_' + title
+
+    if not varbin:
+        if var == 'lepPt':
+            hTotal = TH1F (title+'_total',title+'_total',100,0,500);
+            hPassed = TH1F (title+'_pass',title+'_pass',100,0,500);
+
+        if var == 'HT':
+            hTotal = TH1F (title+'_total',title+'_total',100,0,2500);
+            hPassed = TH1F (title+'_pass',title+'_pass',100,0,2500);
+    else:
+        # for Pt
+        if var == 'lepPt':
+        #xbins = [0, 25 , 30 , 35 , 40 , 50 , 60 , 70 , 80 , 100 , 120 , 140 , 160 , 180, 200, 250, 300, 400, 500 ]
+            xbins = [0] + range(25,40,5) + range (40,60,10) + range(60,100,20) + range(100,200,50) + range(200,500,100)
+        # for HT
+        if var == 'HT':
+            xbins = [ 0, 50, 100, 200 ] +  range(400,2000,250) + [2500]
+
+        hTotal = TH1F (title+'_totalX',title+'_total',int(len(xbins)-1),array('d', xbins))
+        hPassed = TH1F (title+'_passX',title+'_pass',int(len(xbins)-1),array('d', xbins))
+
+    # add event weight
+    totalcut = 'EvWeight * (' + totalcut + ')'
+    selcut = 'EvWeight * (' + totalcut + ' && ' + selcut + ')'
+
+    hTotal.Sumw2()
+    hPassed.Sumw2()
+
+    tree.Draw(var+' >> '+hTotal.GetName(),totalcut)
+    tree.Draw(var+' >> '+hPassed.GetName(),selcut)
+
+    hTotal.SetStats(0)
+    hPassed.SetStats(0)
+
+    hTotal.GetXaxis().SetTitle(var)
+    hPassed.GetXaxis().SetTitle(var)
+
+    print 'Got', hTotal.GetEntries(), 'entries in total selection'
+    print 'Got', hPassed.GetEntries(), 'entries in passed selection'
+
+    return [hTotal,hPassed]
+
+def plotHists(histList, title = ''):
 
     dosame = ''
 
-    canv = TCanvas('c'+histList[0].GetName(),histList[0].GetTitle(),800,600)
+    if title == '':
+        title = histList[0].GetTitle()
+
+    histList[0].SetMaximum(histList[0].GetMaximum()*1.5)
+
+    canv = TCanvas('c'+title.replace(' ',''),title,800,600)
 
     leg = getLegend()
 
@@ -75,6 +124,8 @@ def plotHists(histList):
 
     leg.Draw()
 
+    histList[0].SetTitle(title)
+
     SetOwnership( canv, 0 )
     SetOwnership( leg, 0 )
 
@@ -83,30 +134,82 @@ def plotHists(histList):
 # first argument is '-b' == for batch mode
 #    print sys.argv
 
-if len(sys.argv) > 2:
-    infile = sys.argv[1]
+if __name__ == "__main__":
 
-tfile  = TFile(infile, "READ")
-outfile = TFile('plot_'+infile, "RECREATE")
+    if len(sys.argv) > 2:
+        infile = sys.argv[1]
 
-if not tfile:
-    exit(0)
+    tfile  = TFile(infile, "READ")
+    outfile = TFile('plot_'+infile, "RECREATE")
 
-#histList = [ 'GenElPtMatchEff','GenElPtNonMatchEff' ]
+    if not tfile:
+        print "Couldn't open the file"
+        exit(0)
 
-leptree = tfile.Get('Leptons')
-print leptree.GetEntries()
+    # get the TTree
+    leptree = tfile.Get('Leptons')
+    print 'Found', leptree.GetEntries(), 'entries in Lepton tree'
 
-#canv = makeEffPlot(leptree,'pdgID == 11 && match && prompt && passMVA','passIso')
+    promptcut = 'nGoodLep >0 && pdgID == 11 && match && prompt && passMVA'
+#    promptcut += ' && HT > 750'# && nJets >=6 '
+    nonpromptcut = 'nGoodLep >0 && pdgID == 11 && match && !prompt && passMVA'
+#    nonpromptcut += '&& HT > 750'# && nJets >=6 '
 
-# Iso efficiency
-hists = getSelection(leptree,'pdgID == 11 && match && prompt && passMVA','passIso','Iso')
-canv = makeEffPlot(hists[0],hists[1],'Iso Efficiency')
-canv.Write()
+    passcut = 'passIso'
 
-canv = plotHists(hists)
-canv.Write()
+    '''
+    # Iso efficiency
+    promptElHThists = getSelection(leptree,promptcut,passcut,'Prompt El',false,'HT')
+    nonPromptElHThists = getSelection(leptree,nonpromptcut,passcut,'NonPrompt El',false,'HT')
+
+    canv = plotHists(promptElHThists+nonPromptElHThists,'El HT spectra')
+    canv.Write()
+
+    promptElHThists = getSelection(leptree,promptcut,passcut,'Prompt El',true,'HT')
+    nonPromptElHThists = getSelection(leptree,nonpromptcut,passcut,'NonPrompt El',true,'HT')
+
+    promptElHTeffHist = getEffPlot(promptElHThists[0],promptElHThists[1],'Prompt El Iso Efficiency for HT')
+    nonPromptElHTeffHist = getEffPlot(nonPromptElHThists[0],nonPromptElHThists[1],'Non Prompt El Iso Efficiency for HT')
+
+    canv = plotHists([promptElHTeffHist,nonPromptElHTeffHist],'Electron HT Eff')
+    #promptHists[0].DrawNormalized('same')
+    canv.Write()
+    '''
+    # Electron PT plots
+    promptElPThists = getSelection(leptree,promptcut,passcut,'Prompt El',false,'HT')
+    nonPromptElPThists = getSelection(leptree,nonpromptcut,passcut,'NonPrompt El',false,'HT')
+
+    promptElPThistsMini = getSelection(leptree,promptcut,'miniIso < 0.05','Prompt El MiniIso',false,'HT')
+    nonPromptElPThistsMini = getSelection(leptree,nonpromptcut,'miniIso < 0.05','NonPrompt El MiniIso',false,'HT')
+
+    canv = plotHists(promptElPThists+nonPromptElPThists,'El Pt spectra (relIso)')
+    canv.Write()
+
+    canv = plotHists(promptElPThists+nonPromptElPThists+promptElPThistsMini+nonPromptElPThistsMini,'El Pt spectra (miniIso)')
+    canv.Write()
+
+    promptElPThists = getSelection(leptree,promptcut,passcut,'Prompt El',true,'HT')
+    nonPromptElPThists = getSelection(leptree,nonpromptcut,passcut,'NonPrompt El',true,'HT')
+
+    promptElPThistsMini = getSelection(leptree,promptcut,'miniIso < 0.05','Prompt El MiniIso',true,'HT')
+    nonPromptElPThistsMini = getSelection(leptree,nonpromptcut,'miniIso < 0.05','NonPrompt El MiniIso',true,'HT')
+
+    promptElPTeffHist = getEffPlot(promptElPThists[0],promptElPThists[1],'Prompt El RelIso Efficiency for Pt')
+    nonPromptElPTeffHist = getEffPlot(nonPromptElPThists[0],nonPromptElPThists[1],'Non Prompt El RelIso Efficiency for Pt')
+
+    promptElPTeffHistMini = getEffPlot(promptElPThistsMini[0],promptElPThistsMini[1],'Prompt El miniIso Efficiency for Pt')
+    nonPromptElPTeffHistMini = getEffPlot(nonPromptElPThistsMini[0],nonPromptElPThistsMini[1],'Non Prompt El miniIso Efficiency for Pt')
 
 
-tfile.Close()
-outfile.Close()
+#    canv = plotHists([promptElPTeffHist,nonPromptElPTeffHist,promptElPTeffHistMini,nonPromptElPTeffHistMini],'Electron Pt Eff')
+    canv = plotHists([promptElPTeffHist,promptElPTeffHistMini],'Electron Pt Eff')
+    #promptHists[0].DrawNormalized('same')
+    canv.Write()
+
+    #canv = plotHists([promptElPTeffHistMini,nonPromptElPTeffHistMini],'Electron Pt Eff')
+    #promptHists[0].DrawNormalized('same')
+    #canv.Write()
+
+
+    tfile.Close()
+    outfile.Close()
