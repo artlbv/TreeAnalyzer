@@ -16,121 +16,6 @@ using namespace std;
 GetObjects Obj;
 bool debug = false;
 
-// define global hists
-//Float_t XbinsPt[] = { 0, 25 , 30 , 35 , 40 , 45 , 50 , 55 , 60 , 65 , 70 , 75 , 80 , 85 , 90 , 95 , 100 , 120 , 140 , 160 , 180, 200 };
-Float_t XbinsPt[] = { 0, 25 , 30 , 35 , 40 , 50 , 60 , 70 , 80 , 100 , 120 , 140 , 160 , 180, 200, 250, 300, 400, 500 };
-Int_t  binnum = sizeof(XbinsPt)/sizeof(Float_t) - 1;
-//TH1F* h = new TH1F("n","t", binnum, bins);
-
-/*
-  Electrons
-  Same width histograms
-*/
-
-// hists for matching
-TH1F* hElDrGen = new TH1F ("ElDr","Electron dR to gen particles",100,0.0,10.0);
-TH1F* hElMinDrGen = new TH1F ("ElMinDr","Minumum Electron dR to gen particles",100,0.0,1.0);
-TH1F* hElGenMatchPdgID = new TH1F ("ElGenMatchId","PdgID of matched gen particle",50,-24.5,24.5);
-
-// reco electron
-TH1F* hElPtMatch = new TH1F ("ElPtMatch","Pt of matched El",100,0,500);
-TH1F* hElPtMatchNonPrompt = new TH1F ("ElPtMatchNonPrompt","Pt of non-prompt matched El",100,0,500);
-TH1F* hElPtNonMatch = new TH1F ("ElPtNonMatch","Pt of non matched El",100,0,500);
-TH1F* hElPt = new TH1F ("ElPt","Pt of all El",100,0,500);
-
-/* === */
-// id stuff
-// matched
-TH1F* hElPtMatchPromptIsTight = new TH1F ("ElPtMatchPromptIsTight","Pt of matched to prompt El, passed tightId",100,0,500);
-TH1F* hElPtMatchPromptIsTightIso = new TH1F ("ElPtMatchPromptIsTightIso","Pt of matched to prompt El, passed tightId+Iso",100,0,500);
-TH1F* hElPtMatchPromptIsLoose = new TH1F ("ElPtMatchPromptIsLoose","Pt of matched to prompt El, not passed tightId",100,0,500);
-TH1F* hElPtMatchNonPromptIsTight = new TH1F ("ElPtMatchNonPromptIsTight","Pt of matched to nonprompt El, passed tightId",100,0,500);
-TH1F* hElPtMatchNonPromptIsLoose = new TH1F ("ElPtMatchNonPromptIsLoose","Pt of matched to nonprompt El, not passed tightId",100,0,500);
-// nonmatched
-TH1F* hElPtNonMatchIsTight = new TH1F ("ElPtNonMatchIsTight","Pt of non Matched to gen El, passed tightId",100,0,500);
-TH1F* hElPtNonMatchIsLoose = new TH1F ("ElPtNonMatchIsLoose","Pt of non Matched to gen El, not passed tightId",100,0,500);
-// efficienc
-TH1F* hElMatchPromptEff = new TH1F ("ElMatchPromptEff","Efficiency of matched to prompt El, passed tightId",100,0,500);
-TH1F* hElMatchNonPromptEff = new TH1F ("ElMatchNonPromptEff","Efficiency of matched to non prompt El, passed tightId",100,0,500);
-/* === */
-
-// gen electron
-TH1F* hGenElPtMatch = new TH1F ("GenElPtMatch","Pt of matched prompt gen El",100,0,500);
-TH1F* hGenElPtMatchNonPrompt = new TH1F ("GenElPtMatchNonPrompt","Pt of matched with non-prompt gen El",100,0,500);
-TH1F* hGenElPtNonMatch = new TH1F ("GenElPtNonMatch","Pt of non matched gen El",100,0,500);
-TH1F* hGenElPt = new TH1F ("GenElPt","Pt of all gen El",100,0,500);
-
-// efficiency
-TH1F* hElPtMatchEff = new TH1F ("ElPtMatchEff","Efficiency of matched El",100,0,500);
-TH1F* hElPtMatchNonPromptEff = new TH1F ("ElPtMatchNonPromptEff","Efficiency of non prompt matched El",100,0,500);
-TH1F* hElPtNonMatchEff = new TH1F ("ElPtNonMatchEff","Efficiency of non matched El",100,0,500);
-
-// miniIso
-TH1F* hElMiniIsoMatch = new TH1F ("ElminiIsoMatch","Matched Electron miniIso",100,0.0,2.0);
-TH1F* hElMiniIsoNonMatch = new TH1F ("ElminiIsoNonMatch","Non-Matched Electron miniIso",100,0.0,2.0);
-
-// relIso
-TH1F* hElRelIsoMatch = new TH1F ("ElrelisoMatch","Matched Electron relIso",100,0.0,2.0);
-TH1F* hElRelIsoNonMatch = new TH1F ("ElrelisoNonMatch","Non-Matched Electron relIso",100,0.0,2.0);
-
-/*
-  Electrons
-  Var width histograms
-*/
-
-TH1F* xhElPtMatch = new TH1F ("xhElPtMatch","Pt of matched El",binnum,XbinsPt);
-TH1F* xhElPtMatchNonPrompt = new TH1F ("xhElPtMatchNonPrompt","Pt of matched to non-prompt El",binnum,XbinsPt);
-TH1F* xhElPtNonMatch = new TH1F ("xhElPtNonMatch","Pt of non matched El",binnum,XbinsPt);
-TH1F* xhElPt = new TH1F ("xhElPt","Pt of all El",binnum,XbinsPt);
-// efficiency
-TH1F* xhElPtMatchEff = new TH1F ("xhElPtMatchEff","Efficiency of matched El",binnum,XbinsPt);
-TH1F* xhElPtMatchNonPromptEff = new TH1F ("xhElPtMatchNonPromptEff","Efficiency of non prompt matched El",binnum,XbinsPt);
-TH1F* xhElPtNonMatchEff = new TH1F ("xhElPtNonMatchEff","Efficiency of non matched El",binnum,XbinsPt);
-
-/*
-  Muons
-  Var width histograms
-*/
-// hists for matching
-TH1F* hMuDrGen = new TH1F ("MuDr","Muon dR to gen particles",100,0.0,10.0);
-TH1F* hMuMinDrGen = new TH1F ("MuMinDr","Minumum Muon dR to gen particles",100,0.0,1.0);
-TH1F* hMuGenMatchPdgID = new TH1F ("MuGenMatchId","PdgID of matched gen particle",50,-24.5,24.5);
-
-// reco electron
-TH1F* hMuPtMatch = new TH1F ("MuPtMatch","Pt of matched Mu",100,0,500);
-TH1F* hMuPtNonMatch = new TH1F ("MuPtNonMatch","Pt of non matched Mu",100,0,500);
-TH1F* hMuPt = new TH1F ("MuPt","Pt of all Mu",100,0,500);
-
-// gen electron
-TH1F* hGenMuPtMatch = new TH1F ("GenMuPtMatch","Pt of matched gen Mu",100,0,500);
-TH1F* hGenMuPtNonMatch = new TH1F ("GenMuPtNonMatch","Pt of non matched gen Mu",100,0,500);
-TH1F* hGenMuPt = new TH1F ("GenMuPt","Pt of all gen Mu",100,0,500);
-
-// efficiency
-TH1F* hMuPtMatchEff = new TH1F ("MuPtMatchEff","Efficiency of matched Mu",100,0,500);
-TH1F* hMuPtNonMatchEff = new TH1F ("MuPtNonMatchEff","Efficiency of non matched Mu",100,0,500);
-
-// miniIso
-TH1F* hMuMiniIsoMatch = new TH1F ("MuminiIsoMatch","Matched Muon miniIso",100,0.0,2.0);
-TH1F* hMuMiniIsoNonMatch = new TH1F ("MuminiIsoNonMatch","Non-Matched Muon miniIso",100,0.0,2.0);
-
-// relIso
-TH1F* hMuRelIsoMatch = new TH1F ("MurelisoMatch","Matched Muon relIso",100,0.0,2.0);
-TH1F* hMuRelIsoNonMatch = new TH1F ("MurelisoNonMatch","Non-Matched Muon relIso",100,0.0,2.0);
-
-/*
-  Muons
-  Var width histograms
-*/
-
-TH1F* xhMuPtMatch = new TH1F ("xhMuPtMatch","Pt of matched Mu",binnum,XbinsPt);
-TH1F* xhMuPtNonMatch = new TH1F ("xhMuPtNonMatch","Pt of non matched Mu",binnum,XbinsPt);
-TH1F* xhMuPt = new TH1F ("xhMuPt","Pt of all Mu",binnum,XbinsPt);
-// efficiency
-TH1F* xhMuPtMatchEff = new TH1F ("xhMuPtMatchEff","Efficiency of matched Mu",binnum,XbinsPt);
-TH1F* xhMuPtNonMatchEff = new TH1F ("xhMuPtNonMatchEff","Efficiency of non matched Mu",binnum,XbinsPt);
-
-
 int main (int argc, char* argv[]){
     if (argc < 4) {
         cout<<"usage ./TreeAnalyzer_example [INPUTFOLDER] [XSEC * LUMI] [SAMPLENAME]"<<endl;
@@ -172,6 +57,9 @@ int main (int argc, char* argv[]){
     // VARS FOR TTREE
     //Lepton treeLepton;
     Float_t EvWeight;
+
+    Int_t nGoodLep;
+    Int_t nGenLep;
     Float_t lepPt;
     Float_t lepEta;
     Int_t pdgID;
@@ -181,12 +69,22 @@ int main (int argc, char* argv[]){
     Bool_t passID;
     Bool_t passIso;
 
+    Float_t relIso;
+    Float_t miniIso;
+
+    Int_t nJets;
+    Int_t nBJets;
+    Float_t HT;
+    Float_t MET;
+    Float_t dPhi;
+
     TString rootfilename = "lepTree_"+outname+".root";
     TFile * treef = new TFile(rootfilename,"RECREATE");
-    TTree *leptree = new TTree("Leptons","Leptons");
+    TTree *leptree = new TTree("Leptons","Leptons for efficiency studies");
     //leptree->Branch("Lepton",&treeLepton);
     leptree->Branch("EvWeight",&EvWeight,"EvWeight/F");
 
+    leptree->Branch("nGoodLep",&nGoodLep,"nGoodLep/I");
     leptree->Branch("lepPt",&lepPt,"lepPt/F");
     leptree->Branch("lepEta",&lepEta,"lepEta/F");
     leptree->Branch("pdgID",&pdgID,"pdgID/I");
@@ -196,10 +94,19 @@ int main (int argc, char* argv[]){
     leptree->Branch("passID",&passID,"passID/B");
     leptree->Branch("passIso",&passIso,"passIso/B");
 
+    leptree->Branch("relIso",&relIso,"relIso/F");
+    leptree->Branch("miniIso",&miniIso,"miniIso/F");
+
+    leptree->Branch("nJets",&nJets,"nJets/I");
+    leptree->Branch("nBJets",&nBJets,"nBJets/I");
+
+    leptree->Branch("HT",&HT,"HT/F");
+    leptree->Branch("MET",&MET,"MET/F");
+    leptree->Branch("dPhi",&dPhi,"dPhi/F");
 
 
-    int maxEvents = min(1000000,Nevents);
-//    int maxEvents = Nevents;
+//    int maxEvents = min(100000,Nevents);
+    int maxEvents = Nevents;
 
     for(int entry=0; entry < maxEvents; entry+=1){
 
@@ -213,11 +120,6 @@ int main (int argc, char* argv[]){
         EvWeight *= fw ;
 
         // Pre-selection
-	/*
-        Obj.GetJets(tree);
-        Obj.GetKinVariables();
-        if ( Obj.HT40 < 1250) continue;
-	*/
 
         // Get all objects
         Obj.GetLeptons(tree,"looseID","looseID");
@@ -226,6 +128,19 @@ int main (int argc, char* argv[]){
         // select only with 1 lepton
 //	if (Obj.nGenLep + Obj.nGenLepFromTau == 0) continue;
         if (Obj.nLepGood == 0 ) continue;
+
+	nGoodLep = Obj.nLepGood;
+
+	// fill kinemativ vars
+        Obj.GetJets(tree);
+	Obj.GetMET(tree);
+        Obj.GetKinVariables();
+//        if ( Obj.HT40 < 1250) continue;
+	HT = Obj.HT40;
+	MET = Obj.MET.Pt();
+	dPhi = Obj.DelPhiWLep;
+	nJets = Obj.nJetGood;
+	nBJets = Obj.nBJetGood;
 
 	// Define 'tag'(reference) and 'probe' collections
         // define reference objects: genPart, genLep or genLepFromTau
@@ -269,19 +184,16 @@ int main (int argc, char* argv[]){
 	    passID =  refPart[iref].passID;
 	    passMVA =  refPart[iref].passMVA;
 	    passIso =  refPart[iref].passIso;
-	    pdgID = tagId;
+	    pdgID =  tagId;
 
+	    relIso =  refPart[iref].relIso03;
+	    miniIso =  refPart[iref].miniRelIso;
 
 	    // kinematic selection
 	    if (abs(refPart[iref].Eta()) > 2.4) continue;
 	    if (abs(refPart[iref].Pt()) < 25) continue;
 
-            // fill reference lepton Pt
-	    if (tagId == 11)
-		hElPt->Fill(refPart[iref].Pt(),EvWeight);
-	    if (tagId == 13)
-		hMuPt->Fill(refPart[iref].Pt(),EvWeight);
-
+	    // find matching object
             float maxDr = 0.1;
             float minDr = 9999.;
             float matchIndx = -1;
@@ -298,45 +210,36 @@ int main (int argc, char* argv[]){
 		// reject objects originating from itself (double counting gen particles)
 		if (abs(probe[iprobe].motherId) == abs(probe[iprobe].pdgId)) continue;
 
-                // check W or tau mother
-                //if (!(abs(refPart[iref].motherId) != 24 || abs(refPart[iref].motherId) != 15)) continue;
-		//if (!(abs(probe[iprobe].motherId) != 24 || abs(probe[iprobe].motherId) != 15)) continue;
-
                 // relDeltaPt < 0.3
                 if (abs(1 - probe[iprobe].Pt()/refPart[iref].Pt()) > 0.3) continue;
 
                 // calc dR
                 float tmpDr = refPart[iref].DeltaR((TLorentzVector) probe[iprobe]);
 
-                if (tagId == 11) hElDrGen ->Fill(tmpDr, EvWeight);
-                if (tagId == 13) hMuDrGen ->Fill(tmpDr, EvWeight);
-
                 // check maxDr
                 if (tmpDr < maxDr && tmpDr < minDr){
-
 //                    if (matched)
 //                        cout << endl << "Double Matched in " << entry << " to indx " << matchIndx << " and " << iprobe << endl;
-
                     matched = true;
                     matchIndx = iprobe;
                     minDr = tmpDr;
                 }
             }
 
+	    match = matched;
+
 	    // Fill plots if matched reference to probe
             if( matched ){
 
-		match = matched;
-
 		// get probe infromation
                 int pdg = probe[matchIndx].pdgId;
-		prompt = false;
+
 		// check whether W or tau mother
 		if (abs(probe[matchIndx].motherId) == 24 || abs(probe[matchIndx].motherId) == 15) prompt = true;
+		else prompt = false;
 	    }
-	    else
-		match = false;
 
+	    // Fill Tree for each lepton
 	    leptree->Fill();
         }
     }
