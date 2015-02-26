@@ -68,6 +68,8 @@ if len(sys.argv)>1:
         exe = 'TreeAnalyzer_GenStudy.exe'
     elif sys.argv[1]=='TreeAnalyzer_Eff':  # efficiency study
         exe = 'TreeAnalyzer_EffStudy.exe'
+    elif sys.argv[1]=='TreeAnalyzer_EffTree':  # efficiency study
+        exe = 'TreeAnalyzer_EffStudyTree.exe'
 
     else:
         help()
