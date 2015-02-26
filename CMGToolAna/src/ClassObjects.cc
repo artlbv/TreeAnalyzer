@@ -166,10 +166,19 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
 
             if (passID){
 
-		if( LepGood_tightID[ilep] ==1 &&
-		    LepGood_relIso03[ilep] < goodMu_relIso03 &&
-		    LepGood_sip3d[ilep] < goodMu_sip3d
-		    )
+                if( LepGood_tightID[ilep] ==1 &&
+                    LepGood_sip3d[ilep] < goodMu_sip3d
+                    )
+                    dummyLep.passMVA = true;
+                else
+                    dummyLep.passMVA = false;
+
+		if(LepGood_relIso03[ilep] < goodMu_relIso03)
+		    dummyLep.passIso = true;
+		else
+		    dummyLep.passIso = false;
+
+		if (dummyLep.passMVA && dummyLep.passIso)
 		    dummyLep.passID = true;
 		else
 		    dummyLep.passID = false;
@@ -285,18 +294,18 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
 
                 // for Efficiency studies: add ID variable
                 bool tightIDpass = false;
-		bool passIso = false;
-		bool passMVA = false;
+                bool passIso = false;
+                bool passMVA = false;
+
+                // check eta-dependent relIso ID
+                if ( abs(dummyLep.Eta()) < etaEB && dummyLep.relIso03 < goodEl_relIso03_etaEE)
+                    passIso = true;
+                else if ( abs(dummyLep.Eta()) > etaEE && dummyLep.relIso03 < goodEl_relIso03_etaEB)
+                    passIso = true;
 
                 if( LepGood_lostHits[ilep] <= goodEl_lostHits &&
                     LepGood_convVeto[ilep]
                     ){
-
-                    // check eta-dependent relIso ID
-                    if ( abs(dummyLep.Eta()) < etaEB && dummyLep.relIso03 < goodEl_relIso03_etaEE)
-                        passIso = true;
-                    else if ( abs(dummyLep.Eta()) > etaEE && dummyLep.relIso03 < goodEl_relIso03_etaEB)
-                        passIso = true;
 
                     // check eta-dependent MVA ID
                     if(abs(dummyLep.Eta()) < 0.8 && LepGood_mvaPhys14[ilep] > goodEl_mvaPhys14_eta0p8_T )
@@ -305,15 +314,15 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
                         passMVA =true;
                     else if(abs(dummyLep.Eta()) > 1.57 && LepGood_mvaPhys14[ilep] > goodEl_mvaPhys14_eta2p4_T )
                         passMVA = true;
-
-                    // final check:
-                    if (passMVA && passIso)
-                        tightIDpass = true;
                 }
 
-		dummyLep.passIso = passIso;
-		dummyLep.passMVA = passMVA;
-		dummyLep.passID = tightIDpass;
+                // final check:
+                if (passMVA && passIso)
+                    tightIDpass = true;
+
+                dummyLep.passIso = passIso;
+                dummyLep.passMVA = passMVA;
+                dummyLep.passID = tightIDpass;
 
                 goodLep.push_back(dummyLep);
                 goodEl.push_back(dummyLep);

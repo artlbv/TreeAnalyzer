@@ -30,7 +30,7 @@ class ParticleObject: public TLorentzVector{
 
 public:
 // inherit baseclass constructors (C++11)
-    using TLorentzVector::TLorentzVector;
+    //using TLorentzVector::TLorentzVector;
     ParticleObject() {}
 // conflict with default constructor?
     ParticleObject(Float_t pt, Float_t eta, Float_t phi, Float_t mass){
@@ -42,7 +42,7 @@ public:
 // Lepton
 class Lepton: public ParticleObject{
 public:
-    using ParticleObject::ParticleObject;
+    //using ParticleObject::ParticleObject;
 
     Int_t pdgId;
     Float_t relIso03;
@@ -59,7 +59,7 @@ public:
 // a bit more generic, generator partices
 class GenParticle: public ParticleObject{
 public:
-    using ParticleObject::ParticleObject;
+    //using ParticleObject::ParticleObject;
 
     Int_t status;
     Int_t pdgId;
