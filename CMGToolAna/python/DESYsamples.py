@@ -58,6 +58,12 @@ xsec_lumi[sample] = [670500,26740,769.7]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
 inDir['MC'][sample] = base+'QCD/'
 
+sample = 'QCD_Iso'
+dirsHT[sample]  = ['QCD_HT_250To500/','QCD_HT_500To1000/','QCD_HT_1000ToInf/']
+xsec_lumi[sample] = [670500,26740,769.7]
+xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
+inDir['MC'][sample] = base.replace('Phys14_v3','Phys14_Iso')+'QCD/'
+
 sample = 'QCD_fixPhoton'
 dirsHT[sample]  = ['QCD_HT_250To500_fixPhoton/','QCD_HT_500To1000_fixPhoton/','QCD_HT_1000ToInf_fixPhoton/']
 xsec_lumi[sample] = [670500,26740,769.7]
@@ -105,12 +111,18 @@ dirsHT[sample]  = ['TToLeptons_tch/','TToLeptons_sch/','T_tWch/','TBarToLeptons_
 xsec_lumi[sample] = [136.05*0.108*3,7.20*0.108*3,35.6,80.97*0.108*3,4.16*0.108*3,35.6]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
 inDir['MC'][sample] = base+'SingleTop/'
+##################################
 #       SIGNAL
 ##################################
 sample = 'T1tttt_1500_100'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.0141903*Lumi]
 inDir['MC'][sample] = base+'SMS_T1tttt_2J_mGl1500_mLSP100/'
+##################################
+sample = 'T1tttt_1500_100_Iso'
+dirsHT[sample] = ['/']
+xsec_lumi[sample] = [0.0141903*Lumi]
+inDir['MC'][sample] = base.replace('Phys14_v3','Phys14_Iso')+'SMS_T1tttt_2J_mGl1500_mLSP100/'
 ##################################
 sample = 'T1tttt_1200_800'
 dirsHT[sample] = ['/']
@@ -131,19 +143,6 @@ sample = 'T1qqqq_1400_15'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.044*Lumi] # FIXME
 inDir['MC'][sample] = base+'SMS_Gl_Gl_mGl1400_mLSP300_mChi315/'
-##################################
-##################################
-#       SIGNAL
-##################################
-sample = 'T1tttt_1500_100'
-dirsHT[sample] = ['/']
-xsec_lumi[sample] = [0.0141903*Lumi]
-inDir['MC'][sample] = base+'SMS_T1tttt_2J_mGl1500_mLSP100/'
-##################################
-sample = 'T1tttt_1200_800'
-dirsHT[sample] = ['/']
-xsec_lumi[sample] = [0.085641*Lumi]
-inDir['MC'][sample] = base+'SMS_T1tttt_2J_mGl1200_mLSP800/'
 ## DESY PRIVATE
 
 sample = 'T5tttt_1300_280'
