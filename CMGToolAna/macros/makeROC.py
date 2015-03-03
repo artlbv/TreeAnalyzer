@@ -50,6 +50,9 @@ def makeROC(hSig, hBkg, title = '', reject = false):
     sigIntTot = hSig.Integral(0,nbins)
     bkgIntTot = hBkg.Integral(0,nbins)
 
+    hSigEff = hSig.Clone()
+    hBkgEff = hBkg.Clone()
+
     for bin in range(nbins):
 
         var = hSig.GetBinCenter(bin)
@@ -65,6 +68,9 @@ def makeROC(hSig, hBkg, title = '', reject = false):
         # efficiencies
         sigEff.append(sigInt/sigIntTot)
         bkgEff.append(bkgInt/bkgIntTot)
+
+        hSigEff.SetBinContent(bin,sigInt/sigIntTot)
+        hBkgEff.SetBinContent(bin,bkgInt/bkgIntTot)
 
     # plot ROC curve
     if not reject:
@@ -88,7 +94,7 @@ def makeROC(hSig, hBkg, title = '', reject = false):
         else:
             hROC.Fill(sigEff[bin],1-bkgEff[bin])
 
-    return rocGraph
+    return [rocGraph,hSigEff,hBkgEff]
 
 def getSelection(tree,sigcut,bkgcut,var = 'relIso', title = ''):
 
@@ -250,10 +256,10 @@ if __name__ == "__main__":
     canv = plotHists(nonPromptElhists,'non prompt El relIso')
     canv.Write()
 
-    rocPromptEl = makeROC(promptElhists[0],promptElhists[1],'relIso',true)
+    rocPromptEl = makeROC(promptElhists[0],nonPromptElhists[0],'relIso',true)
     rocNonPromptEl = makeROC(nonPromptElhists[0],nonPromptElhists[1],'relIso',true)
 
-    canv = plotGraphs([rocPromptEl,rocNonPromptEl],'RelIso ROC curve')
+    canv = plotGraphs([rocPromptEl[0],rocNonPromptEl[0]],'RelIso ROC curve')
     canv.Write()
 
     print 'Processing miniIso'
@@ -270,13 +276,16 @@ if __name__ == "__main__":
     canv = plotHists(nonPromptElhists,'non prompt El miniIso')
     canv.Write()
 
-    rocPromptElmini = makeROC(promptElhists[0],promptElhists[1],'miniIso',true)
+    rocPromptElmini = makeROC(promptElhists[0],nonPromptElhists[0],'miniIso',true)
     rocNonPromptElmini = makeROC(nonPromptElhists[0],nonPromptElhists[1],'miniIso',true)
 
-    canv = plotGraphs([rocPromptElmini,rocNonPromptElmini],'MiniIso ROC curve')
+    canv = plotGraphs([rocPromptElmini[0],rocNonPromptElmini[0]],'MiniIso ROC curve')
     canv.Write()
 
-    canv = plotGraphs([rocPromptEl,rocPromptElmini],'Rel vs MiniIso ROC curve')
+    canv = plotGraphs([rocPromptEl[0],rocPromptElmini[0]],'Rel vs MiniIso ROC curve')
+    canv.Write()
+
+    canv = plotHists(rocPromptEl[1:]+rocPromptElmini[1:],'cut efficiencies')
     canv.Write()
 
     tfile.Close()
