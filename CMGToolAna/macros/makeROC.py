@@ -64,7 +64,7 @@ def makeROC(hSig, hBkg, title = '', reject = false):
     hBkgEff.GetYaxis().SetTitle('bkg efficiency')
     hBkgRej.GetYaxis().SetTitle('bkg rejection')
 
-    for bin in range(nbins):
+    for bin in range(1,nbins+1):
 
         var = hSig.GetBinCenter(bin)
         varPts.append(var)
