@@ -72,7 +72,7 @@ if __name__ == "__main__":
     plotfile = TFile.Open(plotfilename)
 
     if plotfile:
-        walkDumpCanvs(plotfile,plotdir)
+        walkDumpCanvs(plotfile,plotdir,'.png')
         plotfile.Close()
 
         print 80*'#'
