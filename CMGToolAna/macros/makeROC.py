@@ -9,10 +9,16 @@ from array import array
 
 _Debug = false
 
-def getLegend():
+def getLegend(pos = 'ne'):
 #    leg = TLegend(0.63,0.525,0.87,0.875)
 #    leg = TLegend(0.1,0.7,0.48,0.9)
-    leg = TLegend(0.4,0.7,0.9,0.9)
+    if pos == 'ne':
+        leg = TLegend(0.5,0.7,0.9,0.9)
+    elif pos == 'logiso':
+        leg = TLegend(0.6,0.8,0.99,0.99)
+    elif pos == 'roc':
+        leg = TLegend(0.15,0.2,0.7,0.4)
+
     leg.SetBorderSize(1)
     leg.SetTextFont(62)
     leg.SetTextSize(0.03321678)
@@ -52,6 +58,11 @@ def makeROC(hSig, hBkg, title = '', reject = false):
 
     hSigEff = hSig.Clone()
     hBkgEff = hBkg.Clone()
+    hBkgRej = hBkg.Clone()
+
+    hSigEff.GetYaxis().SetTitle('sig efficiency')
+    hBkgEff.GetYaxis().SetTitle('bkg efficiency')
+    hBkgRej.GetYaxis().SetTitle('bkg rejection')
 
     for bin in range(nbins):
 
@@ -71,6 +82,7 @@ def makeROC(hSig, hBkg, title = '', reject = false):
 
         hSigEff.SetBinContent(bin,sigInt/sigIntTot)
         hBkgEff.SetBinContent(bin,bkgInt/bkgIntTot)
+        hBkgRej.SetBinContent(bin,1-bkgInt/bkgIntTot)
 
     # plot ROC curve
     if not reject:
@@ -78,6 +90,7 @@ def makeROC(hSig, hBkg, title = '', reject = false):
         hROC  = TH2F(title,'ROC curve for '+title+';sig eff;bkg eff',100,0,1,100,0,1)
         rocGraph = TGraph(nbins,array('d', sigEff),array('d', bkgEff));
         rocGraph.SetTitle('ROC curve for '+title+';sig eff;bkg eff')
+        #rocGraph.GetYaxis().SetTitle(hBkg.GetTitle()+' eff')
 
     else:
         # plot sig eff vs bkg rejection
@@ -86,59 +99,62 @@ def makeROC(hSig, hBkg, title = '', reject = false):
         bkgRej = [1-x for x in bkgEff]
         rocGraph = TGraph(nbins,array('d', sigEff),array('d', bkgRej));
         rocGraph.SetTitle('ROC curve for '+title+';sig eff;bkg rejection')
+        #rocGraph.GetYaxis().SetTitle(hBkg.GetTitle()+' rejection')
 
+    rocGraph.GetXaxis().SetTitle(hSig.GetTitle()+' eff')
+
+    '''
     for bin in range(nbins):
-
         if not reject:
             hROC.Fill(sigEff[bin],bkgEff[bin])
         else:
             hROC.Fill(sigEff[bin],1-bkgEff[bin])
+    '''
 
-    return [rocGraph,hSigEff,hBkgEff]
+    if reject:
+#        return [rocGraph,hSigEff,hBkgRej]
+        return [rocGraph,hSigEff,hBkgEff]
+    else:
+        return [rocGraph,hSigEff,hBkgEff]
 
-def getSelection(tree,sigcut,bkgcut,var = 'relIso', title = ''):
+def getHistFromTree(tree,selcut,var = 'relIso', title = ''):
 
     print '#Selecting histos from', tree.GetName()
-    print '#Signal cut:', sigcut
-    print '#Bkg with:', bkgcut
+    print '#With cut:', selcut
 
     if title == '':
         title = var
+        hname = var
+    else:
+        # remove spaces
+        hname = var+'_'+title.replace(' ','')
+
 
     if 'Iso' not in var:
-        hSig = TH1F (var+title+'_sig',title+' signal selection',200,0,5)
-        hBkg = TH1F (var+title+'_bkg',title+' bkg selection',200,0,5)
+        hist = TH1F (hname,title,200,0,5)
     else:
         # make log binning
         xbins = getLogBins(100,0.001,10)
         binc = array('d', xbins)
 
-        hSig = TH1F (var+title+'_sig',title+' signal selection',len(binc)-1,binc)
-        hBkg = TH1F (var+title+'_bkg',title+' bkg selection',len(binc)-1,binc)
+        hist = TH1F (hname,title,len(binc)-1,binc)
 
 
     # add event weight
-    bkgcut = 'EvWeight * (' + bkgcut + ')'
-    sigcut = 'EvWeight * (' + sigcut + ')'
+    selcut = 'EvWeight * (' + selcut + ')'
 
-    hBkg.Sumw2()
-    hSig.Sumw2()
+    hist.Sumw2()
 
-    tree.Draw(var+' >> '+hBkg.GetName(),bkgcut)
-    tree.Draw(var+' >> '+hSig.GetName(),sigcut)
+    tree.Draw(var+' >> '+hist.GetName(),selcut)
 
-    hBkg.SetStats(0)
-    hSig.SetStats(0)
+    hist.SetStats(0)
+    hist.GetXaxis().SetTitle(var)
 
-    hBkg.GetXaxis().SetTitle(var)
-    hSig.GetXaxis().SetTitle(var)
+    print 'Got', hist.GetEntries(), 'entries in selection'
 
-    print 'Got', hBkg.GetEntries(), 'entries in background selection'
-    print 'Got', hSig.GetEntries(), 'entries in signal selection'
+    return hist
 
-    return [hSig,hBkg]
-
-def plotHists(histList, title = ''):
+def plotHists(histList, title = '', legpos = 'ne'):
 
     dosame = ''
 
@@ -148,9 +164,9 @@ def plotHists(histList, title = ''):
     # replace hists with clones
     histList = [h.Clone() for h in histList]
 
-    canv = TCanvas('c'+title.replace(' ',''),title,800,600)
+    canv = TCanvas(title.replace(' ',''),title,800,600)
 
-    leg = getLegend()
+    leg = getLegend(legpos)
 
     for indx,hist in enumerate(histList):
         hist.Draw(dosame+'hist')
@@ -163,7 +179,12 @@ def plotHists(histList, title = ''):
 
         if dosame == '': dosame = 'same'
 
-    histList[0].GetYaxis().SetRangeUser(max(histList[0].GetMinimum(),0.01),histList[0].GetMaximum()*1.5)
+    ymin = max(0.001,min([h.GetMinimum() for h in histList]))
+    ymax = max([h.GetMaximum() for h in histList])
+
+#    histList[0].GetYaxis().SetRangeUser(max(histList[0].GetMinimum(),0.01),histList[0].GetMaximum()*1.5)
+    histList[0].GetYaxis().SetRangeUser(ymin,ymax*1.5)
+
     leg.Draw()
 
     histList[0].SetTitle(title)
@@ -173,7 +194,7 @@ def plotHists(histList, title = ''):
 
     return canv
 
-def plotGraphs(graphList, title = ''):
+def plotGraphs(graphList, title = '', legpos = 'ne'):
 
     # initial draw command
     dosame = 'APC'
@@ -184,10 +205,10 @@ def plotGraphs(graphList, title = ''):
     # replace graphs with clones
     graphList = [g.Clone() for g in graphList]
 
-    canv = TCanvas('c'+title.replace(' ',''),title,800,600)
+    canv = TCanvas(title.replace(' ',''),title,800,600)
 #    multiGraph = TMultiGraph();
 
-    leg = getLegend()
+    leg = getLegend(legpos)
 
     for indx,graph in enumerate(graphList):
         graph.Draw(dosame)
@@ -205,7 +226,7 @@ def plotGraphs(graphList, title = ''):
 
         if dosame == 'APC': dosame = 'PC same'
 
-    graphList[0].GetXaxis().SetRangeUser(0,1)
+    graphList[0].GetXaxis().SetRangeUser(0.5,1)
     graphList[0].GetYaxis().SetRangeUser(0,1)
 
     leg.Draw()
@@ -222,6 +243,8 @@ def plotGraphs(graphList, title = ''):
 #    print sys.argv
 
 if __name__ == "__main__":
+
+    gStyle.SetOptTitle(kFALSE)
 
     if len(sys.argv) > 2:
         infile = sys.argv[1]
@@ -244,49 +267,85 @@ if __name__ == "__main__":
     print 'Processing relIso'
 
     # Electrons relIso
-    promptElhists = getSelection(leptree,promptElCut,unmatchedElCut,'relIso','Prompt')
-    nonPromptElhists = getSelection(leptree,nonPromptElCut,unmatchedElCut,'relIso','NonPrompt')
+    hPromptEl_RelIso = getHistFromTree(leptree,promptElCut,'relIso','Prompt Electrons')
+    hNonPromptEl_RelIso = getHistFromTree(leptree,nonPromptElCut,'relIso','NonPrompt Electrons')
+    hUnmatchedEl_RelIso = getHistFromTree(leptree,unmatchedElCut,'relIso','Unmatched Electrons')
+    hFakeEl_RelIso = hNonPromptEl_RelIso.Clone()
+    hFakeEl_RelIso.SetName('hFakeEl_RelIso')
+    hFakeEl_RelIso.Add(hUnmatchedEl_RelIso)
+    hFakeEl_RelIso.SetTitle('Fake Electrons')
 
-    canv = plotHists(promptElhists+nonPromptElhists,'El relIso')
+    El_relIso_hists = [hPromptEl_RelIso,hNonPromptEl_RelIso,hUnmatchedEl_RelIso,hFakeEl_RelIso]
+    canv = plotHists(El_relIso_hists,'El relIso','logiso')
+    canv.SetLogy()
+    canv.SetLogx()
+
     canv.Write()
 
-    canv = plotHists(promptElhists,'prompt El relIso')
+    # El ROC
+    roc_NP_El_RelIso = makeROC(hPromptEl_RelIso,hNonPromptEl_RelIso,'NonPrompt (relIso)',true)
+    roc_UM_El_RelIso = makeROC(hPromptEl_RelIso,hUnmatchedEl_RelIso,'UnMatched (relIso)',true)
+    roc_Fake_El_RelIso = makeROC(hPromptEl_RelIso,hFakeEl_RelIso,'Fake (relIso)',true)
+
+    El_relIso_rocs = [roc_NP_El_RelIso[0],roc_UM_El_RelIso[0],roc_Fake_El_RelIso[0]]
+
+    canv = plotGraphs(El_relIso_rocs,'El RelIso ROC curve','roc')
+    canv.SetGridx()
+    canv.SetGridy()
+
     canv.Write()
 
-    canv = plotHists(nonPromptElhists,'non prompt El relIso')
+    El_relIso_eff = roc_NP_El_RelIso[1:]+roc_UM_El_RelIso[2:]+roc_Fake_El_RelIso[2:]
+
+    canv = plotHists(El_relIso_eff,'El RelIso cut efficiencies')
+    canv.SetLogx()
+    canv.SetGridx()
+    canv.SetGridy()
     canv.Write()
 
-    rocPromptEl = makeROC(promptElhists[0],nonPromptElhists[0],'relIso',true)
-    rocNonPromptEl = makeROC(nonPromptElhists[0],nonPromptElhists[1],'relIso',true)
+    # Electrons MiniIso
+    hPromptEl_MiniIso = getHistFromTree(leptree,promptElCut,'miniIso','Prompt Electrons')
+    hNonPromptEl_MiniIso = getHistFromTree(leptree,nonPromptElCut,'miniIso','NonPrompt Electrons')
+    hUnmatchedEl_MiniIso = getHistFromTree(leptree,unmatchedElCut,'miniIso','Unmatched Electrons')
+    hFakeEl_MiniIso = hNonPromptEl_MiniIso.Clone()
+    hFakeEl_MiniIso.SetName('hFakeEl_MiniIso')
+    hFakeEl_MiniIso.Add(hUnmatchedEl_MiniIso)
+    hFakeEl_MiniIso.SetTitle('Fake Electrons')
 
-    canv = plotGraphs([rocPromptEl[0],rocNonPromptEl[0]],'RelIso ROC curve')
+    El_miniIso_hists = [hPromptEl_MiniIso,hNonPromptEl_MiniIso,hUnmatchedEl_MiniIso,hFakeEl_MiniIso]
+    canv = plotHists(El_miniIso_hists,'El miniIso','logiso')
+    canv.SetLogy()
+    canv.SetLogx()
+
     canv.Write()
 
-    print 'Processing miniIso'
+    # El ROC
+    roc_NP_El_MiniIso = makeROC(hPromptEl_MiniIso,hNonPromptEl_MiniIso,'NonPrompt (miniIso)',true)
+    roc_UM_El_MiniIso = makeROC(hPromptEl_MiniIso,hUnmatchedEl_MiniIso,'UnMatched (miniIso)',true)
+    roc_Fake_El_MiniIso = makeROC(hPromptEl_MiniIso,hFakeEl_MiniIso,'Fake (miniIso)',true)
 
-    promptElhists = getSelection(leptree,promptElCut,unmatchedElCut,'miniIso','Prompt')
-    nonPromptElhists = getSelection(leptree,nonPromptElCut,unmatchedElCut,'miniIso','NonPrompt')
+    El_miniIso_rocs = [roc_NP_El_MiniIso[0],roc_UM_El_MiniIso[0],roc_Fake_El_MiniIso[0]]
 
-    canv = plotHists(promptElhists+nonPromptElhists,'El miniIso')
+    canv = plotGraphs(El_miniIso_rocs,'El MiniIso ROC curve','roc')
+    canv.SetGridx()
+    canv.SetGridy()
+
     canv.Write()
 
-    canv = plotHists(promptElhists,'prompt El miniIso')
+    El_miniIso_eff = roc_NP_El_MiniIso[1:]+roc_UM_El_MiniIso[2:]+roc_Fake_El_MiniIso[2:]
+
+    canv = plotHists(El_miniIso_eff,'El MiniIso cut efficiencies')
+    canv.SetLogx()
+    canv.SetGridx()
+    canv.SetGridy()
     canv.Write()
 
-    canv = plotHists(nonPromptElhists,'non prompt El miniIso')
+    # RelIso vs MiniIso
+    canv  = plotGraphs(El_relIso_rocs+El_miniIso_rocs,'El ROC: RelIso vs MiniIso','roc')
+    canv.SetGridx()
+    canv.SetGridy()
     canv.Write()
 
-    rocPromptElmini = makeROC(promptElhists[0],nonPromptElhists[0],'miniIso',true)
-    rocNonPromptElmini = makeROC(nonPromptElhists[0],nonPromptElhists[1],'miniIso',true)
-
-    canv = plotGraphs([rocPromptElmini[0],rocNonPromptElmini[0]],'MiniIso ROC curve')
-    canv.Write()
-
-    canv = plotGraphs([rocPromptEl[0],rocPromptElmini[0]],'Rel vs MiniIso ROC curve')
-    canv.Write()
-
-    canv = plotHists(rocPromptEl[1:]+rocPromptElmini[1:],'cut efficiencies')
-    canv.Write()
 
     tfile.Close()
     outfile.Close()
