@@ -223,11 +223,11 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
         // Electron cuts
         if(abs(LepGood_pdgId[ilep]) == 11){
 
-            bool passID = false;
-
             // check whether leptons are for efficiency study
             // if not: do normal ID
             if ( elID != "effID" ){
+
+		bool passID = false;
 
                 // ID for gen study: w/o Iso
                 if( elID == "looseID" &&
@@ -338,7 +338,7 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
                     nElVeto++;
                 }
             }
-            // for efficiency study
+            // for efficiency study (effID)
             else{
                 // determine passID
                 bool passIso = false;

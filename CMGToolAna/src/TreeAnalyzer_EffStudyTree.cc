@@ -146,7 +146,7 @@ int main (int argc, char* argv[]){
 
         // select only with 1 lepton
 //	if (Obj.nGenLep + Obj.nGenLepFromTau == 0) continue;
-        if (Obj.nLepGood == 0 ) continue;
+//        if (Obj.goodLep.size() == 0 ) continue;
 
 	nGoodLep = Obj.nLepGood;
 	nVetoLep = Obj.nLepVeto;
@@ -255,6 +255,7 @@ int main (int argc, char* argv[]){
             }
 
 	    match = matched;
+	    prompt = false;
 
 	    // Fill plots if matched reference to probe
             if( matched ){
