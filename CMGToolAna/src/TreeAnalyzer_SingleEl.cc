@@ -211,7 +211,7 @@ int main (int argc, char* argv[]){
 
         //get all objects
         if(debug) cout<<"GetLeptons" <<endl;
-        Obj.GetLeptons(tree);
+        Obj.GetLeptons(tree,"mvaPhys14","CristinaID");
         if(debug) cout<<" GetJets"<<endl;
         Obj.GetJets(tree);
         if(debug) cout<<" GetFatJets"<<endl;
