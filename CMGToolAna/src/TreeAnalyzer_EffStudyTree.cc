@@ -59,13 +59,13 @@ int main (int argc, char* argv[]){
     Float_t EvWeight;
 
     Int_t nGoodLep;
+    Int_t nVetoLep;
     Int_t nGenLep;
     Float_t lepPt;
     Float_t lepEta;
     Int_t pdgID;
     Bool_t match;
     Bool_t prompt;
-    Bool_t passMVA;
     Bool_t passID;
     Bool_t passIso;
 
@@ -75,8 +75,11 @@ int main (int argc, char* argv[]){
     Int_t nJets;
     Int_t nBJets;
     Float_t HT;
+    Float_t ST;
     Float_t MET;
     Float_t dPhi;
+    Float_t Jet1Pt;
+    Float_t Jet2Pt;
 
     TString rootfilename = "lepTree_"+outname+".root";
     TFile * treef = new TFile(rootfilename,"RECREATE");
@@ -85,12 +88,12 @@ int main (int argc, char* argv[]){
     leptree->Branch("EvWeight",&EvWeight,"EvWeight/F");
 
     leptree->Branch("nGoodLep",&nGoodLep,"nGoodLep/I");
+    leptree->Branch("nVetoLep",&nVetoLep,"nVetoLep/I");
     leptree->Branch("lepPt",&lepPt,"lepPt/F");
     leptree->Branch("lepEta",&lepEta,"lepEta/F");
     leptree->Branch("pdgID",&pdgID,"pdgID/I");
     leptree->Branch("match",&match,"match/B");
     leptree->Branch("prompt",&prompt,"prompt/B");
-    leptree->Branch("passMVA",&passMVA,"passMVA/B");
     leptree->Branch("passID",&passID,"passID/B");
     leptree->Branch("passIso",&passIso,"passIso/B");
 
@@ -100,13 +103,17 @@ int main (int argc, char* argv[]){
     leptree->Branch("nJets",&nJets,"nJets/I");
     leptree->Branch("nBJets",&nBJets,"nBJets/I");
 
+    leptree->Branch("Jet1Pt",&Jet1Pt,"Jet1Pt/F");
+    leptree->Branch("Jet2Pt",&Jet2Pt,"Jet2Pt/F");
+
     leptree->Branch("HT",&HT,"HT/F");
+    leptree->Branch("ST",&ST,"ST/F");
     leptree->Branch("MET",&MET,"MET/F");
     leptree->Branch("dPhi",&dPhi,"dPhi/F");
 
 
-//    int maxEvents = min(100000,Nevents);
-    int maxEvents = Nevents;
+    int maxEvents = min(100000,Nevents);
+//    int maxEvents = Nevents;
 
     for(int entry=0; entry < maxEvents; entry+=1){
 
@@ -122,14 +129,27 @@ int main (int argc, char* argv[]){
         // Pre-selection
 
         // Get all objects
-        Obj.GetLeptons(tree,"looseID","looseID");
-//        Obj.GetLeptons(tree);
+        Obj.GetLeptons(tree,"effID","effID");
+
+	/*
+	int neff = Obj.nLepGood;
+        Obj.GetLeptons(tree,"mvaPhys14","effID");
+	int nmva = Obj.nLepGood;
+
+	if (neff != nmva){
+	    cout << "Found in entry\t" <<entry << endl
+		 << "EffID: n good lep:" << neff << endl
+		 << "MVAID: n good lep:" << nmva << endl;
+	}
+	continue;
+	*/
 
         // select only with 1 lepton
 //	if (Obj.nGenLep + Obj.nGenLepFromTau == 0) continue;
         if (Obj.nLepGood == 0 ) continue;
 
 	nGoodLep = Obj.nLepGood;
+	nVetoLep = Obj.nLepVeto;
 
 	// fill kinemativ vars
         Obj.GetJets(tree);
@@ -137,10 +157,19 @@ int main (int argc, char* argv[]){
         Obj.GetKinVariables();
 //        if ( Obj.HT40 < 1250) continue;
 	HT = Obj.HT40;
+	ST = Obj.ST;
 	MET = Obj.MET.Pt();
 	dPhi = Obj.DelPhiWLep;
 	nJets = Obj.nJetGood;
 	nBJets = Obj.nBJetGood;
+	if (nJets > 0)
+	    Jet1Pt = Obj.goodJet[0].Pt();
+	else
+	    Jet1Pt = -99;
+	if (nJets > 1)
+	    Jet2Pt = Obj.goodJet[1].Pt();
+	else
+	    Jet2Pt = -99;
 
 	// Define 'tag'(reference) and 'probe' collections
         // define reference objects: genPart, genLep or genLepFromTau
@@ -182,7 +211,6 @@ int main (int argc, char* argv[]){
 	    lepPt =  refPart[iref].Pt();
 	    lepEta =  refPart[iref].Eta();
 	    passID =  refPart[iref].passID;
-	    passMVA =  refPart[iref].passMVA;
 	    passIso =  refPart[iref].passIso;
 	    pdgID =  tagId;
 
@@ -237,6 +265,8 @@ int main (int argc, char* argv[]){
 		// check whether W or tau mother
 		if (abs(probe[matchIndx].motherId) == 24 || abs(probe[matchIndx].motherId) == 15) prompt = true;
 		else prompt = false;
+
+//		if (prompt) cout << entry << "\t" << probe[matchIndx].motherId << endl;
 	    }
 
 	    // Fill Tree for each lepton
