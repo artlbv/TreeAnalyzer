@@ -46,19 +46,18 @@ def GetTreeName(file):
 srcdir = '../src/'
 exe = ' '
 if len(sys.argv)>1:
-    if sys.argv[1]=='TreeAnalyzer':  # single lepton testing version
-        gROOT.LoadMacro(srcdir+'ClassObjects.C+')
-        gROOT.LoadMacro(srcdir+'TreeAnalyzer_SingleLep.C+')
-        from ROOT import TreeAnalyzer as reader
-    elif sys.argv[1]=='TreeAnalyzer_SingleLep':  # single lepton testing version
-        gROOT.LoadMacro(srcdir+'ClassObjects.C+')
-        gROOT.LoadMacro(srcdir+'TreeAnalyzer_SingleLep.C+')
-        from ROOT import TreeAnalyzer as reader
-    elif sys.argv[1]=='TreeOutput':  # write variables to a tree
+    if sys.argv[1]=='TreeOutput':  # write variables to a tree (non compilable)
         gROOT.LoadMacro(srcdir+'ClassObjects.C+')
         gROOT.LoadMacro(srcdir+'TreeOutput.C+')
         from ROOT import TreeWriter as reader
-    elif sys.argv[1]=='TreeAnalyzer_example':  # example with compiled executable
+    # single muon compilable (Batool)
+    elif sys.argv[1]=='TreeAnalyzer_Mu':
+        exe = 'TreeAnalyzer_Mu.exe'
+    # single lepton compilable (Artur)
+    elif sys.argv[1]=='TreeAnalyzer_SingleLep':
+        exe = 'TreeAnalyzer_SingleLep.exe'
+    # example with compiled executable
+    elif sys.argv[1]=='TreeAnalyzer_example':
         exe = 'TreeAnalyzer_example.exe'
     elif sys.argv[1]=='TreeAnalyzer_SingleEl':  # Single Electron with compiled executable
         exe = 'TreeAnalyzer_SingleEl.exe'
