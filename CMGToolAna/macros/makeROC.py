@@ -43,6 +43,10 @@ def getLogBins(nbinsx,xmin,xmax):
 
 def makeROC(hSig, hBkg, title = '', reject = false):
 
+    print '#Computing ROC curves for:'
+    print '#Signal:', hSig.GetTitle()
+    print '#Bkg:', hBkg.GetTitle()
+
     nbins = hSig.GetNbinsX()
 
     if title == '':
@@ -52,6 +56,7 @@ def makeROC(hSig, hBkg, title = '', reject = false):
     bkgEff = []
     fomPts = []
     varPts = []
+    cutPts = []
 
     sigIntTot = hSig.Integral(0,nbins)
     bkgIntTot = hBkg.Integral(0,nbins)
@@ -64,7 +69,7 @@ def makeROC(hSig, hBkg, title = '', reject = false):
     hBkgEff.GetYaxis().SetTitle('bkg efficiency')
     hBkgRej.GetYaxis().SetTitle('bkg rejection')
 
-    for bin in range(nbins):
+    for bin in range(1,nbins+1):
 
         var = hSig.GetBinCenter(bin)
         varPts.append(var)
@@ -76,13 +81,31 @@ def makeROC(hSig, hBkg, title = '', reject = false):
         if(_Debug):
             print 'Bin', bin, 'variable=',var,'sigInt=',sigInt,'bkgInt=',bkgInt
 
-        # efficiencies
-        sigEff.append(sigInt/sigIntTot)
-        bkgEff.append(bkgInt/bkgIntTot)
 
-        hSigEff.SetBinContent(bin,sigInt/sigIntTot)
-        hBkgEff.SetBinContent(bin,bkgInt/bkgIntTot)
-        hBkgRej.SetBinContent(bin,1-bkgInt/bkgIntTot)
+        # efficiencies
+        sigeff = sigInt/sigIntTot
+        bkgeff = bkgInt/bkgIntTot
+
+        sigEff.append(sigeff)
+        bkgEff.append(bkgeff)
+
+        hSigEff.SetBinContent(bin,sigeff)
+        hBkgEff.SetBinContent(bin,bkgeff)
+        hBkgRej.SetBinContent(bin,1-bkgeff)
+
+        # Report cut values
+        if fabs(var-0.101) < hSig.GetBinWidth(bin):
+#            print 'this is the cut of', var
+            print 'Bin', bin, 'variable=',var,'sigEff=',sigeff,'bkgEff=',bkgeff
+            cutPts.append(bin)
+
+        if bkgeff > 1:
+            print 'hoppla!'
+            print sigeff, sigInt
+            print bkgeff, bkgInt
+
+    # cut points graph
+    #gCut = TGraph(1,array('d',[sigEff[bin] for bin in cutPts]),array('d',[bkgEff[bin] for bin in cutPts]))
 
     # plot ROC curve
     if not reject:
@@ -94,7 +117,7 @@ def makeROC(hSig, hBkg, title = '', reject = false):
 
     else:
         # plot sig eff vs bkg rejection
-        hROC  = TH2F(title,'ROC curve for '+title+';sig eff;bkg rejection',100,0,1,100,0,1)
+        hROC  = TH2F(title,'ROC curve for '+title,100,0,1,100,0,1)
 
         bkgRej = [1-x for x in bkgEff]
         rocGraph = TGraph(nbins,array('d', sigEff),array('d', bkgRej));
@@ -112,8 +135,8 @@ def makeROC(hSig, hBkg, title = '', reject = false):
     '''
 
     if reject:
-#        return [rocGraph,hSigEff,hBkgRej]
-        return [rocGraph,hSigEff,hBkgEff]
+        return [rocGraph,hSigEff,hBkgRej]
+#        return [rocGraph,hSigEff,hBkgEff]
     else:
         return [rocGraph,hSigEff,hBkgEff]
 
@@ -129,9 +152,9 @@ def getHistFromTree(tree,selcut,var = 'relIso', title = ''):
         # remove spaces
         hname = var+'_'+title.replace(' ','')
 
-
-    if 'Iso' in var:
-        hist = TH1F (hname,title,200,0,5)
+    # hack log switch
+    if 'Iso' not in var:
+        hist = TH1F (hname,title,200,0,10)
     else:
         # make log binning
         xbins = getLogBins(100,0.001,10)
@@ -164,11 +187,17 @@ def plotHists(histList, title = '', legpos = 'ne'):
     # replace hists with clones
     histList = [h.Clone() for h in histList]
 
+#    print 'Plotting hists'
+#    print histList
+
     canv = TCanvas(title.replace(' ',''),title,800,600)
 
     leg = getLegend(legpos)
 
     for indx,hist in enumerate(histList):
+
+#        print 'Drawing', hist.GetTitle()
+
         hist.Draw(dosame+'hist')
 
         leg.AddEntry(hist,hist.GetTitle(),'l')
@@ -179,11 +208,25 @@ def plotHists(histList, title = '', legpos = 'ne'):
 
         if dosame == '': dosame = 'same'
 
-    ymin = max(0.001,min([h.GetMinimum() for h in histList]))
+    ymin = max(0.001,min([h.GetMinimum(0) for h in histList]))
     ymax = max([h.GetMaximum() for h in histList])
 
+    if 'log' in legpos:
+        ymax *= 2
+    else:
+        ymax *= 1.5
 #    histList[0].GetYaxis().SetRangeUser(max(histList[0].GetMinimum(),0.01),histList[0].GetMaximum()*1.5)
-    histList[0].GetYaxis().SetRangeUser(ymin,ymax*1.5)
+    histList[0].GetYaxis().SetRangeUser(ymin,ymax)
+
+    # draw line at cut
+    if 'Iso' in title:
+        print 'Drawing cut line'
+        cutl = TLine(0.1,ymin,0.1,ymax)
+        cutl.SetLineColor(1)
+        cutl.SetLineWidth(3)
+        cutl.SetLineStyle(2)
+        SetOwnership( cutl, 0 )
+        cutl.Draw()
 
     leg.Draw()
 
@@ -211,20 +254,30 @@ def plotGraphs(graphList, title = '', legpos = 'ne'):
     leg = getLegend(legpos)
 
     for indx,graph in enumerate(graphList):
-        graph.Draw(dosame)
 
-        gtitle = graph.GetTitle()
-#        gtitle = gtitle[:gtitle.find(';')]
+        # draw point for cut values
+        if true:
+            latex =  TLatex(graph.GetX()[49], graph.GetY()[49],"0.1")
+            graph.GetListOfFunctions().Add(latex);
+            latex.SetTextSize(0.04);
+            latex.SetTextColor(kBlue);
 
-        leg.AddEntry(graph,gtitle,'pl')
-        SetOwnership( graph, 0 )
-
+        # Draw graph
         graph.SetLineWidth(2)
         graph.SetLineColor(indx+1)
         graph.SetMarkerColor(indx+1)
         graph.SetMarkerStyle(indx+20)
 
-        if dosame == 'APC': dosame = 'PC same'
+        graph.Draw(dosame)
+
+        gtitle = graph.GetTitle()
+#        gtitle = gtitle[:gtitle.find(';')]
+        leg.AddEntry(graph,gtitle,'pl')
+
+        SetOwnership( graph, 0 )
+
+        if dosame == 'APC':
+            dosame = 'PC same'
 
     graphList[0].GetXaxis().SetRangeUser(0.5,1)
     graphList[0].GetYaxis().SetRangeUser(0,1)
@@ -260,10 +313,14 @@ if __name__ == "__main__":
     leptree = tfile.Get('Leptons')
     print 'Found', leptree.GetEntries(), 'entries in Lepton tree'
 
+    print '##########'
+    print '#ELECTRON#'
+    print '##########'
 
-    promptElCut = 'pdgID == 11 && passID && match && prompt'
-    nonPromptElCut = 'pdgID == 11 && passID && match && !prompt'
-    unmatchedElCut = 'pdgID == 11 && passID && !match'
+    promptElCut = 'pdgID == 11 &&  passID && match && prompt'
+    nonPromptElCut = 'pdgID == 11 &&  passID && match && !prompt'
+    unmatchedElCut = 'pdgID == 11 &&  passID && !match'
+#    fakeElCut = '(('+nonPromptElCut+') || (' + unmatchedElCut + '))'
 
     print 'Processing relIso'
 
@@ -271,6 +328,7 @@ if __name__ == "__main__":
     hPromptEl_RelIso = getHistFromTree(leptree,promptElCut,'relIso','Prompt Electrons')
     hNonPromptEl_RelIso = getHistFromTree(leptree,nonPromptElCut,'relIso','NonPrompt Electrons')
     hUnmatchedEl_RelIso = getHistFromTree(leptree,unmatchedElCut,'relIso','Unmatched Electrons')
+#    hFakeEl_RelIso = getHistFromTree(leptree,fakeElCut,'relIso','Fake Electrons')
     hFakeEl_RelIso = hNonPromptEl_RelIso.Clone()
     hFakeEl_RelIso.SetName('hFakeEl_RelIso')
     hFakeEl_RelIso.Add(hUnmatchedEl_RelIso)
@@ -350,10 +408,13 @@ if __name__ == "__main__":
     ############
     # MUONS
     ############
+    print '#######'
+    print '#MUONS#'
+    print '#######'
 
-    promptMuCut = 'pdgID == 13 && passID && match && prompt'
-    nonPromptMuCut = 'pdgID == 13 && passID && match && !prompt'
-    unmatchedMuCut = 'pdgID == 13 && passID && !match'
+    promptMuCut = 'pdgID == 13 &&  passID && match && prompt'
+    nonPromptMuCut = 'pdgID == 13 &&  passID && match && !prompt'
+    unmatchedMuCut = 'pdgID == 13 &&  passID && !match'
 
     print 'Processing relIso'
 
@@ -439,6 +500,22 @@ if __name__ == "__main__":
 
     # COMPARE MUON AND ELECTRON
     # RelIso vs MiniIso
+
+    relIso_hists = [hPromptEl_RelIso,hFakeEl_RelIso,hPromptMu_RelIso,hFakeMu_RelIso]
+#    relIso_hists = [hFakeEl_RelIso,hFakeMu_RelIso]
+    canv = plotHists(relIso_hists,'El vs Mu relIso','logiso')
+    canv.SetLogy()
+    canv.SetLogx()
+    canv.Write()
+
+    miniIso_hists = [hPromptEl_MiniIso,hFakeEl_MiniIso,hPromptMu_MiniIso,hFakeMu_MiniIso]
+#    miniIso_hists = [hFakeEl_MiniIso,hFakeMu_MiniIso]
+    canv = plotHists(miniIso_hists,'El vs Mu miniIso','logiso')
+    canv.SetLogy()
+    canv.SetLogx()
+    canv.Write()
+
+    # ROC
     rocEl_relIso = roc_Fake_El_RelIso[0]
     rocEl_relIso.SetTitle('Elec relIso')
 
@@ -457,7 +534,6 @@ if __name__ == "__main__":
     canv.SetGridx()
     canv.SetGridy()
     canv.Write()
-
 
     tfile.Close()
     outfile.Close()
