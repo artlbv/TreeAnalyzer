@@ -54,7 +54,7 @@ Float_t goodFatJetPt = 100.0;
 
 // \\\\\\CUTS FINISHED
 
-void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, string muID/* = "POG2012"*/ ){
+void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, string muID/* = "CristinaID"*/ ){
 
     // clearing objects
     goodLep.clear();
@@ -122,13 +122,6 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
         bool isVetoMu = false;
         bool isVetoEl = false;
 
-        /////////
-        // common cuts for all hard leptons (good and veto leps pass)
-        /////////
-
-        if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
-            continue;
-
         // Muon cuts
         if(abs(LepGood_pdgId[ilep]) == 13){
 
@@ -137,6 +130,19 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
             if ( muID != "effID" ){
 
                 bool passID = false;
+
+		// Don't apply any ID
+		if ( muID == "NOID" )
+		    passID = true;
+		else{
+		    /////////
+		    // common cuts for all hard leptons (good and veto leps pass)
+		    /////////
+		    if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+			continue;
+		}
+
+		// Applying IDs
 
                 // Default POG ID
                 if( muID == "POG2012" &&
@@ -187,6 +193,10 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
             // for efficiency study (effID)
             else{
 
+		// check pt and acceptance
+		if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+		    continue;
+
                 // determine passID
                 bool passIso = false;
                 bool passID = false;
@@ -228,6 +238,17 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "POG2012"*/, strin
             if ( elID != "effID" ){
 
 		bool passID = false;
+
+		// Don't apply any ID
+		if ( elID == "NOID" )
+		    passID = true;
+		else{
+		    /////////
+		    // common cuts for all hard leptons (good and veto leps pass)
+		    /////////
+		    if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+			continue;
+		}
 
                 // ID for gen study: w/o Iso
                 if( elID == "looseID" &&
