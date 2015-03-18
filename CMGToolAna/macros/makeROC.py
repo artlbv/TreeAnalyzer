@@ -30,6 +30,13 @@ def getLegend(pos = 'ne'):
 
     return leg
 
+def getNormHist(hist):
+    # normalize a variable binned size hist
+    for bin in range(1,hist.GetNbinsX()):
+        hist.SetBinContent(bin, hist.GetBinContent(bin) / hist.GetBinWidth(bin))
+
+    return hist
+
 def getLogBins(nbinsx,xmin,xmax):
     logxmin = math.log10(xmin)
     logxmax = math.log10(xmax)
@@ -166,9 +173,13 @@ def getHistFromTree(tree,selcut,var = 'relIso', title = ''):
     # add event weight
     selcut = 'EvWeight * (' + selcut + ')'
 
+    # set weight
     hist.Sumw2()
 
     tree.Draw(var+' >> '+hist.GetName(),selcut)
+
+    # normalize histo
+#    hist = getNormHist(hist)
 
     hist.SetStats(0)
     hist.GetXaxis().SetTitle(var)
@@ -179,7 +190,7 @@ def getHistFromTree(tree,selcut,var = 'relIso', title = ''):
 
 def plotHists(histList, title = '', legpos = 'ne'):
 
-    dosame = ''
+    drawOpt = ''
 
     if title == '':
         title = histList[0].GetTitle()
@@ -198,7 +209,7 @@ def plotHists(histList, title = '', legpos = 'ne'):
 
 #        print 'Drawing', hist.GetTitle()
 
-        hist.Draw(dosame+'hist')
+        hist.Draw(drawOpt+'hist')
 
         leg.AddEntry(hist,hist.GetTitle(),'l')
         SetOwnership( hist, 0 )
@@ -206,7 +217,7 @@ def plotHists(histList, title = '', legpos = 'ne'):
         hist.SetLineColor(indx+1)
         hist.SetLineWidth(2)
 
-        if dosame == '': dosame = 'same'
+        if drawOpt == '': drawOpt = 'same'
 
     ymin = max(0.001,min([h.GetMinimum(0) for h in histList]))
     ymax = max([h.GetMaximum() for h in histList])
@@ -240,7 +251,7 @@ def plotHists(histList, title = '', legpos = 'ne'):
 def plotGraphs(graphList, title = '', legpos = 'ne'):
 
     # initial draw command
-    dosame = 'APC'
+    drawOpt = 'AC'
 
     if title == '':
         title = graphList[0].GetTitle()
@@ -257,10 +268,10 @@ def plotGraphs(graphList, title = '', legpos = 'ne'):
 
         # draw point for cut values
         if true:
-            latex =  TLatex(graph.GetX()[49], graph.GetY()[49],"0.1")
+            latex = TLatex(graph.GetX()[49], graph.GetY()[49],"/0.1")
             graph.GetListOfFunctions().Add(latex);
             latex.SetTextSize(0.04);
-            latex.SetTextColor(kBlue);
+            latex.SetTextColor(indx+1);
 
         # Draw graph
         graph.SetLineWidth(2)
@@ -268,7 +279,7 @@ def plotGraphs(graphList, title = '', legpos = 'ne'):
         graph.SetMarkerColor(indx+1)
         graph.SetMarkerStyle(indx+20)
 
-        graph.Draw(dosame)
+        graph.Draw(drawOpt)
 
         gtitle = graph.GetTitle()
 #        gtitle = gtitle[:gtitle.find(';')]
@@ -276,8 +287,8 @@ def plotGraphs(graphList, title = '', legpos = 'ne'):
 
         SetOwnership( graph, 0 )
 
-        if dosame == 'APC':
-            dosame = 'PC same'
+        if drawOpt == 'AC':
+            drawOpt = 'C same'
 
     graphList[0].GetXaxis().SetRangeUser(0.5,1)
     graphList[0].GetYaxis().SetRangeUser(0,1)
@@ -517,10 +528,10 @@ if __name__ == "__main__":
 
     # ROC
     rocEl_relIso = roc_Fake_El_RelIso[0]
-    rocEl_relIso.SetTitle('Elec relIso')
+    rocEl_relIso.SetTitle('Electron relIso')
 
     rocEl_miniIso = roc_Fake_El_MiniIso[0]
-    rocEl_miniIso.SetTitle('Elec miniIso')
+    rocEl_miniIso.SetTitle('Electron miniIso')
 
     rocMu_relIso = roc_Fake_Mu_RelIso[0]
     rocMu_relIso.SetTitle('Muon relIso')
