@@ -132,7 +132,6 @@ def getSelection(tree,totalcut,selcut,title = 'Efficiency',varbin = false, var =
 
     return [hTotal,hPassed]
 
-
 def plotHists(histList, title = '', legpos = 'ne'):
 
     drawOpt = ''
@@ -233,7 +232,6 @@ def plotEffs(histList, title = '', legpos = 'ne'):
 
     SetOwnership( canv, 0 )
     SetOwnership( leg, 0 )
-#    SetOwnership( hBase, 0)
 
     return canv
 
@@ -255,7 +253,6 @@ if __name__ == "__main__":
     # get the TTree
     leptree = tfile.Get('Leptons')
     print 'Found', leptree.GetEntries(), 'entries in Lepton tree'
-
 
     ##########
     # ELECTRON

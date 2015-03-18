@@ -88,7 +88,6 @@ def makeROC(hSig, hBkg, title = '', reject = false):
         if(_Debug):
             print 'Bin', bin, 'variable=',var,'sigInt=',sigInt,'bkgInt=',bkgInt
 
-
         # efficiencies
         sigeff = sigInt/sigIntTot
         bkgeff = bkgInt/bkgIntTot
@@ -178,6 +177,7 @@ def getHistFromTree(tree,selcut,var = 'relIso', title = ''):
 
     tree.Draw(var+' >> '+hist.GetName(),selcut)
 
+
     # normalize histo
 #    hist = getNormHist(hist)
 
@@ -206,7 +206,6 @@ def plotHists(histList, title = '', legpos = 'ne'):
     leg = getLegend(legpos)
 
     for indx,hist in enumerate(histList):
-
 #        print 'Drawing', hist.GetTitle()
 
         hist.Draw(drawOpt+'hist')
