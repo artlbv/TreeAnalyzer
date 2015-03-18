@@ -103,7 +103,7 @@ void SetupHists(int CutNumber){
     }
 }
 
-void FillMainHists(int CutIndex, double EvWeight, bool FillBJets = true){
+void FillMainHists(int CutIndex, float EvWeight, bool FillBJets = true){
     hnJet[CutIndex]->Fill(Obj.nJetGood,EvWeight);
     hnLep[CutIndex]->Fill(Obj.nLepGood,EvWeight);
 
@@ -158,7 +158,7 @@ int main (int argc, char* argv[]){
         exit(0);
     }
     vector<TString> files;
-    vector<double> weights;
+    vector<float> weights;
     for(int i=0;i<size;i+=2){
         files.push_back( arr->At(i)->GetName() );
         weights.push_back( atof( arr->At(i+1)->GetName() ) );
@@ -186,7 +186,7 @@ int main (int argc, char* argv[]){
 
     // CutFlow variables
     int iCut = 0;
-    double CFCounter[CutNumb];
+    float CFCounter[CutNumb];
     int iCFCounter[CutNumb];
     for (int i=0;i < CutNumb; i++){
         CFCounter[i] = 0;
@@ -198,22 +198,24 @@ int main (int argc, char* argv[]){
 
     cout << "Starting event loop" << endl;
 
-//    for(int entry=0; entry < min(10000,Nevents); entry+=1){
-    for(int entry=0; entry < Nevents; entry+=1){
+    for(int entry=0; entry < min(100000,Nevents); entry+=1){
+//    for(int entry=0; entry < Nevents; entry+=1){
 
         if (entry % 1000 == 0)
             cout << "================= Processing entry: " << entry << '\r' << flush;
 
         //lumi calcualtion done in runAnalyzer.py (fb and pb)
-        Double_t fw = tree->GetEntryW(entry);
-        Double_t EvWeight = 1.0;
+        Float_t fw = tree->GetEntryW(entry);
+        Float_t EvWeight = 1.0;
         EvWeight *= fw ;
 
         //get all objects
         if(debug) cout<<"GetLeptons" <<endl;
         Obj.GetLeptons(tree,"mvaPhys14","CristinaID");
+//        Obj.GetLeptons(tree,"NOID","NOID");
         if(debug) cout<<" GetJets"<<endl;
         Obj.GetJets(tree);
+//        Obj.GetJets(tree,"NOID");
         if(debug) cout<<" GetFatJets"<<endl;
 //        Obj.GetFatJets(tree);
         if(debug) cout<<" GetGenLeptons"<<endl;
