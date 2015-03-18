@@ -116,7 +116,7 @@ public:
 
 class GetObjects{
 public:
-    void GetJets(EasyChain * tree);
+    void GetJets(EasyChain * tree, string jetID = "normID");
     void GetFatJets(EasyChain * tree);
     void GetMET(EasyChain * tree);
     void GetGenMET(EasyChain * tree);

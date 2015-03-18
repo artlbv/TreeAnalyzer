@@ -131,18 +131,18 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
 
                 bool passID = false;
 
-		// Don't apply any ID
-		if ( muID == "NOID" )
-		    passID = true;
-		else{
-		    /////////
-		    // common cuts for all hard leptons (good and veto leps pass)
-		    /////////
-		    if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
-			continue;
-		}
+                // Don't apply any ID
+                if ( muID == "NOID" )
+                    passID = true;
+                else{
+                    /////////
+                    // common cuts for all hard leptons (good and veto leps pass)
+                    /////////
+                    if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+                        continue;
+                }
 
-		// Applying IDs
+                // Applying IDs
 
                 // Default POG ID
                 if( muID == "POG2012" &&
@@ -193,9 +193,9 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
             // for efficiency study (effID)
             else{
 
-		// check pt and acceptance
-		if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
-		    continue;
+                // check pt and acceptance
+                if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+                    continue;
 
                 // determine passID
                 bool passIso = false;
@@ -213,7 +213,7 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
                 dummyLep.passIso = passIso;
                 dummyLep.passID = passID;
 
-		// fill all leptons
+                // fill all leptons
                 goodLep.push_back(dummyLep);
                 goodMu.push_back(dummyLep);
 
@@ -237,18 +237,18 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
             // if not: do normal ID
             if ( elID != "effID" ){
 
-		bool passID = false;
+                bool passID = false;
 
-		// Don't apply any ID
-		if ( elID == "NOID" )
-		    passID = true;
-		else{
-		    /////////
-		    // common cuts for all hard leptons (good and veto leps pass)
-		    /////////
-		    if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
-			continue;
-		}
+                // Don't apply any ID
+                if ( elID == "NOID" )
+                    passID = true;
+                else{
+                    /////////
+                    // common cuts for all hard leptons (good and veto leps pass)
+                    /////////
+                    if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+                        continue;
+                }
 
                 // ID for gen study: w/o Iso
                 if( elID == "looseID" &&
@@ -736,7 +736,7 @@ void GetObjects::GetGenParticles(EasyChain * tree){
 
     }
 }
-void GetObjects::GetJets(EasyChain * tree){
+void GetObjects::GetJets(EasyChain * tree, string jetID/* = "normID"*/){
     goodJet.clear();
     goodBJet.clear();
 
@@ -771,18 +771,30 @@ void GetObjects::GetJets(EasyChain * tree){
     {
         Jet dummyJet;
         dummyJet.SetPtEtaPhiM(Jet_pt[ijet],Jet_eta[ijet],Jet_phi[ijet],Jet_mass[ijet]);
-        //put pt, eta, cuts and other stuff
-        //jet are already cleaned from all loose leptons that are in LepGood
-        if(dummyJet.Pt() > goodJetPt && fabs(dummyJet.Eta()) < goodEta){
-            goodJet.push_back(dummyJet);
-            nJetGood++;
 
-            // filling B jets
-            //if(Jet_btagCSV[ijet] > goodJetBtagCSV){
-            if(Jet_btagCMVA[ijet] > goodJetBtagCMVA){
-                goodBJet.push_back(dummyJet);
-                nBJetGood++;
+        if ( jetID ==  "normID"){
+            //put pt, eta, cuts and other stuff
+            //jet are already cleaned from all loose leptons that are in LepGood
+            if(dummyJet.Pt() > goodJetPt && fabs(dummyJet.Eta()) < goodEta){
+                goodJet.push_back(dummyJet);
+                nJetGood++;
+
+                // filling B jets
+                //if(Jet_btagCSV[ijet] > goodJetBtagCSV){
+                if(Jet_btagCMVA[ijet] > goodJetBtagCMVA){
+                    goodBJet.push_back(dummyJet);
+                    nBJetGood++;
+                }
             }
+	}
+
+	else if ( jetID ==  "NOID" ) {
+	    // simply push back all jets
+	    goodJet.push_back(dummyJet);
+	    nJetGood++;
+
+	    goodBJet.push_back(dummyJet);
+	    nBJetGood++;
         }
     }
 
