@@ -116,13 +116,13 @@ public:
 
 class GetObjects{
 public:
-    void GetJets(EasyChain * tree);
+    void GetJets(EasyChain * tree, string jetID = "normID");
     void GetFatJets(EasyChain * tree);
     void GetMET(EasyChain * tree);
     void GetGenMET(EasyChain * tree);
 
     void GetMETnoPU(EasyChain * tree);
-    void GetLeptons(EasyChain * tree, string elID = "POG2012", string muID = "POG2012");
+    void GetLeptons(EasyChain * tree, string elID = "mvaPhys14", string muID = "CristinaID");
     void GetSoftLeptons(EasyChain * tree);
 
     void GetGenLeptons(EasyChain * tree);
