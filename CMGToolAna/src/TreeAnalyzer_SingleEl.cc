@@ -198,11 +198,13 @@ int main (int argc, char* argv[]){
 
     cout << "Starting event loop" << endl;
 
-//    for(int entry=0; entry < min(10000,Nevents); entry+=1){
-    for(int entry=0; entry < Nevents; entry+=1){
+//    int maxEvents = min(100000,Nevents);
+    int maxEvents = Nevents;
+
+    for(int entry=0; entry < maxEvents; entry+=1){
 
         if (entry % 1000 == 0)
-            cout << "================= Processing entry: " << entry << '\r' << flush;
+            cout << "================= Processing entry: " << entry <<  " (" << 100*entry/maxEvents <<  "% done)" << '\r' << flush;
 
         //lumi calcualtion done in runAnalyzer.py (fb and pb)
         Double_t fw = tree->GetEntryW(entry);
