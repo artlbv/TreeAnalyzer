@@ -47,9 +47,6 @@ echo `uname -a`
 BASEDIR=$(dirname $PWD)
 echo "Running in" $PWD
 
-EXE=$(find .. -name "runAnalyzer.py")
-EXE=$(readlink -f $EXE)
-
 if [ $# -eq 1 ]; then
     OutDir=$1
 else
@@ -60,8 +57,7 @@ echo "Outdir is" $OutDir
 
 echo start at `date`
 
-#../python/./runAnalyzer.py XXXX YYYY
-$EXE XXXX YYYY
+../python/runAnalyzer.py XXXX YYYY
 
 mv CMG* $OutDir
 

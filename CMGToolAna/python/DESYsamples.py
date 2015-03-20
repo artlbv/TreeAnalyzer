@@ -53,7 +53,7 @@ sample = 'WJets_Iso'
 dirsHT[sample]  = ['WJetsToLNu_HT100to200/','WJetsToLNu_HT200to400/','WJetsToLNu_HT400to600/','WJetsToLNu_HT600toInf/']
 xsec_lumi[sample] = [1817.0*1.23,471.6*1.23,55.61*1.23,18.81*1.23]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
-inDir['MC'][sample] = base+'Phys14_Iso/'+'WJets_Iso/'
+inDir['MC'][sample] = base+'Phys14_Iso/'+'WJets/'
 
 ##################################
 
@@ -95,6 +95,12 @@ dirsHT[sample]  = ['DYJetsToLL_M50_HT100to200/','DYJetsToLL_M50_HT200to400/','DY
 xsec_lumi[sample] = [194.3*1.27,52.24*1.27,6.546*1.27,2.179*1.27]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
 inDir['MC'][sample] = base+'Phys14_v3/'+'DYJets/'
+##################################
+sample = 'DYJets_Iso'
+dirsHT[sample]  = ['DYJetsToLL_M50_HT100to200/','DYJetsToLL_M50_HT200to400/','DYJetsToLL_M50_HT400to600/','DYJetsToLL_M50_HT600toInf/']
+xsec_lumi[sample] = [194.3*1.27,52.24*1.27,6.546*1.27,2.179*1.27]
+xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
+inDir['MC'][sample] = base+'Phys14_Iso/'+'DYJets/'
 
 ##################################
 sample = 'TTH'
@@ -123,6 +129,12 @@ dirsHT[sample]  = ['TToLeptons_tch/','TToLeptons_sch/','T_tWch/','TBarToLeptons_
 xsec_lumi[sample] = [136.05*0.108*3,7.20*0.108*3,35.6,80.97*0.108*3,4.16*0.108*3,35.6]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
 inDir['MC'][sample] = base+'Phys14_v3/'+'SingleTop/'
+##################################
+sample = 'SingleTop_Iso'
+dirsHT[sample]  = ['TToLeptons_tch/','TToLeptons_sch/','T_tWch/','TBarToLeptons_tch/','TBarToLeptons_sch/','TBar_tWch/']
+xsec_lumi[sample] = [136.05*0.108*3,7.20*0.108*3,35.6,80.97*0.108*3,4.16*0.108*3,35.6]
+xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
+inDir['MC'][sample] = base+'Phys14_Iso/'+'SingleTop/'
 ##################################
 #       SIGNAL
 ##################################

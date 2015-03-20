@@ -2,9 +2,11 @@
 
 # SAMPLES TO RUN ON
 #samples="MC_DYJets MC_QCD MC_WJets MC_TTbar "
-samples="MC_QCD MC_WJets MC_TTbar "
+#samples="MC_QCD_Iso MC_WJets_Iso MC_TTbar_Iso MC_TTV"
 #samples+="MC_SingleTop MC_TTH MC_TTW MC_TTZ "
 #samples+="MC_T1tttt_1500_100 MC_T1tttt_1200_800"
+#samples="MC_T1tttt_1500_100_Iso MC_T1tttt_1200_800_Iso"
+samples="MC_DYJets"
 #samples+="MC_T5tttt_1000_280 MC_T5tttt_1300_280 MC_T5tttt_1000_285 MC_T5tttt_1300_285 MC_T1ttbbWW_1300_290 MC_T1ttbbWW_1300_295 MC_T1ttbbWW_1000_715 MC_T1ttbbWW_1000_720 "
 #samples+="SqGl_1300_100"
 
@@ -38,7 +40,7 @@ echo "With output to" $OutDir
 for samp in $samples; do
 
     # create temp dir
-    JobDir=$PWD/../.$samp$Pref
+    JobDir=$PWD/../.$samp"_"$Pref
 
     if [ ! -d $JobDir ]; then
 	mkdir -p $JobDir
@@ -46,7 +48,7 @@ for samp in $samples; do
 
     cd $JobDir
 
-    echo "Submitting" $samp "from" ../.$samp$Pref
+    echo "Submitting" $samp "from" $JobDir
 
     reader=reader_${AnaName}_${samp}.job
     cat $SubDir/jobTemplate.sh >| $reader
