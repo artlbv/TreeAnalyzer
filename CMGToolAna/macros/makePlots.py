@@ -5,6 +5,8 @@ import glob
 sys.argv.append( '-b' )
 
 from ROOT import *
+TFile.Open._creates = True
+#TH1.Clone._creates = True
 
 # globals
 firstPlot = True
@@ -26,9 +28,27 @@ def checkType(fname):
 #    fname = trimName(fname)
 
     # exclude sample pattern from plotting
-    if 'TTH' in fname:     return 'nan'
+    if 'X' in fname:     return 'nan'
     elif "T1" in fname:  return 'sig'
     elif "" in fname:    return 'bkg'
+
+def lookUpSample(name):
+
+    # backgrounds
+    if 'QCD' in name: title = 'QCD'
+    elif 'TTbar' in name: title = 'TTJets'
+    elif 'WJets' in name: title = 'WJets'
+    elif 'TTV' in name: title = 'TTV'
+    elif 'SingleTop' in name: title = 'SingleTop'
+    elif 'DY' in name: title = 'DYJets'
+    # signals
+    elif 'T1tttt' in name:
+        if '1500_100' in name: title = 'T1tttt(1500,100)'
+        elif '1200_800' in name: title = 'T1tttt(1200,800)'
+    # didn't find this sample
+    else: title = name
+
+    return title
 
 def doLegend(nameDict = {}, sigList = [], bkgList = []):
 
@@ -43,10 +63,10 @@ def doLegend(nameDict = {}, sigList = [], bkgList = []):
     leg.SetFillStyle(1001)
 
     for hist in reversed(bkgList):
-        leg.AddEntry(hist,nameDict[hist],'f')
+        leg.AddEntry(hist,lookUpSample(nameDict[hist]),'f')
 
     for hist in sigList:
-        leg.AddEntry(hist,nameDict[hist],'l')
+        leg.AddEntry(hist,lookUpSample(nameDict[hist]),'l')
 
     return leg
 
@@ -140,18 +160,6 @@ def custHists(histDict):
         else:  paintHist(hist, 1,2,1,0)
 
         '''
-        if "TT"  in name:     paintHist(hist, 1,1,1, kAzure-4)
-        elif "Top"  in name:  paintHist(hist, 1,1,1, kAzure-3)
-        elif "WJets" in name: paintHist(hist, 1,1,1, kViolet+5)
-        elif "QCD"  in name:   paintHist(hist, 1,1,1, kCyan-6)
-        elif "DY"  in name:   paintHist(hist, 1,1,1, kYellow)
-        elif "800" in name:   paintHist(hist, 2,2,2,0)
-        elif "1200" in name:  paintHist(hist, kBlack, 2,2,0)
-        elif "1300" in name:  paintHist(hist, 4,2,2,0)
-        elif "1500" in name:  paintHist(hist, kMagenta, 2,2,0)
-        else:  paintHist(hist, 1,2,1,0)
-        '''
-
         # workaround for Electron/Muon separation
         if "El" in name:
             col = hist.GetFillColor()
@@ -164,6 +172,7 @@ def custHists(histDict):
             hist.SetFillColor(0)
             hist.SetLineWidth(3)
             hist.SetLineColor(col-1)
+        '''
 
 #        if checkType(name) == 'sig':
 #            hist.Scale(10)
@@ -327,12 +336,12 @@ def findHisto(file,name):
 
         if(cutKey.GetName() == name):
             return cutKey.ReadObj()
-
     else:
         return 0
 
-def getHist(file,name,dir=''):
-    file.cd(dir)
+def getHist(file,name,dirname=''):
+    file.cd(dirname)
+#    print file,name,dirname
     return file.Get(name)
 
 def copyStruct(infile,outfile):
@@ -357,12 +366,17 @@ def copyHist(fileList,outfile,histname,dirname=''):
     histDict = {}
 
     for tfile in fileList:
-        hist = findHisto(tfile,histname)
+        histOnFile = findHisto(tfile,histname)
+#        histOnFile = getHist(tfile,histname,dirname)
+        hist = histOnFile.Clone()
+        del histOnFile
+
         fname = tfile.GetName()
         fname = trimName(fname)
 
         if hist and checkType(fname) != 'nan':
-            histDict[fname] = findHisto(tfile,histname)
+            hist.SetDirectory(0)
+            histDict[fname] = hist
 
     # customise histograms
     custHists(histDict)
@@ -375,6 +389,7 @@ def copyHist(fileList,outfile,histname,dirname=''):
         print 'Writing canvas for histo', histname, 'in root'
     else:
         print 'Writing canvas for histo', histname, 'in', dirname
+
     canv.Write()
 
     return 1
@@ -406,7 +421,8 @@ def walkCopyHists(fileList,outfile):
                 if 'TH' in str(type(hist)):
                     copyHist(fileList,outfile,hist.GetName(),histDir.GetName())
 
-            if switch:
+            switch += 1
+            if switch < 0:
                 break
         # if not a folder
         else:
@@ -443,19 +459,28 @@ if __name__ == "__main__":
     print 80*'#'
 
     fileList = []
+
     # open files
     for name in nameList:
-        fileList.append(TFile.Open(name))
+#        fileList.append(TFile.Open(name))
+        fileList.append(TFile(name,"READ"))
+
+#    for f in fileList:
+#        SetOwnership(f,True)
 
     outfile  = TFile("StackPlots.root", "RECREATE")
+#    outfile  = TFile.Open("StackPlots.root", "RECREATE")
 
     walkCopyHists(fileList,outfile)
 
-    print 'Closing files'
-    for tfile in fileList:
-        tfile.Close()
-
+    print 'Saving new plots...'
     outfile.Close()
+
+    print 'Closing input files...'
+    for tfile in fileList:
+        print tfile.GetName()
+        tfile.Close()
+        print gROOT.GetListOfClosedObjects()
 
     print 80*'#'
     print 'Finished writing and closed files'
