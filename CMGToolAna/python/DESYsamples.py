@@ -7,7 +7,7 @@ def scale(fac,list):
 # scenarios and samples
 scenarios = ['MC','data']
 treename = 'treeProducerSusySingleLepton/'
-base = '/nfs/dust/cms/group/susy-desy/Run2/MC/CMGtuples/Phys14_v3/'
+base = '/nfs/dust/cms/group/susy-desy/Run2/MC/CMGtuples/'
 Lumi = 4 #given in fb^-1
 Lumi = Lumi * 1000
 
@@ -25,29 +25,35 @@ for scene in scenarios:
 sample = 'TTbar'
 dirsHT[sample]  = ['/']
 xsec_lumi[sample] = [809.1*Lumi] #cross section in pb
-inDir['MC'][sample] = base+'TTJets'
+inDir['MC'][sample] = base+'Phys14_v3/'+'TTJets'
 
 sample = 'TTbar_Iso'
 dirsHT[sample]  = ['/']
 xsec_lumi[sample] = [809.1*Lumi] #cross section in pb
-inDir['MC'][sample] = base.replace('Phys14_v3','Phys14_Iso')+'TTJets'
+inDir['MC'][sample] = base+'Phys14_Iso/'+'TTJets'
 
 ##################################
 sample = 'TTbar_SinLep'
 dirsHT[sample]  = ['/']
 xsec_lumi[sample] = [809.1*Lumi] #cross section in pb
-inDir['MC'][sample] = base+'TTJets/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'TTJets/'
 ##################################
 sample = 'TTbar_DiLep'
 dirsHT[sample]  = ['/']
 xsec_lumi[sample] = [809.1*Lumi] #cross section in pb
-inDir['MC'][sample] = base+'TTJets/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'TTJets/'
 ##################################
 sample = 'WJets'
 dirsHT[sample]  = ['WJetsToLNu_HT100to200/','WJetsToLNu_HT200to400/','WJetsToLNu_HT400to600/','WJetsToLNu_HT600toInf/']
 xsec_lumi[sample] = [1817.0*1.23,471.6*1.23,55.61*1.23,18.81*1.23]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
-inDir['MC'][sample] = base+'WJets/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'WJets/'
+##################################
+sample = 'WJets_Iso'
+dirsHT[sample]  = ['WJetsToLNu_HT100to200/','WJetsToLNu_HT200to400/','WJetsToLNu_HT400to600/','WJetsToLNu_HT600toInf/']
+xsec_lumi[sample] = [1817.0*1.23,471.6*1.23,55.61*1.23,18.81*1.23]
+xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
+inDir['MC'][sample] = base+'Phys14_Iso/'+'WJets_Iso/'
 
 ##################################
 
@@ -56,19 +62,19 @@ sample = 'QCD'
 dirsHT[sample]  = ['QCD_HT_250To500/','QCD_HT_500To1000/','QCD_HT_1000ToInf/']
 xsec_lumi[sample] = [670500,26740,769.7]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
-inDir['MC'][sample] = base+'QCD/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'QCD/'
 
 sample = 'QCD_Iso'
 dirsHT[sample]  = ['QCD_HT_250To500/','QCD_HT_500To1000/','QCD_HT_1000ToInf/']
 xsec_lumi[sample] = [670500,26740,769.7]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
-inDir['MC'][sample] = base.replace('Phys14_v3','Phys14_Iso')+'QCD/'
+inDir['MC'][sample] = base+'Phys14_Iso/'+'QCD/'
 
 sample = 'QCD_fixPhoton'
 dirsHT[sample]  = ['QCD_HT_250To500_fixPhoton/','QCD_HT_500To1000_fixPhoton/','QCD_HT_1000ToInf_fixPhoton/']
 xsec_lumi[sample] = [670500,26740,769.7]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
-inDir['MC'][sample] = base+'QCD_fixPhoton/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'QCD_fixPhoton/'
 
 
 # PT binned QCD
@@ -81,118 +87,129 @@ xsec_lumi[sample] = [2237000000,161500000,22110000,3000114.3,493200,120300,7475,
 # for future: make lumi list from number of bins
 #xsec_lumi[sample] = [Lumi*(x+1) for x in range(len(dirsHT[sample]))]
 
-inDir['MC'][sample] = base+'QCD_Pt_good/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'QCD_Pt_good/'
 
 ##################################
 sample = 'DYJets'
 dirsHT[sample]  = ['DYJetsToLL_M50_HT100to200/','DYJetsToLL_M50_HT200to400/','DYJetsToLL_M50_HT400to600/','DYJetsToLL_M50_HT600toInf/']
 xsec_lumi[sample] = [194.3*1.27,52.24*1.27,6.546*1.27,2.179*1.27]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
-inDir['MC'][sample] = base+'DYJets/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'DYJets/'
 
 ##################################
 sample = 'TTH'
 dirsHT[sample]  = ['/']
 xsec_lumi[sample] = [0.5085*Lumi]
-inDir['MC'][sample] = base+'TTH/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'TTH/'
 ##################################
 sample = 'TTW'
 dirsHT[sample]  = ['/']
 xsec_lumi[sample] = [0.6647*Lumi]
-inDir['MC'][sample] = base+'TTWJets/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'TTWJets/'
 ##################################
 sample = 'TTZ'
 dirsHT[sample]  = ['/']
 xsec_lumi[sample] = [0.8565*Lumi]
-inDir['MC'][sample] = base+'TTZJets/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'TTZJets/'
+### combined tth,ttz,ttw ###
+sample = 'TTV'
+dirsHT[sample]  = ['TTZJets/','TTWJets/','TTH/']
+xsec_lumi[sample] = [0.8565,0.6647,0.5085]
+xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
+inDir['MC'][sample] = base+'Phys14_Iso/'+'TTV/'
 ################################## Not HT bins different top decay chains
 sample = 'SingleTop'
 dirsHT[sample]  = ['TToLeptons_tch/','TToLeptons_sch/','T_tWch/','TBarToLeptons_tch/','TBarToLeptons_sch/','TBar_tWch/']
 xsec_lumi[sample] = [136.05*0.108*3,7.20*0.108*3,35.6,80.97*0.108*3,4.16*0.108*3,35.6]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
-inDir['MC'][sample] = base+'SingleTop/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'SingleTop/'
 ##################################
 #       SIGNAL
 ##################################
 sample = 'T1tttt_1500_100'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.0141903*Lumi]
-inDir['MC'][sample] = base+'SMS_T1tttt_2J_mGl1500_mLSP100/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'SMS_T1tttt_2J_mGl1500_mLSP100/'
 ##################################
 sample = 'T1tttt_1500_100_Iso'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.0141903*Lumi]
-inDir['MC'][sample] = base.replace('Phys14_v3','Phys14_Iso')+'SMS_T1tttt_2J_mGl1500_mLSP100/'
+inDir['MC'][sample] = base+'Phys14_Iso/'+'SMS_T1tttt_2J_mGl1500_mLSP100/'
 ##################################
 sample = 'T1tttt_1200_800'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.085641*Lumi]
-inDir['MC'][sample] = base+'SMS_T1tttt_2J_mGl1200_mLSP800/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'SMS_T1tttt_2J_mGl1200_mLSP800/'
+##################################
+sample = 'T1tttt_1200_800_Iso'
+dirsHT[sample] = ['/']
+xsec_lumi[sample] = [0.085641*Lumi]
+inDir['MC'][sample] = base+'Phys14_Iso/'+'SMS_T1tttt_2J_mGl1200_mLSP800/'
 ## DESY PRIVATE
 sample = 'T1tttt_800_450'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [1.489*Lumi]
-inDir['MC'][sample] = base+'SMS_T1tttt_2J_mGl800_mLSP450/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'SMS_T1tttt_2J_mGl800_mLSP450/'
 ##################################
 sample = 'T1tttt_1300_100'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.044*Lumi]
-inDir['MC'][sample] = base+'SMS_T1tttt_2J_mGl1300_mLSP100/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'SMS_T1tttt_2J_mGl1300_mLSP100/'
 ##################################
 sample = 'T1qqqq_1400_15'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.044*Lumi] # FIXME
-inDir['MC'][sample] = base+'SMS_Gl_Gl_mGl1400_mLSP300_mChi315/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'SMS_Gl_Gl_mGl1400_mLSP300_mChi315/'
 ## DESY PRIVATE
 
 sample = 'T5tttt_1300_280'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.044*Lumi]
-inDir['MC'][sample] = base+'T5ttttDeg_mGo1300_mStop300_mChi280/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'T5ttttDeg_mGo1300_mStop300_mChi280/'
 
 sample = 'T5tttt_1000_280'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.325388*Lumi]
-inDir['MC'][sample] = base+'T5ttttDeg_mGo1000_mStop300_mChi280/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'T5ttttDeg_mGo1000_mStop300_mChi280/'
 
 
 sample = 'T5tttt_1300_285'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.044*Lumi]
-inDir['MC'][sample] = base+'T5ttttDeg_mGo1300_mStop300_mCh285_mChi280/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'T5ttttDeg_mGo1300_mStop300_mCh285_mChi280/'
 
 sample = 'T5tttt_1000_285'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.325388*Lumi]
-inDir['MC'][sample] = base+'T5ttttDeg_mGo1000_mStop300_mCh285_mChi280/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'T5ttttDeg_mGo1000_mStop300_mCh285_mChi280/'
 
 
 sample = 'T1ttbbWW_1000_715'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.325388*Lumi]
-inDir['MC'][sample] = base+'T1ttbbWW_mGo1000_mCh725_mChi715/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'T1ttbbWW_mGo1000_mCh725_mChi715/'
 
 
 sample = 'T1ttbbWW_1000_720'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.325388*Lumi]
-inDir['MC'][sample] = base+'T1ttbbWW_mGo1000_mCh725_mChi720/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'T1ttbbWW_mGo1000_mCh725_mChi720/'
 
 
 sample = 'T1ttbbWW_1300_290'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.044*Lumi]
-inDir['MC'][sample] = base+'T1ttbbWW_mGo1300_mCh300_mChi290/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'T1ttbbWW_mGo1300_mCh300_mChi290/'
 
 sample = 'T1ttbbWW_1300_295'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.044*Lumi]
-inDir['MC'][sample] = base+'T1ttbbWW_mGo1300_mCh300_mChi295/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'T1ttbbWW_mGo1300_mCh300_mChi295/'
 
 sample = 'SqGl_1300_100'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.151*Lumi]
-inDir['MC'][sample] = base+'Sq_Gl_4t_Gl1300_Sq1300_LSP100/Loop/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'Sq_Gl_4t_Gl1300_Sq1300_LSP100/Loop/'
 
 # Create list of samples (instead of hardcoded)
 SAMPLES = sorted(inDir['MC'].keys() + inDir['data'].keys())
@@ -201,16 +218,16 @@ SAMPLES = sorted(inDir['MC'].keys() + inDir['data'].keys())
 sample = 'T1tttt_800_450'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [1.489*Lumi]
-inDir['MC'][sample] = base+'SMS_T1tttt_2J_mGl800_mLSP450/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'SMS_T1tttt_2J_mGl800_mLSP450/'
 ##################################
 sample = 'T1tttt_1300_100'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.044*Lumi]
-inDir['MC'][sample] = base+'SMS_T1tttt_2J_mGl1300_mLSP100/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'SMS_T1tttt_2J_mGl1300_mLSP100/'
 ##################################
 sample = 'T1qqqq_1400_15'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.044*Lumi] # FIXME
-inDir['MC'][sample] = base+'SMS_Gl_Gl_mGl1400_mLSP300_mChi315/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'SMS_Gl_Gl_mGl1400_mLSP300_mChi315/'
 ##################################
 '''
