@@ -103,7 +103,7 @@ void SetupHists(int CutNumber){
     }
 }
 
-void FillMainHists(int CutIndex, double EvWeight, bool FillBJets = true){
+void FillMainHists(int CutIndex, float EvWeight, bool FillBJets = true){
     hnJet[CutIndex]->Fill(Obj.nJetGood,EvWeight);
     hnLep[CutIndex]->Fill(Obj.nLepGood,EvWeight);
 
@@ -158,7 +158,7 @@ int main (int argc, char* argv[]){
         exit(0);
     }
     vector<TString> files;
-    vector<double> weights;
+    vector<float> weights;
     for(int i=0;i<size;i+=2){
         files.push_back( arr->At(i)->GetName() );
         weights.push_back( atof( arr->At(i+1)->GetName() ) );
@@ -186,7 +186,7 @@ int main (int argc, char* argv[]){
 
     // CutFlow variables
     int iCut = 0;
-    double CFCounter[CutNumb];
+    float CFCounter[CutNumb];
     int iCFCounter[CutNumb];
     for (int i=0;i < CutNumb; i++){
         CFCounter[i] = 0;
@@ -206,24 +206,27 @@ int main (int argc, char* argv[]){
         if (entry % 1000 == 0)
             cout << "================= Processing entry: " << entry <<  " (" << 100*entry/maxEvents <<  "% done)" << '\r' << flush;
 
-        //lumi calcualtion done in runAnalyzer.py (fb and pb)
-        Double_t fw = tree->GetEntryW(entry);
-        Double_t EvWeight = 1.0;
-        EvWeight *= fw ;
+        /*
+	   file W is can take two values:
+	    - lumi/entries
+	    - entries (max entries in sample)
+
+        Float_t fileW = tree->GetEntryW(entry);
+	Float_t xsec = tree->Get(xsec,"xsec");
+        Float_t EvWeight = fileW * xsec;
+	 */
+
+        Float_t fileW = tree->GetEntryW(entry);
+        Float_t EvWeight = 1.0;
+        EvWeight *= fileW;
 
         //get all objects
         if(debug) cout<<"GetLeptons" <<endl;
         Obj.GetLeptons(tree,"mvaPhys14","CristinaID");
         if(debug) cout<<" GetJets"<<endl;
         Obj.GetJets(tree);
-        if(debug) cout<<" GetFatJets"<<endl;
-//        Obj.GetFatJets(tree);
-        if(debug) cout<<" GetGenLeptons"<<endl;
-//        Obj.GetGenLeptons(tree);
         if(debug) cout<<" GetMET"<<endl;
         Obj.GetMET(tree);
-        if(debug) cout<<" GetGenMET"<<endl;
-//        Obj.GetGenMET(tree);
 
         //check src/ClassObjects.C for what is available and implement new variables in there
         if(debug) cout<<" GetKinVariables"<<endl;
@@ -340,8 +343,6 @@ int main (int argc, char* argv[]){
 
         // Fill main histograms
 	FillMainHists(iCut, EvWeight);
-
-
     }
 
     cout << endl << "Finished event loop" << endl;
@@ -362,7 +363,6 @@ int main (int argc, char* argv[]){
         cout << "After cut\t"
 	     << CutList[ci] << "\t\t"
 	     << CFCounter[ci] << "\tevents left\t"<< iCFCounter[ci] <<"\tcnt"<< endl;
-
 
         CutFlow->SetBinContent(1+ci,CFCounter[ci]);
     }
@@ -412,17 +412,6 @@ int main (int argc, char* argv[]){
         if(hLepEta[cj]->GetEntries() > 0) hLepEta[cj]->Write();
         if(hnOver[cj]->GetEntries() > 0) hnOver[cj]->Write();
 
-/*
-        h1JetpT[cj]->Write();
-        hnJet[cj]->Write();
-        hnOver[cj]->Write();
-        hnBJet[cj]->Write();
-        hnLep[cj]->Write();
-        hLepPt[cj]->Write();
-        hLepEta[cj]->Write();
-        hMET[cj]->Write();
-*/
     }
     cout<<"done with normal histograms"<<endl;
-
 }
