@@ -28,7 +28,7 @@ def GetNevents(loc):
             evts = line.split()[2]
             break
 
-    return int(evts)
+    return float(evts)
 
 # Get sample directory
 if len(sys.argv) > 1:
@@ -36,30 +36,32 @@ if len(sys.argv) > 1:
 else:
     help()
 
-# Get current script dir
-pyDir = sys.argv[0]
-cwd = os.path.dirname(pyDir)
-
 # Settings
 treename = 'treeProducerSusySingleLepton'
 lumi = 1000 #pb-1
 exe = 'TreeAnalyzer_SingleEl.exe'
+
+# Get current script dir
+pyDir = sys.argv[0]
+cwd = os.path.dirname(pyDir)
+
 # get relative path
 exe = cwd+'/../'+exe
 
 # Calculate number of events
 entries = GetNevents(sampDir+'/')
-#remove the trailing / : rstrip('//')
+# Remove the trailing / : rstrip('//')
 sample = os.path.basename(sampDir.rstrip('//'))
 
 # get scenario MC/Data
 if 'MC' in sampDir: scene = 'MC'
 else: scene = 'Data'
 
-print sampDir, 'has', entries, 'entries for sample', scene+'_'+sample
+weight = lumi/entries
+print sampDir, 'has', entries, 'entries for sample', scene+'_'+sample, weight
 
 # NB! weight is lumi/entries
-fileName = sampDir+'/'+treename+'/ '+str(lumi/entries)+' '
+fileName = sampDir+'/'+treename+'/ '+str(weight)+' '
 
 print([exe, fileName,scene+'_'+sample])
 os.system(exe+" "+fileName+" "+scene+'_'+sample)

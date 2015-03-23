@@ -5,9 +5,6 @@ import os
 from glob import glob
 from sys import exit
 
-from ROOT import gROOT
-from ROOT import TFile
-
 # default samples location
 locSamp = 'DESY'
 
@@ -24,32 +21,20 @@ def help():
 
 def GetNevents(loc):
     EvtFile = open(loc+"ttHLepSkimmer/events.txt", "r")
-    theInts = []
-    for val in EvtFile.read().split():
-        if val.isdigit():
-            theInts.append(val)
-        EvtFile.close()
-    return float(theInts[0])
 
-def GetTreeName(file):
-    keylist = file.GetListOfKeys()
-    treeKey = keylist.At(0)
-    treeName = treeKey.GetName()
+    for line in EvtFile.readlines():
+        if 'all events' in line:
+            evts = line.split()[2]
+            break
 
-    if 'tree' in treeName:
-        return treeName
-    else:
-        print 'Tree not found in ', file.GetName()
-        exit(0)
+    return float(evts)
 
 # choose the analysis and a sample
 srcdir = '../src/'
 exe = ' '
 if len(sys.argv)>1:
-    if sys.argv[1]=='TreeOutput':  # write variables to a tree (non compilable)
-        gROOT.LoadMacro(srcdir+'ClassObjects.C+')
-        gROOT.LoadMacro(srcdir+'TreeOutput.C+')
-        from ROOT import TreeWriter as reader
+    if sys.argv[1]=='TreeAnalyzer_example':
+        exe = 'TreeAnalyzer_example.exe'
     # single muon compilable (Batool)
     elif sys.argv[1]=='TreeAnalyzer_Mu':
         exe = 'TreeAnalyzer_Mu.exe'
@@ -57,8 +42,6 @@ if len(sys.argv)>1:
     elif sys.argv[1]=='TreeAnalyzer_SingleLep':
         exe = 'TreeAnalyzer_SingleLep.exe'
     # example with compiled executable
-    elif sys.argv[1]=='TreeAnalyzer_example':
-        exe = 'TreeAnalyzer_example.exe'
     elif sys.argv[1]=='TreeAnalyzer_SingleEl':  # Single Electron with compiled executable
         exe = 'TreeAnalyzer_SingleEl.exe'
     elif sys.argv[1]=='TreeAnalyzer_SingleMu':  # Single Electron with compiled executable
@@ -75,16 +58,22 @@ if len(sys.argv)>1:
 else:
     help()
 
+# Append relative path to exe
+pyDir = sys.argv[0]
+cwd = os.path.dirname(pyDir)
+
+# get relative path
+exe = cwd+'/../'+exe
+
 # check sample location in sys.argv
 if 'EOS' in sys.argv:
     from EOSsamples import *
 else:
     from DESYsamples import *
 
-# fill sample dictionaries
+# loop over the samples in the arguments
 foundFlag=False
 
-# loop over the samples in the arguments
 for arg in sys.argv:
     for scene in scenarios:
         for samp in SAMPLES:
@@ -112,7 +101,7 @@ for arg in sys.argv:
                     print fileNames,samp,scene
                     reader(fileNames,scene+'_'+samp)
                 else:
-                    print([".././"+exe, fileNames,scene+'_'+samp])
-                    os.system(".././"+exe+" "+fileNames+" "+scene+'_'+samp)
+                    print([exe, fileNames,scene+'_'+samp])
+                    os.system(exe+" "+fileNames+" "+scene+'_'+samp)
 
 if not foundFlag: help()
