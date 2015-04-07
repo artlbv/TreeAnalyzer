@@ -5,8 +5,7 @@ import glob
 sys.argv.append( '-b' )
 
 from ROOT import *
-TFile.Open._creates = True
-#TH1.Clone._creates = True
+#TFile.Open._creates = True
 
 # globals
 firstPlot = True
@@ -272,7 +271,6 @@ def doPlot(histDict):
         print '---'
         print 'Background samples:'
         for hist in bkgList:
-#            print nameDict[hist], '\t', hist.Integral(), 'events'
             if "CutFlow" in hist.GetName():
                 print nameDict[hist], '\t', hist.GetMaximum(), 'events'
             else:
@@ -326,48 +324,21 @@ def doPlot(histDict):
 Here the functions for file handling are defined
 '''
 
-def findHisto(file,name):
-    for cutKey in file.GetListOfKeys():
-        if cutKey.IsFolder() == 1:
-            histDir = cutKey.ReadObj()
-            for histKey in histDir.GetListOfKeys():
-                if(histKey.GetName() == name):
-                    return histKey.ReadObj()
-
-        if(cutKey.GetName() == name):
-            return cutKey.ReadObj()
-    else:
-        return 0
-
-def getHist(file,name,dirname=''):
-    file.cd(dirname)
-#    print file,name,dirname
-    return file.Get(name)
-
-def copyStruct(infile,outfile):
-    indirlist = infile.GetListOfKeys()
-#    outdirlist = outfile.GetListOfKeys()
-
-    for cutKey in indirlist:
-
-        if cutKey.IsFolder() == 1:
-            histDir = cutKey.ReadObj()
-
-            # create same folder
-            #if(outfile)
-            outfile.mkdir(histDir.GetName())
-
 def copyHist(fileList,outfile,histname,dirname=''):
 
     # go to outfile target dir
     outfile.cd(dirname)
 
+    if dirname != '': dirname += '/'
+
     # empty file hist dict
     histDict = {}
 
     for tfile in fileList:
-        histOnFile = findHisto(tfile,histname)
-#        histOnFile = getHist(tfile,histname,dirname)
+        histOnFile = tfile.Get(dirname+histname)
+
+        if not histOnFile: continue
+
         hist = histOnFile.Clone()
         del histOnFile
 
@@ -375,8 +346,10 @@ def copyHist(fileList,outfile,histname,dirname=''):
         fname = trimName(fname)
 
         if hist and checkType(fname) != 'nan':
-            hist.SetDirectory(0)
+#            hist.SetDirectory(0)
             histDict[fname] = hist
+
+    if len(histDict) < 1: exit (0)
 
     # customise histograms
     custHists(histDict)
@@ -391,6 +364,9 @@ def copyHist(fileList,outfile,histname,dirname=''):
         print 'Writing canvas for histo', histname, 'in', dirname
 
     canv.Write()
+
+    del histDict
+    del canv
 
     return 1
 
@@ -412,7 +388,7 @@ def walkCopyHists(fileList,outfile):
         if refKey.IsFolder() == 1:
             # create same folder
             histDir = refKey.ReadObj()
-            outfile.mkdir(histDir.GetName())
+            fileDir = outfile.mkdir(histDir.GetName())
 
             #loop over histos inside
             for histKey in histDir.GetListOfKeys():
@@ -420,16 +396,26 @@ def walkCopyHists(fileList,outfile):
                 # check whether histo
                 if 'TH' in str(type(hist)):
                     copyHist(fileList,outfile,hist.GetName(),histDir.GetName())
+                del hist
+
+            histDir.Close()
+            fileDir.Close()
+
+            del histDir
+            del fileDir
 
             switch += 1
             if switch < 0:
                 break
         # if not a folder
         else:
-            refHist = refKey.ReadObj()
+            reffile.cd()
+            hist = refKey.ReadObj()
             # check whether histo
-            if 'TH' in str(type(refHist)):
-                copyHist(fileList,outfile,refHist.GetName())
+            if 'TH' in str(type(hist)):
+                copyHist(fileList,outfile,hist.GetName())
+
+            del hist
 
         print 80*'#'
 
@@ -453,7 +439,7 @@ if __name__ == "__main__":
 
     print 'FileDir:', fileDir
     print 'Pattern', pattern
-    nameList = glob.glob(fileDir+'/*'+pattern)
+    nameList = glob.glob(fileDir+'/'+pattern)
     print 'Found', len(nameList), 'files'
     print [trimName(x) for x in nameList]
     print 80*'#'
@@ -473,14 +459,13 @@ if __name__ == "__main__":
 
     walkCopyHists(fileList,outfile)
 
-    print 'Saving new plots...'
+    print 'Saving new plots... to', outfile.GetName()
     outfile.Close()
 
     print 'Closing input files...'
     for tfile in fileList:
         print tfile.GetName()
         tfile.Close()
-        print gROOT.GetListOfClosedObjects()
 
     print 80*'#'
     print 'Finished writing and closed files'
