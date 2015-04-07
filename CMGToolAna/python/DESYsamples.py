@@ -122,7 +122,7 @@ sample = 'TTV'
 dirsHT[sample]  = ['TTZJets/','TTWJets/','TTH/']
 xsec_lumi[sample] = [0.8565,0.6647,0.5085]
 xsec_lumi[sample] = scale(Lumi,xsec_lumi[sample])
-inDir['MC'][sample] = base+'Phys14_Iso/'+'TTV/'
+inDir['MC'][sample] = base+'Phys14_v3/'+'TTV/'
 ################################## Not HT bins different top decay chains
 sample = 'SingleTop'
 dirsHT[sample]  = ['TToLeptons_tch/','TToLeptons_sch/','T_tWch/','TBarToLeptons_tch/','TBarToLeptons_sch/','TBar_tWch/']
@@ -141,7 +141,7 @@ inDir['MC'][sample] = base+'Phys14_Iso/'+'SingleTop/'
 sample = 'T1tttt_1500_100'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.0141903*Lumi]
-inDir['MC'][sample] = base+'Phys14_v3/'+'SMS_T1tttt_2J_mGl1500_mLSP100/'
+inDir['MC'][sample] = base+'Phys14_v3/Signal/'+'SMS_T1tttt_2J_mGl1500_mLSP100/'
 ##################################
 sample = 'T1tttt_1500_100_Iso'
 dirsHT[sample] = ['/']
@@ -151,7 +151,7 @@ inDir['MC'][sample] = base+'Phys14_Iso/'+'SMS_T1tttt_2J_mGl1500_mLSP100/'
 sample = 'T1tttt_1200_800'
 dirsHT[sample] = ['/']
 xsec_lumi[sample] = [0.085641*Lumi]
-inDir['MC'][sample] = base+'Phys14_v3/'+'SMS_T1tttt_2J_mGl1200_mLSP800/'
+inDir['MC'][sample] = base+'Phys14_v3/Signal/'+'SMS_T1tttt_2J_mGl1200_mLSP800/'
 ##################################
 sample = 'T1tttt_1200_800_Iso'
 dirsHT[sample] = ['/']
