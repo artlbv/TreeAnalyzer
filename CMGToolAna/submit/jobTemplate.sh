@@ -57,7 +57,7 @@ echo "Outdir is" $OutDir
 
 echo start at `date`
 
-../python/runAnalyzer.py XXXX YYYY
+EXE ANANAME SAMPLE
 
 mv CMG* $OutDir
 
