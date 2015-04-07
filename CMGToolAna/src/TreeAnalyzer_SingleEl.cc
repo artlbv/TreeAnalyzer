@@ -12,6 +12,11 @@
 
 using namespace std;
 
+// flag electron or muon channel
+
+const bool isEl = true;
+//const bool isEl = false;
+
 // Map of Cuts. Instead of Cut Number use CutID (CutName):
 // Fill Histo of cutname as Histo[GetCutID("cutname")]->Fill();
 
@@ -222,7 +227,7 @@ int main (int argc, char* argv[]){
 
         //get all objects
         if(debug) cout<<"GetLeptons" <<endl;
-        Obj.GetLeptons(tree,"mvaPhys14","CristinaID");
+        Obj.GetLeptons(tree,"mvaPhys14","MiniIsoID");
         if(debug) cout<<" GetJets"<<endl;
         Obj.GetJets(tree);
         if(debug) cout<<" GetMET"<<endl;
@@ -250,8 +255,13 @@ int main (int argc, char* argv[]){
         // 1. Cut (Require exactly one good Electron)
         //////////////////
         if (Obj.nLepGood != 1) continue;
-//        if ( Obj.nMuGood != 1) continue;
-        if ( Obj.nElGood != 1) continue;
+
+	if (isEl){
+	    if ( Obj.nElGood != 1) continue;
+	}
+	else{
+	    if ( Obj.nMuGood != 1) continue;
+	}
 
         // replace LepGood collection with SoftLepGood if you want to do the soft lep analysis
         /*
@@ -349,7 +359,12 @@ int main (int argc, char* argv[]){
 
     //write out cutflow
     ofstream tfile;
-    TString textfilename = "CMG_cutflow_"+outname+"_El.txt";
+    TString textfilename = "CMG_cutflow_"+outname;
+    if( isEl )
+	textfilename+="_El.txt";
+    else
+	textfilename+="_Mu.txt";
+
     tfile.open(textfilename);
     tfile << "########################################" << endl;
     tfile << "Cut efficiency numbers:" << endl;
@@ -369,7 +384,13 @@ int main (int argc, char* argv[]){
 
     //write out histograms
     TFile * outf;
-    TString rootfilename = "CMG_"+outname+"_El_his.root";
+    TString rootfilename = "CMG_"+outname;
+
+    if (isEl)
+	rootfilename += "_El_his.root";
+    else
+	rootfilename += "_Mu_his.root";
+
     outf = new TFile(rootfilename,"RECREATE");
 
     //first the main histograms
