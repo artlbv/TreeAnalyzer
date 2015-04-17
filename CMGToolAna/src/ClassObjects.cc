@@ -5,6 +5,8 @@ using namespace std;
 // \\\\\\OBJECT CUTS
 
 Float_t goodEta = 2.4;
+Float_t goodEta_El = 2.5;
+Float_t goodEta_Mu = 2.4;
 
 //leptons
 Float_t goodElPt = 25.0;
@@ -89,6 +91,7 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
     Float_t LepGood_miniRelIso[arrayN];
     Int_t   LepGood_pdgId[arrayN];
     Int_t  LepGood_tightID[arrayN];
+    Int_t  LepGood_mediumMuonID[arrayN];
     Int_t LepGood_convVeto[arrayN];
     Int_t LepGood_lostHits[arrayN];
     Float_t LepGood_sip3d[arrayN];
@@ -103,6 +106,7 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
     tree->Get(LepGood_miniRelIso[0],"LepGood_miniRelIso");
     tree->Get(LepGood_pdgId[0],"LepGood_pdgId");
     tree->Get(LepGood_tightID[0],"LepGood_tightId");
+    tree->Get(LepGood_mediumMuonID[0],"LepGood_mediumMuonId");
     tree->Get(LepGood_convVeto[0],"LepGood_convVeto");
     tree->Get(LepGood_lostHits[0],"LepGood_lostHits");
     tree->Get(LepGood_sip3d[0],"LepGood_sip3d");
@@ -138,44 +142,54 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
                     /////////
                     // common cuts for all hard leptons (good and veto leps pass)
                     /////////
-                    if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+                    if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta_Mu)
                         continue;
                 }
 
                 // Applying IDs
 
                 // Default POG ID
-                if( muID == "POG2012" &&
-                    dummyLep.Pt() > goodMuPt &&
-                    LepGood_tightID[ilep] ==1 &&
-                    LepGood_relIso03[ilep] < goodMu_relIso03
-                    )
-                    passID = true;
-
+                if( muID == "POG2012"){
+                    if (dummyLep.Pt() > goodMuPt &&
+                        LepGood_tightID[ilep] ==1 &&
+                        LepGood_relIso03[ilep] < goodMu_relIso03
+                        )
+                        passID = true;
+                }
                 // ID for gen study: w/o Iso
-                if( muID == "looseID" &&
-                    dummyLep.Pt() > goodMuPt
-                    )
-                    passID = true;
-
+                else if( muID == "looseID"){
+                    if (dummyLep.Pt() > goodMuPt)
+                        passID = true;
+                }
                 // ID for gen study: w/o Iso
-                if( muID == "genID" &&
-                    dummyLep.Pt() > goodMuPt &&
-                    LepGood_tightID[ilep] ==1 &&
-                    LepGood_sip3d[ilep] < goodMu_sip3d
-                    )
-                    passID = true;
-
+                else if( muID == "genID"){
+                    if (dummyLep.Pt() > goodMuPt &&
+                        LepGood_tightID[ilep] ==1 &&
+                        LepGood_sip3d[ilep] < goodMu_sip3d
+                        )
+                        passID = true;
+                }
                 //ID from Cristina
-                if( muID == "CristinaID" &&
-                    dummyLep.Pt() > goodMuPt &&
-                    LepGood_tightID[ilep] ==1 &&
-                    LepGood_relIso03[ilep] < goodMu_relIso03 &&
-                    LepGood_sip3d[ilep] < goodMu_sip3d
-                    )
-                    passID = true;
-
+                else if( muID == "CristinaID"){
+                    if (dummyLep.Pt() > goodMuPt &&
+                        LepGood_tightID[ilep] ==1 &&
+                        LepGood_relIso03[ilep] < goodMu_relIso03 &&
+                        LepGood_sip3d[ilep] < goodMu_sip3d
+                        )
+                        passID = true;
+                }
+                //ID for MiniIso
+                else if( muID == "MiniIsoID"){
+                    if (dummyLep.Pt() > goodMuPt &&
+                        LepGood_mediumMuonID[ilep] == 1 &&
+                        LepGood_miniRelIso[ilep] < 0.2 &&
+                        LepGood_sip3d[ilep] < goodMu_sip3d
+                        )
+                        passID = true;
+                }
+                ////////////
                 // fill if passes ID check
+                ////////////
                 if (passID){
 
                     goodLep.push_back(dummyLep);
@@ -185,7 +199,7 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
 
                     //continue;
                 }
-                else if(dummyLep.relIso03 < vetoLep_relIso03){
+                else {// if(dummyLep.miniRelIso < 0.4){
                     isVetoMu = true;
                     nMuVeto++;
                 }
@@ -194,7 +208,7 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
             else{
 
                 // check pt and acceptance
-                if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+                if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta_Mu)
                     continue;
 
                 // determine passID
@@ -223,7 +237,7 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
                     nLepGood++;
                 }
                 // count Veto (with Iso cut)
-                else if (dummyLep.relIso03 < vetoLep_relIso03){
+                else {// if (dummyLep.relIso03 < vetoLep_relIso03){
                     isVetoMu = true;
                     nMuVeto++;
                 }
@@ -246,7 +260,7 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
                     /////////
                     // common cuts for all hard leptons (good and veto leps pass)
                     /////////
-                    if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+                    if(dummyLep.Pt() <= vetoLepPt || fabs(dummyLep.Eta()) > goodEta_El)
                         continue;
                 }
 
@@ -257,104 +271,101 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
                     passID = true;
 
                 // a la POG Cuts_2012 ID
-                if( elID == "POG2012" &&
-                    dummyLep.Pt() > goodElPt &&
-                    LepGood_tightID[ilep] > 2 &&
-                    LepGood_relIso03[ilep] < goodEl_relIso03
-                    )
-                    passID = true;
-
+                else if( elID == "POG2012"){
+                    if (dummyLep.Pt() > goodElPt &&
+                        LepGood_tightID[ilep] > 2 &&
+                        LepGood_relIso03[ilep] < goodEl_relIso03
+                        )
+                        passID = true;
+                }
                 // ID for gen study: w/o Iso
-                if( elID == "genID" &&
-                    dummyLep.Pt() > goodElPt &&
-                    LepGood_lostHits[ilep] <= goodEl_lostHits &&
-                    LepGood_convVeto[ilep] &&
-                    LepGood_tightID[ilep] > 1
-                    )
-                    passID = true;
-
+                else if( elID == "genID"){
+                    if (dummyLep.Pt() > goodElPt &&
+                        LepGood_lostHits[ilep] <= goodEl_lostHits &&
+                        LepGood_convVeto[ilep] &&
+                        LepGood_tightID[ilep] > 1
+                        )
+                        passID = true;
+                }
                 // MVAsusy ID
-                if( elID == "MVASusy" &&
-                    dummyLep.Pt() > goodElPt &&
-                    LepGood_relIso03[ilep] < 0.15 &&
-                    LepGood_mvaSusy[ilep] > goodEl_mvaSusy &&
-                    LepGood_lostHits[ilep] <= goodEl_lostHits &&
-                    LepGood_convVeto[ilep]
-                    )
-                    passID = true;
-
+                else if( elID == "MVASusy"){
+                    if( dummyLep.Pt() > goodElPt &&
+                        LepGood_relIso03[ilep] < 0.15 &&
+                        LepGood_mvaSusy[ilep] > goodEl_mvaSusy &&
+                        LepGood_lostHits[ilep] <= goodEl_lostHits &&
+                        LepGood_convVeto[ilep]
+                        )
+                        passID = true;
+                }
                 // a la POG Cuts_2012 ID + recommendations from Cristina
-                if( elID == "CristinaID" &&
-                    dummyLep.Pt() > goodElPt &&
-                    LepGood_relIso03[ilep] < goodEl_relIso03 &&
-                    LepGood_tightID[ilep] > goodEl_tightId &&
-                    LepGood_lostHits[ilep] <= goodEl_lostHits &&
-                    LepGood_sip3d[ilep] < goodEl_sip3d &&
-                    LepGood_convVeto[ilep]
-                    )
-                    passID = true;
-
-                // for Efficiency studies (v1)
-                if( elID == "mvaPhys14" &&
-                    dummyLep.Pt() > goodElPt &&
-                    (fabs(dummyLep.Eta()) < 1.44 || fabs(dummyLep.Eta()) > 1.57) &&
-                    LepGood_lostHits[ilep] <= goodEl_lostHits &&
-                    LepGood_convVeto[ilep] &&
-                    LepGood_sip3d[ilep] < goodEl_sip3d
-                    ){
-
-                    // check eta-dependent relIso ID
-                    bool passIso = false;
-
-                    /*
-                      if ( fabs(dummyLep.Eta()) < etaEB && dummyLep.relIso03 < goodEl_relIso03_etaEE)
-                      passIso = true;
-                      else if ( fabs(dummyLep.Eta()) > etaEE && dummyLep.relIso03 < goodEl_relIso03_etaEB)
-                      passIso = true;
-                    */
-
-                    if (dummyLep.relIso03 < goodEl_relIso03)
-                        passIso = true;
-                    // check eta-dependent MVA ID
-
-                    bool passMVA = false;
-
-                    if(fabs(dummyLep.Eta()) < 0.8 && LepGood_mvaPhys14[ilep] > goodEl_mvaPhys14_eta0p8_T )
-                        passMVA =true;
-                    else if(fabs(dummyLep.Eta()) > 0.8 && fabs(dummyLep.Eta()) < 1.44 && LepGood_mvaPhys14[ilep] > goodEl_mvaPhys14_eta1p4_T)
-                        passMVA =true;
-                    else if(fabs(dummyLep.Eta()) > 1.57 && LepGood_mvaPhys14[ilep] > goodEl_mvaPhys14_eta2p4_T )
-                        passMVA = true;
-
-                    // final check:
-                    if (passMVA && passIso)
+                else if( elID == "CristinaID"){
+                    if (dummyLep.Pt() > goodElPt &&
+                        LepGood_relIso03[ilep] < goodEl_relIso03 &&
+                        LepGood_tightID[ilep] > goodEl_tightId &&
+                        LepGood_lostHits[ilep] <= goodEl_lostHits &&
+                        LepGood_sip3d[ilep] < goodEl_sip3d &&
+                        LepGood_convVeto[ilep]
+                        )
                         passID = true;
                 }
+                // for Current ID with MVA and MiniRelIso
+                else if( elID == "mvaPhys14"){
+                    if (dummyLep.Pt() > goodElPt &&
+                        (fabs(dummyLep.Eta()) < 1.44 || fabs(dummyLep.Eta()) > 1.57) &&
+                        LepGood_lostHits[ilep] <= goodEl_lostHits &&
+                        LepGood_convVeto[ilep] &&
+                        LepGood_sip3d[ilep] < goodEl_sip3d
+                        ){
 
+                        // check eta-dependent relIso ID
+                        bool passIso = false;
+
+                        //if (dummyLep.relIso03 < goodEl_relIso03)
+			if (dummyLep.miniRelIso < 0.1)
+                            passIso = true;
+
+                        // check eta-dependent MVA ID
+                        bool passMVA = false;
+
+                        if(fabs(dummyLep.Eta()) < 0.8 && LepGood_mvaPhys14[ilep] > goodEl_mvaPhys14_eta0p8_T )
+                            passMVA =true;
+                        else if(fabs(dummyLep.Eta()) > 0.8 && fabs(dummyLep.Eta()) < 1.44 && LepGood_mvaPhys14[ilep] > goodEl_mvaPhys14_eta1p4_T)
+                            passMVA =true;
+                        else if(fabs(dummyLep.Eta()) > 1.57 && LepGood_mvaPhys14[ilep] > goodEl_mvaPhys14_eta2p4_T )
+                            passMVA = true;
+
+                        // final check:
+                        if (passMVA && passIso)
+                            passID = true;
+                    }
+                }
                 // a la POG Cuts_2012 ID + 2015 POD Iso + recommendations from Cristina
-                if( elID == "NewID" &&
-                    dummyLep.Pt() > goodElPt &&
-                    LepGood_tightID[ilep] > goodEl_tightId &&
-                    LepGood_lostHits[ilep] <= goodEl_lostHits &&
-                    LepGood_sip3d[ilep] < goodEl_sip3d &&
-                    LepGood_convVeto[ilep]
-                    ){
-                    if ( fabs(dummyLep.Eta()) < etaEB && dummyLep.relIso03 < goodEl_relIso03_etaEE)
-                        passID = true;
-                    else if ( fabs(dummyLep.Eta()) > etaEE && dummyLep.relIso03 < goodEl_relIso03_etaEB)
-                        passID = true;
+                else if( elID == "NewID"){
+                    if (dummyLep.Pt() > goodElPt &&
+			LepGood_tightID[ilep] > goodEl_tightId &&
+			LepGood_lostHits[ilep] <= goodEl_lostHits &&
+			LepGood_sip3d[ilep] < goodEl_sip3d &&
+			LepGood_convVeto[ilep]
+			){
+			if ( fabs(dummyLep.Eta()) < etaEB && dummyLep.relIso03 < goodEl_relIso03_etaEE)
+			    passID = true;
+			else if ( fabs(dummyLep.Eta()) > etaEE && dummyLep.relIso03 < goodEl_relIso03_etaEB)
+			    passID = true;
+		    }
                 }
+
+		// check eta
+		if (fabs(dummyLep.Eta()) > 2.4) passID = false;
 
                 // fill if passes ID check
                 if (passID){
-
                     goodLep.push_back(dummyLep);
                     goodEl.push_back(dummyLep);
                     nElGood++;
                     nLepGood++;
                     // continue;
                 }
-                else if(dummyLep.relIso03 < vetoLep_relIso03){
+                else{// if(dummyLep.relIso03 < vetoLep_relIso03){
                     isVetoEl = true;
                     nElVeto++;
                 }
@@ -397,7 +408,7 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
                     nLepGood++;
                 }
                 // count Veto
-                else if (dummyLep.relIso03 < vetoLep_relIso03){
+                else { //if (dummyLep.relIso03 < vetoLep_relIso03){
                     isVetoEl = true;
                     nElVeto++;
                 }
@@ -491,7 +502,7 @@ void GetObjects::GetSoftLeptons(EasyChain * tree){
 
         //common cuts for all soft leptons (good and veto leps pass)
 
-        if(dummyLep.Pt() <= softvetoLepPt || fabs(dummyLep.Eta()) > goodEta)
+        if(dummyLep.Pt() <= softvetoLepPt || fabs(dummyLep.Eta()) > goodEta_El)
             continue;
         // Muon cuts
         if(abs(LepGood_pdgId[ilep]) == 13){
@@ -786,15 +797,15 @@ void GetObjects::GetJets(EasyChain * tree, string jetID/* = "normID"*/){
                     nBJetGood++;
                 }
             }
-	}
+        }
 
-	else if ( jetID ==  "NOID" ) {
-	    // simply push back all jets
-	    goodJet.push_back(dummyJet);
-	    nJetGood++;
+        else if ( jetID ==  "NOID" ) {
+            // simply push back all jets
+            goodJet.push_back(dummyJet);
+            nJetGood++;
 
-	    goodBJet.push_back(dummyJet);
-	    nBJetGood++;
+            goodBJet.push_back(dummyJet);
+            nBJetGood++;
         }
     }
 
