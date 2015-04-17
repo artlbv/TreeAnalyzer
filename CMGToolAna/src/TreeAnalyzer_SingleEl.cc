@@ -186,7 +186,7 @@ int main (int argc, char* argv[]){
         string cutname = CutList[icut];
 
         CutMap[cutname] = icut;
-        cout << "Cut name\t" << cutname << "\tcut number\t" << icut << endl;
+	//    cout << "Cut name\t" << cutname << "\tcut number\t" << icut << endl;
     }
 
     // CutFlow variables
