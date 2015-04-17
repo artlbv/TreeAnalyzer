@@ -198,8 +198,8 @@ int main (int argc, char* argv[]){
 
     cout << "Starting event loop" << endl;
 
-    for(int entry=0; entry < min(100000,Nevents); entry+=1){
-//    for(int entry=0; entry < Nevents; entry+=1){
+//    for(int entry=0; entry < min(100000,Nevents); entry+=1){
+    for(int entry=0; entry < Nevents; entry+=1){
 
         if (entry % 1000 == 0)
             cout << "================= Processing entry: " << entry << '\r' << flush;
