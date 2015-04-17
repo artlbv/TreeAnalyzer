@@ -199,7 +199,7 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
 
                     //continue;
                 }
-                else {//if(dummyLep.relIso03 < vetoLep_relIso03){
+                else {// if(dummyLep.miniRelIso < 0.4){
                     isVetoMu = true;
                     nMuVeto++;
                 }
@@ -353,9 +353,12 @@ void GetObjects::GetLeptons(EasyChain * tree, string elID/* = "mvaPhys14"*/, str
 			    passID = true;
 		    }
                 }
+
+		// check eta
+		if (fabs(dummyLep.Eta()) > 2.4) passID = false;
+
                 // fill if passes ID check
                 if (passID){
-
                     goodLep.push_back(dummyLep);
                     goodEl.push_back(dummyLep);
                     nElGood++;
